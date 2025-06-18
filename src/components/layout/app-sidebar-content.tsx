@@ -18,14 +18,20 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGame } from '@/components/game/game-provider';
 import { MAX_TILES, MIN_TILES, MIN_PLAYERS, MAX_PLAYERS } from '@/lib/constants';
-import { Settings, Palette, Info, Wand2, RefreshCwIcon, Users, Image as ImageIcon, XCircle, Link as LinkIcon, Download, Upload, MinusCircle, ShieldAlert, RotateCcw } from 'lucide-react';
+import { Settings, Palette, Info, Wand2, RefreshCwIcon, Users, Image as ImageIcon, XCircle, Link as LinkIcon, Download, Upload, ShieldAlert, Dices } from 'lucide-react';
 import type { BoardSettings, WinningCondition, PunishmentType } from '@/types';
 import React, { useRef, useState } from 'react';
 import { useLanguage } from '@/context/language-context';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import Image from 'next/image';
+import NextImage from 'next/image'; // Renamed to avoid conflict
 import { TutorialModal } from './tutorial-modal';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 
 export function AppSidebarContent() {
@@ -108,7 +114,7 @@ export function AppSidebarContent() {
       return;
     }
     try {
-      const jsonString = JSON.stringify(state.boardConfig, null, 2); // Pretty print JSON
+      const jsonString = JSON.stringify(state.boardConfig, null, 2); 
       const blob = new Blob([jsonString], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -147,7 +153,6 @@ export function AppSidebarContent() {
       };
       reader.readAsText(file);
     }
-    // Reset file input to allow re-importing the same file
     if (event.target) {
         event.target.value = '';
     }
@@ -202,32 +207,34 @@ export function AppSidebarContent() {
         <SidebarSeparator />
 
         {boardSettings && (
-          <>
-            <SidebarGroup>
-              <SidebarGroupLabel className="flex items-center gap-2 font-headline">
-                <Settings size={16} /> {t('sidebar.boardSettings')}
-              </SidebarGroupLabel>
-              <SidebarGroupContent className="space-y-4">
+          <Accordion type="multiple" className="w-full px-2">
+            <AccordionItem value="board-settings">
+              <AccordionTrigger className="text-sm hover:no-underline">
+                <div className="flex items-center gap-2 font-medium">
+                    <Settings size={16} /> {t('sidebar.boardSettings')}
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-4 pt-2 pb-4">
                 <div>
-                  <Label htmlFor="boardName" className="text-sm font-medium">{t('sidebar.boardName')}</Label>
+                  <Label htmlFor="boardName" className="text-xs font-medium">{t('sidebar.boardName')}</Label>
                   <Input 
                     id="boardName" 
                     value={boardSettings.name} 
                     onChange={(e) => handleSettingChange('name', e.target.value)}
-                    className="mt-1"
+                    className="mt-1 h-8 text-xs"
                   />
                 </div>
                  <div>
-                  <Label htmlFor="boardDescription" className="text-sm font-medium">{t('sidebar.description')}</Label>
+                  <Label htmlFor="boardDescription" className="text-xs font-medium">{t('sidebar.description')}</Label>
                   <Input 
                     id="boardDescription" 
                     value={boardSettings.description || ''} 
                     onChange={(e) => handleSettingChange('description', e.target.value)}
-                    className="mt-1"
+                    className="mt-1 h-8 text-xs"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="numTiles" className="text-sm font-medium">
+                  <Label htmlFor="numTiles" className="text-xs font-medium">
                     {t('sidebar.numberOfTiles', { count: boardSettings.numberOfTiles })}
                   </Label>
                   <Slider
@@ -242,32 +249,32 @@ export function AppSidebarContent() {
                 </div>
                 
                 <div>
-                  <Label htmlFor="punishmentType" className="text-sm font-medium">{t('sidebar.punishmentType.label')}</Label>
+                  <Label htmlFor="punishmentType" className="text-xs font-medium">{t('sidebar.punishmentType.label')}</Label>
                   <Select
                     value={boardSettings.punishmentType}
                     onValueChange={(value: PunishmentType) => handleSettingChange('punishmentType', value)}
                   >
-                    <SelectTrigger id="punishmentType" className="mt-1">
+                    <SelectTrigger id="punishmentType" className="mt-1 h-8 text-xs">
                       <SelectValue placeholder={t('sidebar.punishmentType.selectPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">{t('sidebar.punishmentType.none')}</SelectItem>
-                      <SelectItem value="revertMove">{t('sidebar.punishmentType.revertMove')}</SelectItem>
-                      <SelectItem value="moveBackFixed">{t('sidebar.punishmentType.moveBackFixed')}</SelectItem>
-                      <SelectItem value="moveBackLevelBased">{t('sidebar.punishmentType.moveBackLevelBased')}</SelectItem>
+                      <SelectItem value="none" className="text-xs">{t('sidebar.punishmentType.none')}</SelectItem>
+                      <SelectItem value="revertMove" className="text-xs">{t('sidebar.punishmentType.revertMove')}</SelectItem>
+                      <SelectItem value="moveBackFixed" className="text-xs">{t('sidebar.punishmentType.moveBackFixed')}</SelectItem>
+                      <SelectItem value="moveBackLevelBased" className="text-xs">{t('sidebar.punishmentType.moveBackLevelBased')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 {boardSettings.punishmentType === 'moveBackFixed' && (
                   <div>
-                    <Label htmlFor="punishmentValue" className="text-sm font-medium">
+                    <Label htmlFor="punishmentValue" className="text-xs font-medium">
                       {t('sidebar.punishmentValue', { count: boardSettings.punishmentValue })}
                     </Label>
                     <Slider
                       id="punishmentValue"
                       min={1}
-                      max={5} // Max 5 tiles back for fixed punishment, can be adjusted
+                      max={5} 
                       step={1}
                       value={[boardSettings.punishmentValue]}
                       onValueChange={handleSliderChange('punishmentValue')}
@@ -277,32 +284,32 @@ export function AppSidebarContent() {
                 )}
 
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="randomizeTilesOnLoad" className="text-sm font-medium">{t('sidebar.randomizeTilesOnLoad')}</Label>
+                  <Label htmlFor="randomizeTilesOnLoad" className="text-xs font-medium">{t('sidebar.randomizeTilesOnLoad')}</Label>
                   <Switch
                     id="randomizeTilesOnLoad"
                     checked={boardSettings.randomizeTiles} 
                     onCheckedChange={(checked) => handleSettingChange('randomizeTiles', checked)}
                   />
                 </div>
-              </SidebarGroupContent>
-            </SidebarGroup>
+              </AccordionContent>
+            </AccordionItem>
 
-            <SidebarSeparator />
-            
-            <SidebarGroup>
-              <SidebarGroupLabel className="flex items-center gap-2 font-headline">
-                <ImageIcon size={16} /> {t('sidebar.boardAppearance')}
-              </SidebarGroupLabel>
-              <SidebarGroupContent className="space-y-2">
+            <AccordionItem value="board-appearance">
+              <AccordionTrigger className="text-sm hover:no-underline">
+                <div className="flex items-center gap-2 font-medium">
+                    <ImageIcon size={16} /> {t('sidebar.boardAppearance')}
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-2 pt-2 pb-4">
                  <div>
-                    <Label htmlFor="boardBgImage" className="text-sm font-medium">{t('sidebar.boardBackgroundImage')}</Label>
+                    <Label htmlFor="boardBgImage" className="text-xs font-medium">{t('sidebar.boardBackgroundImage')}</Label>
                     {boardSettings.boardBackgroundImage && (
                       <div className="mt-2 relative w-full aspect-video border rounded-md overflow-hidden">
-                        <Image src={boardSettings.boardBackgroundImage} alt={t('sidebar.boardBackgroundPreview')} layout="fill" objectFit="contain" unoptimized />
+                        <NextImage src={boardSettings.boardBackgroundImage} alt={t('sidebar.boardBackgroundPreview')} layout="fill" objectFit="contain" unoptimized />
                         <Button 
                           variant="destructive" 
                           size="icon" 
-                          className="absolute top-1 right-1 h-7 w-7 z-10"
+                          className="absolute top-1 right-1 h-6 w-6 z-10"
                           onClick={removeBoardBackgroundImage}
                           aria-label={t('sidebar.removeBoardBackgroundImage')}
                         >
@@ -315,24 +322,23 @@ export function AppSidebarContent() {
                       type="file" 
                       accept="image/*" 
                       onChange={handleBoardBackgroundImageChange}
-                      className="mt-1 text-xs"
+                      className="mt-1 text-xs h-8"
                       ref={boardBgInputRef}
                     />
                     <p className="text-xs text-muted-foreground mt-1">{t('sidebar.boardBackgroundImageHelp')}</p>
                   </div>
-              </SidebarGroupContent>
-            </SidebarGroup>
+              </AccordionContent>
+            </AccordionItem>
 
-
-            <SidebarSeparator />
-
-            <SidebarGroup>
-              <SidebarGroupLabel className="flex items-center gap-2 font-headline">
-                <Users size={16} /> {t('sidebar.playerSettings')}
-              </SidebarGroupLabel>
-              <SidebarGroupContent className="space-y-4">
+            <AccordionItem value="player-settings">
+              <AccordionTrigger className="text-sm hover:no-underline">
+                 <div className="flex items-center gap-2 font-medium">
+                    <Users size={16} /> {t('sidebar.playerSettings')}
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-4 pt-2 pb-4">
                 <div>
-                  <Label htmlFor="numPlayers" className="text-sm font-medium">
+                  <Label htmlFor="numPlayers" className="text-xs font-medium">
                     {t('sidebar.numberOfPlayers', { count: boardSettings.numberOfPlayers })}
                   </Label>
                   <Slider
@@ -346,33 +352,32 @@ export function AppSidebarContent() {
                   />
                 </div>
                  <div>
-                  <Label htmlFor="winningCondition" className="text-sm font-medium">{t('sidebar.winningCondition')}</Label>
+                  <Label htmlFor="winningCondition" className="text-xs font-medium">{t('sidebar.winningCondition')}</Label>
                    <Select
                     value={boardSettings.winningCondition}
                     onValueChange={(value: WinningCondition) => handleSettingChange('winningCondition', value)}
                   >
-                    <SelectTrigger id="winningCondition" className="mt-1">
+                    <SelectTrigger id="winningCondition" className="mt-1 h-8 text-xs">
                       <SelectValue placeholder={t('sidebar.selectWinningCondition')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="firstToFinish">{t('sidebar.firstToFinish')}</SelectItem>
-                      <SelectItem value="highestScore">{t('sidebar.highestScore')}</SelectItem>
+                      <SelectItem value="firstToFinish" className="text-xs">{t('sidebar.firstToFinish')}</SelectItem>
+                      <SelectItem value="highestScore" className="text-xs">{t('sidebar.highestScore')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarSeparator />
+              </AccordionContent>
+            </AccordionItem>
             
-            <SidebarGroup>
-              <SidebarGroupLabel className="flex items-center gap-2 font-headline">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-dice-3"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M16 8h.01"/><path d="M12 12h.01"/><path d="M8 16h.01"/></svg>
-                {t('sidebar.diceConfiguration')}
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
+            <AccordionItem value="dice-config">
+              <AccordionTrigger className="text-sm hover:no-underline">
+                <div className="flex items-center gap-2 font-medium">
+                    <Dices size={16} /> {t('sidebar.diceConfiguration')}
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-2 pb-4">
                 <div>
-                  <Label htmlFor="diceSides" className="text-sm font-medium">{t('sidebar.diceSides', { count: boardSettings.diceSides })}</Label>
+                  <Label htmlFor="diceSides" className="text-xs font-medium">{t('sidebar.diceSides', { count: boardSettings.diceSides })}</Label>
                   <Slider
                     id="diceSides"
                     min={1}
@@ -383,26 +388,27 @@ export function AppSidebarContent() {
                     className="mt-2"
                   />
                 </div>
-              </SidebarGroupContent>
-            </SidebarGroup>
+              </AccordionContent>
+            </AccordionItem>
 
-            <SidebarSeparator />
-             <SidebarGroup>
-                <SidebarGroupLabel className="flex items-center gap-2 font-headline">
-                    <Palette size={16} /> {t('sidebar.tileCustomization')}
-                </SidebarGroupLabel>
-                <SidebarGroupContent className="space-y-2">
-                    <p className="text-sm text-muted-foreground">{t('sidebar.selectTileToEdit')}</p>
-                    <Button onClick={handleRandomizeVisuals} className="w-full" variant="outline">
-                        <RefreshCwIcon className="mr-2 h-4 w-4" /> {t('sidebar.randomizeVisuals')}
+             <AccordionItem value="tile-customization">
+                <AccordionTrigger className="text-sm hover:no-underline">
+                    <div className="flex items-center gap-2 font-medium">
+                        <Palette size={16} /> {t('sidebar.tileCustomization')}
+                    </div>
+                </AccordionTrigger>
+                <AccordionContent className="space-y-2 pt-2 pb-4">
+                    <p className="text-xs text-muted-foreground">{t('sidebar.selectTileToEdit')}</p>
+                    <Button onClick={handleRandomizeVisuals} className="w-full h-8 text-xs" variant="outline">
+                        <RefreshCwIcon className="mr-2 h-3 w-3" /> {t('sidebar.randomizeVisuals')}
                     </Button>
-                </SidebarGroupContent>
-            </SidebarGroup>
-          </>
+                </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         )}
         
-        <SidebarMenuItem>
-          <SidebarMenuButton onClick={() => setIsTutorialModalOpen(true)} tooltip={t('sidebar.tutorialAndInfoTooltip')}>
+        <SidebarMenuItem className="px-2 mt-auto pt-2">
+          <SidebarMenuButton onClick={() => setIsTutorialModalOpen(true)} tooltip={t('sidebar.tutorialAndInfoTooltip')} size="sm" variant="ghost">
             <Info size={16} /> {t('sidebar.tutorialAndInfo')}
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -413,3 +419,5 @@ export function AppSidebarContent() {
     </>
   );
 }
+
+    

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -11,6 +12,12 @@ import { DEFAULT_TILE_COLOR, START_TILE_COLOR, FINISH_TILE_COLOR, TILE_TYPE_EMOJ
 import { Edit3, Trash2 } from 'lucide-react';
 import { TileEditorModal } from './tile-editor-modal';
 import { useLanguage } from '@/context/language-context';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export function BoardDesigner() {
   const { state, dispatch } = useGame();
@@ -20,9 +27,8 @@ export function BoardDesigner() {
   useEffect(() => {
     if (state.boardConfig) {
       const { numberOfTiles } = state.boardConfig.settings;
-      const currentTiles = state.boardConfig.tiles || []; // Ensure currentTiles is an array
+      const currentTiles = state.boardConfig.tiles || []; 
 
-      // Determine if an update is needed
       let needsUpdate = currentTiles.length !== numberOfTiles;
 
       if (!needsUpdate && numberOfTiles > 0) {
@@ -39,7 +45,6 @@ export function BoardDesigner() {
           }
         }
       } else if (numberOfTiles === 0 && currentTiles.length > 0) {
-        // If numberOfTiles is somehow 0 but currentTiles exist, clear them
         needsUpdate = true;
       }
 
@@ -80,10 +85,9 @@ export function BoardDesigner() {
                 }
             }
         }
-        // Ensure if only one tile, it is a start tile.
         if (newTiles.length === 1 && newTiles[0].type !== 'start') {
             newTiles[0] = {
-                id: newTiles[0].id, // Keep ID if possible
+                id: newTiles[0].id, 
                 type: 'start' as TileType,
                 position: 0,
                 ui: { color: START_TILE_COLOR, icon: TILE_TYPE_EMOJIS.start },
@@ -132,57 +136,65 @@ export function BoardDesigner() {
 
   return (
     <Card className="shadow-lg">
-      <CardHeader>
-        <CardTitle className="font-headline">{t('boardDesigner.tileConfiguration')}</CardTitle>
-        <CardDescription>{t('boardDesigner.tileConfigurationDescription')}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-[400px] pr-4">
-          <div className="space-y-2">
-            {tiles.map((tile) => (
-              <Card key={tile.id} className="p-3 hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                     <span 
-                        className="w-6 h-6 rounded-sm flex items-center justify-center text-xs" 
-                        style={{ backgroundColor: tile.ui.color || DEFAULT_TILE_COLOR, color: tile.ui.color && tile.ui.color !== DEFAULT_TILE_COLOR && tile.ui.color !== START_TILE_COLOR && tile.ui.color !== FINISH_TILE_COLOR ? 'white' : 'black' }}
-                        role="img"
-                        aria-label={`${tile.type} tile icon`}
-                      >
-                       {tile.ui.icon || TILE_TYPE_EMOJIS[tile.type] || TILE_TYPE_EMOJIS.empty}
-                      </span>
-                    <span className="font-medium">{t('boardDesigner.tile')} {tile.position + 1}</span>
-                    <span className="text-sm text-muted-foreground capitalize">{getTileTypeDisplayName(tile.type)}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => handleEditTile(tile)} aria-label={t('boardDesigner.editTile', {position: tile.position + 1 })}>
-                      <Edit3 className="h-4 w-4" />
-                    </Button>
-                    {(tile.type !== 'empty' && tile.type !== 'start' && tile.type !== 'finish') && (
-                       <Button variant="ghost" size="icon" onClick={() => handleDeleteTileConfig(tile.id)} aria-label={t('boardDesigner.clearTileConfig', {position: tile.position + 1 })}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+      <Accordion type="single" collapsible defaultValue="tile-list" className="w-full">
+        <AccordionItem value="tile-list" className="border-b-0">
+          <AccordionTrigger className="hover:no-underline p-6">
+            <div className="flex flex-col items-start">
+              <CardTitle className="font-headline">{t('boardDesigner.tileConfiguration')}</CardTitle>
+              <CardDescription className="text-xs">{t('boardDesigner.tileConfigurationDescription')}</CardDescription>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="px-2 pb-4 pt-0">
+            <ScrollArea className="h-[400px] pr-4">
+              <div className="space-y-2">
+                {tiles.map((tile) => (
+                  <Card key={tile.id} className="p-3 hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span 
+                            className="w-6 h-6 rounded-sm flex items-center justify-center text-xs" 
+                            style={{ backgroundColor: tile.ui.color || DEFAULT_TILE_COLOR, color: tile.ui.color && tile.ui.color !== DEFAULT_TILE_COLOR && tile.ui.color !== START_TILE_COLOR && tile.ui.color !== FINISH_TILE_COLOR ? 'white' : 'black' }}
+                            role="img"
+                            aria-label={`${tile.type} tile icon`}
+                          >
+                          {tile.ui.icon || TILE_TYPE_EMOJIS[tile.type] || TILE_TYPE_EMOJIS.empty}
+                          </span>
+                        <span className="font-medium text-sm">{t('boardDesigner.tile')} {tile.position + 1}</span>
+                        <span className="text-xs text-muted-foreground capitalize">{getTileTypeDisplayName(tile.type)}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => handleEditTile(tile)} aria-label={t('boardDesigner.editTile', {position: tile.position + 1 })}>
+                          <Edit3 className="h-4 w-4" />
+                        </Button>
+                        {(tile.type !== 'empty' && tile.type !== 'start' && tile.type !== 'finish') && (
+                          <Button variant="ghost" size="icon" onClick={() => handleDeleteTileConfig(tile.id)} aria-label={t('boardDesigner.clearTileConfig', {position: tile.position + 1 })}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    {tile.config && tile.type === 'quiz' && (
+                      <p className="text-xs text-muted-foreground mt-1 truncate">{t('boardDesigner.questionShort')}: {tile.config.question}</p>
                     )}
-                  </div>
-                </div>
-                {tile.config && tile.type === 'quiz' && (
-                  <p className="text-xs text-muted-foreground mt-1 truncate">{t('boardDesigner.questionShort')}: {tile.config.question}</p>
-                )}
-                 {tile.config && tile.type === 'info' && (
-                  <p className="text-xs text-muted-foreground mt-1 truncate">{t('boardDesigner.infoShort')}: {tile.config.message}</p>
-                )}
-              </Card>
-            ))}
-          </div>
-        </ScrollArea>
-        {selectedTileForEdit && (
-          <TileEditorModal
-            tile={selectedTileForEdit}
-            onSave={handleSaveTile}
-            onClose={() => setSelectedTileForEdit(null)}
-          />
-        )}
-      </CardContent>
+                    {tile.config && tile.type === 'info' && (
+                      <p className="text-xs text-muted-foreground mt-1 truncate">{t('boardDesigner.infoShort')}: {tile.config.message}</p>
+                    )}
+                  </Card>
+                ))}
+              </div>
+            </ScrollArea>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+      {selectedTileForEdit && (
+        <TileEditorModal
+          tile={selectedTileForEdit}
+          onSave={handleSaveTile}
+          onClose={() => setSelectedTileForEdit(null)}
+        />
+      )}
     </Card>
   );
 }
+
+    
