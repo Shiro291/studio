@@ -21,6 +21,7 @@ import { nanoid } from 'nanoid';
 import { HexColorPicker } from "react-colorful"; // Needs to be installed: npm install react-colorful
 import { Checkbox } from '../ui/checkbox';
 import { ScrollArea } from '../ui/scroll-area';
+import { Trash2 } from 'lucide-react'; // Added Trash2 import
 
 interface TileEditorModalProps {
   tile: Tile;
