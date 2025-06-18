@@ -27,9 +27,9 @@ export function DiceRoller({ isDesignerMode = false }: DiceRollerProps) {
   const rollDice = () => {
     if (isRolling || !canRoll) return;
     setIsRolling(true);
-    setRolledValueDisplay(null); 
+    setRolledValueDisplay(null); // Set to null initially for the "..." or brief blank before first number
 
-    let currentRollCount = 0;
+    let currentRollCount = 0; // Local counter for animation frames
     const rollInterval = setInterval(() => {
       setRolledValueDisplay(Math.floor(Math.random() * diceSides) + 1);
       currentRollCount++;
@@ -64,10 +64,13 @@ export function DiceRoller({ isDesignerMode = false }: DiceRollerProps) {
         aria-live="polite"
         title={rolledValueDisplay !== null ? t('diceRoller.diceRolled', {value: rolledValueDisplay}) : t('diceRoller.diceNotRolled')}
       >
-        {isRolling && currentRollCount <= 10 ? rolledValueDisplay ?? "..." : 
-         (rolledValueDisplay !== null && !isRolling) ? rolledValueDisplay : 
-         <Dices size={48} className="text-muted-foreground" />
-        }
+        {isRolling ? (
+            rolledValueDisplay ?? "..."
+         ) : rolledValueDisplay !== null ? (
+            rolledValueDisplay
+         ) : (
+            <Dices size={48} className="text-muted-foreground" />
+         )}
       </div>
       <Button 
         onClick={rollDice} 
