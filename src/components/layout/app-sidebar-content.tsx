@@ -94,36 +94,16 @@ export function AppSidebarContent() {
         const boardConfigForLink: BoardConfig = JSON.parse(JSON.stringify(state.boardConfig));
         boardConfigForLink.id = nanoid(); 
 
-        // Strip all image data URIs for the link
-        if (boardConfigForLink.settings.boardBackgroundImage?.startsWith('data:image/')) {
-            delete boardConfigForLink.settings.boardBackgroundImage;
-        }
-
-        boardConfigForLink.tiles.forEach(tile => {
-          if (tile.type === 'quiz' && tile.config) {
-            const quizConfig = tile.config as TileConfigQuiz;
-            if (quizConfig.questionImage?.startsWith('data:image/')) {
-              delete quizConfig.questionImage;
-            }
-            if (quizConfig.options && Array.isArray(quizConfig.options)) {
-              quizConfig.options.forEach(option => {
-                if (option.image?.startsWith('data:image/')) {
-                  delete option.image;
-                }
-              });
-            }
-          } else if (tile.type === 'info' && tile.config) {
-            const infoConfig = tile.config as TileConfigInfo;
-            if (infoConfig.image?.startsWith('data:image/')) {
-              delete infoConfig.image;
-            }
-          }
-        });
+        // No image stripping for URL fragment method for now, let's test full data.
+        // If still too large for browser URL limits, we might need to revisit stripping
+        // very large non-essential images (e.g., AI option images if they are huge).
 
         const jsonString = JSON.stringify(boardConfigForLink);
         const utf8Encoded = unescape(encodeURIComponent(jsonString));
         const base64Data = btoa(utf8Encoded);
-        const shareUrl = `${window.location.origin}/play?board=${encodeURIComponent(base64Data)}`;
+        
+        // Use URL fragment (#) instead of query parameter
+        const shareUrl = `${window.location.origin}/play#${encodeURIComponent(base64Data)}`;
         
         navigator.clipboard.writeText(shareUrl)
           .then(() => {
@@ -244,7 +224,7 @@ export function AppSidebarContent() {
         toast({ title: t('sidebar.boardImportedTitle'), description: t('sidebar.boardImportedDescription') });
         setJsonPasteContent(''); 
     } else {
-        toast({ variant: "destructive", title: t('sidebar.importErrorTitle'), description: t('sidebar.pasteInvalidJsonError') });
+        // Error toast is handled by loadBoardFromJson if parsing fails
     }
   };
 

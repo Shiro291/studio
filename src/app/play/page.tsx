@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+// import { useSearchParams } from 'next/navigation'; // No longer needed for hash-based data
 import { useGame } from '@/components/game/game-provider';
 import { GameBoardDisplay } from '@/components/board/game-board-display';
 import { DiceRoller } from '@/components/board/dice-roller';
@@ -21,22 +21,32 @@ import { TileInteractionModal } from '@/components/play/tile-interaction-modal';
 export default function PlayPage() {
   const { state, loadBoardFromBase64, dispatch } = useGame();
   const { t } = useLanguage();
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams(); // Switched to hash
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [isInteractionModalOpen, setIsInteractionModalOpen] = useState(false);
   const [currentTileForModal, setCurrentTileForModal] = useState<Tile | null>(null);
 
   useEffect(() => {
-    if (!initialLoadDone) {
-      const boardData = searchParams.get('board');
-      if (boardData) {
-        loadBoardFromBase64(decodeURIComponent(boardData));
+    if (!initialLoadDone && typeof window !== 'undefined') {
+      const hash = window.location.hash;
+      if (hash && hash.length > 1) {
+        const boardData = hash.substring(1); // Remove leading '#'
+        // The boardData is already URI encoded by the sender
+        // loadBoardFromBase64 expects a base64 string, so it will decodeURI and then atob
+        loadBoardFromBase64(boardData); 
       } else {
-        dispatch({ type: 'SET_ERROR', payload: t('playPage.noBoardDataError') });
+        // Fallback or check if there's an old query param for backward compatibility if needed
+        const searchParams = new URLSearchParams(window.location.search);
+        const boardDataQuery = searchParams.get('board');
+        if (boardDataQuery) {
+          loadBoardFromBase64(decodeURIComponent(boardDataQuery));
+        } else {
+          dispatch({ type: 'SET_ERROR', payload: t('playPage.noBoardDataError') });
+        }
       }
       setInitialLoadDone(true);
     }
-  }, [searchParams, loadBoardFromBase64, initialLoadDone, t, dispatch]);
+  }, [loadBoardFromBase64, initialLoadDone, t, dispatch]);
 
   useEffect(() => {
     if (state.activeTileForInteraction && state.gameStatus === 'interaction_pending') {
@@ -67,13 +77,6 @@ export default function PlayPage() {
     if (proceedToNextTurn) {
       dispatch({ type: 'PROCEED_TO_NEXT_TURN' });
     } else {
-      // This branch is primarily for when a non-blocking modal is closed (e.g., info/reward via 'X')
-      // or if a quiz modal was somehow closed externally before an answer (which is prevented by modal's own logic).
-      // If an interaction was genuinely pending, and this close wasn't meant to end the turn,
-      // the main useEffect will re-evaluate and potentially re-open the modal if needed.
-      // If the interaction was completed (e.g. quiz answered) and `proceedToNextTurn` is false (should not happen for quiz),
-      // then `PROCEED_TO_NEXT_TURN` needs to be called from the modal's internal logic.
-      // For an unattempted Quiz modal, this `onModalClose(false)` should not be reachable via 'X' due to modal's internal checks.
       if (state.activeTileForInteraction && state.gameStatus === 'interaction_pending' && 
           (state.activeTileForInteraction.type === 'info' || state.activeTileForInteraction.type === 'reward')) {
           dispatch({ type: 'PROCEED_TO_NEXT_TURN' });
