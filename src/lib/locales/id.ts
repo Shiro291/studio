@@ -38,7 +38,7 @@ export const id = {
   'sidebar.winningCondition': 'Kondisi Menang',
   'sidebar.selectWinningCondition': 'Pilih cara menang',
   'sidebar.firstToFinish': 'Pertama Sampai Petak Selesai',
-  'sidebar.highestScore': 'Skor Tertinggi (setelah semua selesai/X ronde)',
+  'sidebar.highestScore': 'Skor Tertinggi (setelah semua selesai)',
 
   'sidebar.diceConfiguration': 'Konfigurasi Dadu',
   'sidebar.diceSides': 'Sisi Dadu: {count}',
@@ -49,8 +49,8 @@ export const id = {
   'sidebar.tutorialAndInfoTooltip': 'Pelajari cara menggunakan BoardWise',
   'sidebar.mobileTitle': 'Menu',
 
-  'sidebar.linkCopiedTitle': 'Tautan Disalin!',
-  'sidebar.linkCopiedDescriptionPlay': 'Tautan permainan yang dapat dimainkan telah disalin! Buka untuk bermain.',
+  'sidebar.linkCopiedTitle': 'Tautan Disalin & Dibuka!',
+  'sidebar.linkCopiedDescriptionPlay': 'Tautan permainan disalin & dibuka di tab baru. Jika tidak, tempel di tab browser baru untuk bermain!',
   'sidebar.copyFailedTitle': 'Penyalinan Gagal',
   'sidebar.copyFailedDescription': 'Tidak dapat menyalin tautan. Silakan coba lagi.',
   'sidebar.linkErrorTitle': 'Kesalahan Pembuatan Tautan',

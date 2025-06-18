@@ -38,7 +38,7 @@ export const en = {
   'sidebar.winningCondition': 'Winning Condition',
   'sidebar.selectWinningCondition': 'Select how to win',
   'sidebar.firstToFinish': 'First to Finish Tile',
-  'sidebar.highestScore': 'Highest Score (after all finish/X rounds)',
+  'sidebar.highestScore': 'Highest Score (after all finish)',
 
   'sidebar.diceConfiguration': 'Dice Configuration',
   'sidebar.diceSides': 'Dice Sides: {count}',
@@ -49,8 +49,8 @@ export const en = {
   'sidebar.tutorialAndInfoTooltip': 'Learn how to use BoardWise',
   'sidebar.mobileTitle': 'Menu',
 
-  'sidebar.linkCopiedTitle': 'Link Copied!',
-  'sidebar.linkCopiedDescriptionPlay': 'Playable game link copied to clipboard. Open it to play!',
+  'sidebar.linkCopiedTitle': 'Link Copied & Opened!',
+  'sidebar.linkCopiedDescriptionPlay': 'Playable link copied & opened in a new tab. If not, paste it into a new browser tab to play!',
   'sidebar.copyFailedTitle': 'Copy Failed',
   'sidebar.copyFailedDescription': 'Could not copy the link. Please try again.',
   'sidebar.linkErrorTitle': 'Link Creation Error',

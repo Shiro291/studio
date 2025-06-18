@@ -237,28 +237,31 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       currentLogs = addLogEntry(currentLogs, 'log.playerMovedTo', 'move', { name: currentPlayer.name, position: newPosition + 1, tileType: landedTile.type });
 
 
-      if (landedTile.type === 'empty' || landedTile.type === 'start' || (landedTile.type === 'finish' && state.gameStatus !== 'finished')) {
-         if (landedTile.type === 'finish') {
-            playSound('finishSound');
-            const finishedPlayer = newPlayers[state.currentPlayerIndex];
-            let gameWinner = state.winner;
-            if (!gameWinner && state.boardConfig.settings.winningCondition === 'firstToFinish') {
-                gameWinner = finishedPlayer;
-                currentLogs = addLogEntry(currentLogs, 'log.playerFinished', 'winner', { name: finishedPlayer.name });
-            }
-             // Log for highest score will be handled in PROCEED_TO_NEXT_TURN
-            return {
-                ...state,
-                players: newPlayers,
-                diceRoll: diceValue,
-                activeTileForInteraction: landedTile,
-                gameStatus: gameWinner ? 'finished' : 'interaction_pending',
-                winner: gameWinner,
-                logs: currentLogs,
-             };
+      if (landedTile.type === 'finish' && state.gameStatus !== 'finished') {
+        playSound('finishSound');
+        const finishedPlayer = newPlayers[state.currentPlayerIndex];
+        let gameWinner = state.winner;
+        currentLogs = addLogEntry(currentLogs, 'log.playerFinished', 'game_event', { name: finishedPlayer.name });
+        
+        if (!gameWinner && state.boardConfig.settings.winningCondition === 'firstToFinish') {
+            gameWinner = finishedPlayer; // Winner declared immediately for 'firstToFinish'
         }
+        // For 'highestScore', winner is determined in PROCEED_TO_NEXT_TURN after all players finish.
+        return {
+            ...state,
+            players: newPlayers,
+            diceRoll: diceValue,
+            activeTileForInteraction: landedTile, // Still allow interaction if any (though finish usually doesn't have one)
+            gameStatus: gameWinner ? 'finished' : 'interaction_pending', // Game only finishes if 'firstToFinish' and winner declared
+            winner: gameWinner,
+            logs: currentLogs,
+         };
+      }
+      
+      if (landedTile.type === 'empty' || landedTile.type === 'start') {
         return { ...state, players: newPlayers, diceRoll: diceValue, activeTileForInteraction: landedTile, gameStatus: 'interaction_pending', logs: currentLogs };
       }
+
       return { ...state, players: newPlayers, diceRoll: diceValue, activeTileForInteraction: landedTile, gameStatus: 'interaction_pending', logs: currentLogs };
     }
     case 'ANSWER_QUIZ': {
@@ -337,33 +340,25 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         if (!state.boardConfig || state.gameStatus === 'finished') return state;
 
         let nextPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
-        let currentWinner = state.winner;
+        let currentWinner = state.winner; // Might be set if 'firstToFinish'
         let gameIsFinished = !!currentWinner;
         let currentLogs = state.logs;
+        const maxPosition = state.boardConfig.tiles.length - 1;
 
+        // Check for 'highestScore' win condition
         if (!currentWinner && state.boardConfig.settings.winningCondition === 'highestScore') {
-            const playerWhoJustMoved = state.players[state.currentPlayerIndex];
-            if(playerWhoJustMoved.position === state.boardConfig.tiles.length -1) {
-                if (state.currentPlayerIndex === state.players.length - 1) { // Last player has reached the finish
-                    gameIsFinished = true;
-                }
-            }
-            if (gameIsFinished) {
+            const allPlayersFinished = state.players.every(p => p.position === maxPosition);
+            if (allPlayersFinished) {
+                gameIsFinished = true;
                 currentWinner = state.players.reduce((prev, current) => (prev.score > current.score) ? prev : current, state.players[0]);
                 if (currentWinner) {
                     playSound('finishSound');
                     currentLogs = addLogEntry(currentLogs, 'log.highestScoreWinner', 'winner', { name: currentWinner.name, score: currentWinner.score });
                 }
             }
-        } else if (!currentWinner && state.boardConfig.settings.winningCondition === 'firstToFinish') {
-            // Winner is already determined in PLAYER_ROLLED_DICE for 'firstToFinish'
-            if (state.winner) { // If a winner was set by landing on finish
-                 gameIsFinished = true;
-                 currentWinner = state.winner;
-                 // Log for firstToFinish is in PLAYER_ROLLED_DICE
-            }
         }
-
+        // For 'firstToFinish', winner is already handled in PLAYER_ROLLED_DICE.
+        // If gameIsFinished is true here, it means a winner was declared (either by firstToFinish or all finished for highestScore).
 
         return {
             ...state,

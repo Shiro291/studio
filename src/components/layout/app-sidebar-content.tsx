@@ -83,12 +83,17 @@ export function AppSidebarContent() {
         const utf8Encoded = unescape(encodeURIComponent(jsonString));
         const base64Data = btoa(utf8Encoded);
         const shareUrl = `${window.location.origin}/play?board=${encodeURIComponent(base64Data)}`;
+        
         navigator.clipboard.writeText(shareUrl)
           .then(() => {
             toast({
               title: t('sidebar.linkCopiedTitle'),
               description: t('sidebar.linkCopiedDescriptionPlay'),
             });
+            // Attempt to open in new tab
+            if (typeof window !== "undefined") {
+              window.open(shareUrl, '_blank')?.focus();
+            }
           })
           .catch(err => {
             console.error('Failed to copy URL: ', err);

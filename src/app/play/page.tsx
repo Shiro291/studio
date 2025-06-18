@@ -63,9 +63,6 @@ export default function PlayPage() {
             {state.error} {t('playPage.errorLoadingDescription')}
           </AlertDescription>
         </Alert>
-        <Link href="/" passHref>
-          <Button variant="link" className="mt-4">{t('playPage.backToEditor')}</Button>
-        </Link>
       </div>
     );
   }
@@ -80,9 +77,6 @@ export default function PlayPage() {
              {t('playPage.noBoardConfig')}
           </AlertDescription>
         </Alert>
-         <Link href="/" passHref>
-          <Button variant="link" className="mt-4">{t('playPage.backToEditor')}</Button>
-        </Link>
       </div>
     );
   }
@@ -109,9 +103,6 @@ export default function PlayPage() {
                 <Button onClick={() => dispatch({ type: 'RESET_GAME_FOR_PLAY' })}>
                 {t('playPage.playAgain')}
                 </Button>
-                <Link href="/" passHref>
-                    <Button variant="outline">{t('playPage.backToEditor')}</Button>
-                </Link>
             </div>
           </CardContent>
         </Card>
