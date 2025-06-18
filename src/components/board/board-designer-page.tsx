@@ -73,7 +73,7 @@ export default function BoardDesignerPage() {
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2 space-y-8">
-          <Card>
+          <Card className="w-full">
             <CardHeader>
               <CardTitle className="font-headline">{t('boardDesignerPage.gameBoard')}</CardTitle>
             </CardHeader>
@@ -81,7 +81,7 @@ export default function BoardDesignerPage() {
               <GameBoardDisplay boardConfig={state.boardConfig} />
             </CardContent>
           </Card>
-          <Card className="lg:max-w-sm mx-auto"> {/* Constrain dice roller card width */}
+          <Card className="lg:max-w-sm mx-auto w-full"> 
             <CardHeader>
                 <CardTitle className="font-headline text-lg">{t('boardDesignerPage.gameControls')}</CardTitle>
             </CardHeader>
@@ -98,3 +98,4 @@ export default function BoardDesignerPage() {
     </div>
   );
 }
+
