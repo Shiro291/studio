@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -9,7 +8,6 @@ import {
   SidebarGroupLabel,
   SidebarGroupContent,
   SidebarSeparator,
-  SidebarInput
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -19,13 +17,14 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGame } from '@/components/game/game-provider';
 import { MAX_TILES, MIN_TILES, MIN_PLAYERS, MAX_PLAYERS } from '@/lib/constants';
-import { Gem, Settings, Share2, Zap, Palette, Info, Wand2, RefreshCwIcon, Users, Trophy, Image as ImageIcon, XCircle } from 'lucide-react';
+import { Settings, Share2, Palette, Info, Wand2, RefreshCwIcon, Users, Image as ImageIcon, XCircle } from 'lucide-react';
 import type { BoardSettings, WinningCondition } from '@/types';
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useLanguage } from '@/context/language-context';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Image from 'next/image';
+import { TutorialModal } from './tutorial-modal';
 
 
 export function AppSidebarContent() {
@@ -34,6 +33,7 @@ export function AppSidebarContent() {
   const { toast } = useToast();
   const boardSettings = state.boardConfig?.settings;
   const boardBgInputRef = useRef<HTMLInputElement>(null);
+  const [isTutorialModalOpen, setIsTutorialModalOpen] = useState(false);
 
   const handleSettingChange = <K extends keyof BoardSettings>(key: K, value: BoardSettings[K]) => {
     dispatch({ type: 'UPDATE_BOARD_SETTINGS', payload: { [key]: value } });
@@ -110,6 +110,7 @@ export function AppSidebarContent() {
 
 
   return (
+    <>
     <ScrollArea className="h-full flex-1">
       <SidebarMenu>
         <SidebarGroup>
@@ -266,7 +267,9 @@ export function AppSidebarContent() {
             
             <SidebarGroup>
               <SidebarGroupLabel className="flex items-center gap-2 font-headline">
-                <Gem size={16} /> {t('sidebar.diceConfiguration')}
+                 {/* Using an SVG for dice as Gem icon might be confusing */}
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-dice-3"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M16 8h.01"/><path d="M12 12h.01"/><path d="M8 16h.01"/></svg>
+                {t('sidebar.diceConfiguration')}
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <div>
@@ -298,20 +301,16 @@ export function AppSidebarContent() {
             </SidebarGroup>
           </>
         )}
-
-        <SidebarMenuItem>
-          <SidebarMenuButton tooltip={t('sidebar.comingSoon')} disabled>
-            <Zap size={16} /> {t('sidebar.aiGeneration')}
-          </SidebarMenuButton>
-        </SidebarMenuItem>
         
         <SidebarMenuItem>
-          <SidebarMenuButton tooltip={t('sidebar.tutorialAndInfo')}>
+          <SidebarMenuButton onClick={() => setIsTutorialModalOpen(true)} tooltip={t('sidebar.tutorialAndInfoTooltip')}>
             <Info size={16} /> {t('sidebar.tutorialAndInfo')}
           </SidebarMenuButton>
         </SidebarMenuItem>
 
       </SidebarMenu>
     </ScrollArea>
+    <TutorialModal isOpen={isTutorialModalOpen} onClose={() => setIsTutorialModalOpen(false)} />
+    </>
   );
 }

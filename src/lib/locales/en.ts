@@ -1,4 +1,3 @@
-
 export const en = {
   // AppHeader
   'appHeader.toggleTheme': 'Toggle theme',
@@ -35,9 +34,8 @@ export const en = {
   'sidebar.tileCustomization': 'Tile Customization',
   'sidebar.selectTileToEdit': 'Select a tile on the board to edit its properties. Or use options below.',
   'sidebar.randomizeVisuals': 'Randomize Tile Visuals',
-  'sidebar.aiGeneration': 'AI Generation',
   'sidebar.tutorialAndInfo': 'Tutorial & Info',
-  'sidebar.comingSoon': 'Coming Soon!',
+  'sidebar.tutorialAndInfoTooltip': 'Learn how to use BoardWise',
   'sidebar.linkCopiedTitle': 'Link Copied!',
   'sidebar.linkCopiedDescription': 'Shareable board link copied to clipboard.',
   'sidebar.copyFailedTitle': 'Copy Failed',
@@ -104,6 +102,41 @@ export const en = {
   'diceRoller.rolling': 'Rolling...',
   'diceRoller.diceNotRolled': 'Dice not rolled yet',
   'diceRoller.diceRolled': 'Dice rolled: {value}',
+
+  // TutorialModal
+  'tutorialModal.title': 'Welcome to BoardWise!',
+  'tutorialModal.close': 'Close',
+  'tutorialModal.welcome.title': 'Welcome!',
+  'tutorialModal.welcome.p1': 'BoardWise helps you create and share your own custom interactive board games. Design your board, add quizzes, info, and rewards, then share it with a link!',
+  'tutorialModal.gettingStarted.title': 'Getting Started',
+  'tutorialModal.gettingStarted.step1': 'Click "New Board" to start fresh or use a shared link to load an existing one.',
+  'tutorialModal.gettingStarted.step2': 'Use the sidebar to configure overall board settings like name, number of tiles, and dice type.',
+  'tutorialModal.gettingStarted.step3': 'Click on tiles in the "Tile Configuration" list (right side of the screen) to edit their type (Quiz, Info, Reward), content, color, and icon.',
+  'tutorialModal.gettingStarted.step4': 'Once your board is ready, use "Export/Share Board Link" to get a unique URL to save or share your game.',
+  'tutorialModal.boardSettings.title': 'Board Settings (Sidebar)',
+  'tutorialModal.boardSettings.intro': 'Customize the core aspects of your game:',
+  'tutorialModal.boardSettings.nameDescription.label': 'Name & Description',
+  'tutorialModal.boardSettings.nameDescription.text': 'Give your game a unique identity.',
+  'tutorialModal.boardSettings.numberOfTiles.label': 'Number of Tiles',
+  'tutorialModal.boardSettings.numberOfTiles.text': 'Adjust the board length (10-100 tiles). Start and Finish tiles are automatic.',
+  'tutorialModal.boardSettings.backgroundImage.label': 'Board Background Image',
+  'tutorialModal.boardSettings.backgroundImage.text': 'Personalize your board with a background image.',
+  'tutorialModal.boardSettings.playerSettings.label': 'Player & Winning',
+  'tutorialModal.boardSettings.playerSettings.text': 'Set player count and how the game is won.',
+  'tutorialModal.boardSettings.diceSettings.label': 'Dice',
+  'tutorialModal.boardSettings.diceSettings.text': 'Choose the number of sides for the game dice.',
+  'tutorialModal.tileConfiguration.title': 'Tile Configuration (Right Panel)',
+  'tutorialModal.tileConfiguration.intro': 'Make each tile unique:',
+  'tutorialModal.tileConfiguration.selectTile': 'Click a tile in the list to open the editor.',
+  'tutorialModal.tileConfiguration.types.label': 'Tile Types',
+  'tutorialModal.tileConfiguration.types.quiz': 'Ask questions with multiple choice answers and optional images. Assign difficulty and points.',
+  'tutorialModal.tileConfiguration.types.info': 'Provide helpful information or story elements, with optional images.',
+  'tutorialModal.tileConfiguration.types.reward': 'Give players a message or points.',
+  'tutorialModal.tileConfiguration.customization': 'Customize color and icon (emoji) for each tile.',
+  'tutorialModal.sharing.title': 'Sharing Your Game',
+  'tutorialModal.sharing.text': 'The "Export/Share Board Link" button generates a unique URL. Save this URL or send it to others. When they open the link, your board will load automatically!',
+  'tutorialModal.haveFun': 'Have fun creating!',
+  
 
   // Misc
   'capitalize.empty': 'Empty',

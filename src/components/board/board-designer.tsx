@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -21,68 +20,81 @@ export function BoardDesigner() {
   useEffect(() => {
     if (state.boardConfig) {
       const { numberOfTiles } = state.boardConfig.settings;
-      const currentTiles = state.boardConfig.tiles;
+      const currentTiles = state.boardConfig.tiles || []; // Ensure currentTiles is an array
 
-      const needsUpdate = 
-        currentTiles.length !== numberOfTiles ||
-        currentTiles.length === 0 ||
-        (currentTiles.length > 0 && currentTiles[0].type !== 'start') ||
-        (currentTiles.length > 1 && currentTiles[currentTiles.length - 1].type !== 'finish') ||
-        (numberOfTiles === 1 && currentTiles.length > 0 && currentTiles[0].type !== 'start');
+      // Determine if an update is needed
+      let needsUpdate = currentTiles.length !== numberOfTiles;
+
+      if (!needsUpdate && numberOfTiles > 0) {
+        if (currentTiles[0]?.type !== 'start' || 
+            currentTiles[0]?.ui?.icon !== TILE_TYPE_EMOJIS.start ||
+            currentTiles[0]?.ui?.color !== START_TILE_COLOR) {
+          needsUpdate = true;
+        }
+        if (numberOfTiles > 1) {
+          if(currentTiles[numberOfTiles - 1]?.type !== 'finish' ||
+             currentTiles[numberOfTiles - 1]?.ui?.icon !== TILE_TYPE_EMOJIS.finish ||
+             currentTiles[numberOfTiles - 1]?.ui?.color !== FINISH_TILE_COLOR) {
+            needsUpdate = true;
+          }
+        }
+      } else if (numberOfTiles === 0 && currentTiles.length > 0) {
+        // If numberOfTiles is somehow 0 but currentTiles exist, clear them
+        needsUpdate = true;
+      }
+
 
       if (needsUpdate) {
-        const newTiles: Tile[] = Array(numberOfTiles).fill(null).map((_, index) => {
-          const existingTileAtPosition = currentTiles.find(t => t.position === index);
+        const newTiles: Tile[] = [];
+        if (numberOfTiles > 0) {
+            for (let i = 0; i < numberOfTiles; i++) {
+                const existingTileAtPosition = currentTiles.find(
+                    (t) => t.position === i && t.type !== 'start' && t.type !== 'finish'
+                );
 
-          if (index === 0) {
-            return {
-              id: existingTileAtPosition?.id && existingTileAtPosition.type === 'start' ? existingTileAtPosition.id : nanoid(),
-              type: 'start' as TileType,
-              position: index,
-              ui: { color: START_TILE_COLOR, icon: TILE_TYPE_EMOJIS.start },
-              config: undefined,
-            };
-          }
-          
-          if (index === numberOfTiles - 1 && numberOfTiles > 1) {
-            return {
-              id: existingTileAtPosition?.id && existingTileAtPosition.type === 'finish' ? existingTileAtPosition.id : nanoid(),
-              type: 'finish' as TileType,
-              position: index,
-              ui: { color: FINISH_TILE_COLOR, icon: TILE_TYPE_EMOJIS.finish },
-              config: undefined,
-            };
-          }
-
-          if (existingTileAtPosition && existingTileAtPosition.type !== 'start' && existingTileAtPosition.type !== 'finish') {
-            return {
-              ...existingTileAtPosition,
-              position: index,
-            };
-          }
-          
-          return {
-            id: nanoid(),
-            type: 'empty' as TileType,
-            position: index,
-            ui: { color: DEFAULT_TILE_COLOR, icon: TILE_TYPE_EMOJIS.empty },
-          };
-        });
-        
-        if (newTiles.length === 1 && (newTiles[0].type !== 'start' || !newTiles[0].ui.icon || !newTiles[0].ui.color)) {
-             newTiles[0] = {
-                id: newTiles[0].id || nanoid(),
+                if (i === 0) {
+                    newTiles.push({
+                        id: currentTiles[0]?.type === 'start' ? currentTiles[0].id : nanoid(),
+                        type: 'start' as TileType,
+                        position: 0,
+                        ui: { color: START_TILE_COLOR, icon: TILE_TYPE_EMOJIS.start },
+                        config: undefined,
+                    });
+                } else if (i === numberOfTiles - 1 && numberOfTiles > 1) {
+                    newTiles.push({
+                        id: currentTiles[numberOfTiles - 1]?.type === 'finish' ? currentTiles[numberOfTiles - 1].id : nanoid(),
+                        type: 'finish' as TileType,
+                        position: i,
+                        ui: { color: FINISH_TILE_COLOR, icon: TILE_TYPE_EMOJIS.finish },
+                        config: undefined,
+                    });
+                } else if (existingTileAtPosition) {
+                    newTiles.push({ ...existingTileAtPosition, position: i });
+                } else {
+                    newTiles.push({
+                        id: nanoid(),
+                        type: 'empty' as TileType,
+                        position: i,
+                        ui: { color: DEFAULT_TILE_COLOR, icon: TILE_TYPE_EMOJIS.empty },
+                    });
+                }
+            }
+        }
+        // Ensure if only one tile, it is a start tile.
+        if (newTiles.length === 1 && newTiles[0].type !== 'start') {
+            newTiles[0] = {
+                id: newTiles[0].id, // Keep ID if possible
                 type: 'start' as TileType,
                 position: 0,
                 ui: { color: START_TILE_COLOR, icon: TILE_TYPE_EMOJIS.start },
                 config: undefined,
-             };
+            };
         }
-
+        
         dispatch({ type: 'UPDATE_TILES', payload: newTiles });
       }
     }
-  }, [state.boardConfig?.settings.numberOfTiles, state.boardConfig?.tiles, dispatch, state.boardConfig]);
+  }, [state.boardConfig?.settings.numberOfTiles, state.boardConfig?.tiles, dispatch]);
 
 
   if (!state.boardConfig) {
