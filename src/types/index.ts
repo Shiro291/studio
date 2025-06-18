@@ -4,12 +4,12 @@ export interface QuizOption {
   id: string;
   text: string;
   isCorrect: boolean;
-  imageUrl?: string;
+  image?: string; // Data URI for the option image
 }
 
 export interface TileConfigQuiz {
   question: string;
-  imageUrl?: string;
+  questionImage?: string; // Data URI for the question image
   options: QuizOption[];
   difficulty: 1 | 2 | 3; // Level 1, 2, 3
   points: number; // 5, 10, 15
@@ -17,7 +17,7 @@ export interface TileConfigQuiz {
 
 export interface TileConfigInfo {
   message: string;
-  imageUrl?: string;
+  image?: string; // Data URI for the info image
 }
 
 export interface TileConfigReward {

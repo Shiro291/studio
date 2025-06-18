@@ -3,6 +3,8 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { GameProvider } from '@/components/game/game-provider';
 import { AppShell } from '@/components/layout/app-shell';
+import { LanguageProvider } from '@/context/language-context'; // Added
+import { ThemeProvider } from 'next-themes'; // Added based on AppHeader usage
 
 export const metadata: Metadata = {
   title: 'BoardWise',
@@ -23,10 +25,14 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <GameProvider>
-          <AppShell>{children}</AppShell>
-          <Toaster />
-        </GameProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <LanguageProvider>
+            <GameProvider>
+              <AppShell>{children}</AppShell>
+              <Toaster />
+            </GameProvider>
+          </LanguageProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

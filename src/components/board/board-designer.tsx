@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -9,10 +10,12 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { nanoid } from 'nanoid';
 import { DEFAULT_TILE_COLOR, START_TILE_COLOR, FINISH_TILE_COLOR, TILE_TYPE_EMOJIS } from '@/lib/constants';
 import { Edit3, Trash2 } from 'lucide-react';
-import { TileEditorModal } from './tile-editor-modal'; // To be created
+import { TileEditorModal } from './tile-editor-modal';
+import { useLanguage } from '@/context/language-context';
 
 export function BoardDesigner() {
   const { state, dispatch } = useGame();
+  const { t } = useLanguage();
   const [selectedTileForEdit, setSelectedTileForEdit] = useState<Tile | null>(null);
 
   useEffect(() => {
@@ -32,7 +35,6 @@ export function BoardDesigner() {
           };
         });
 
-        // Ensure start and finish tiles are present and correctly positioned
         if (newTiles.length > 0) {
           newTiles[0] = { 
             ...newTiles[0], 
@@ -54,7 +56,7 @@ export function BoardDesigner() {
 
 
   if (!state.boardConfig) {
-    return <p>Loading board configuration...</p>;
+    return <p>{t('boardDesigner.loadingBoardConfig')}</p>;
   }
 
   const { tiles } = state.boardConfig;
@@ -80,12 +82,17 @@ export function BoardDesigner() {
     );
     dispatch({ type: 'UPDATE_TILES', payload: newTiles });
   };
+  
+  const getTileTypeDisplayName = (type: TileType) => {
+    const key = `capitalize.${type.toLowerCase()}` as keyof typeof import('@/lib/locales/en').en;
+    return t(key);
+  }
 
   return (
     <Card className="shadow-lg">
       <CardHeader>
-        <CardTitle className="font-headline">Tile Configuration</CardTitle>
-        <CardDescription>Click on a tile below to customize its type and content.</CardDescription>
+        <CardTitle className="font-headline">{t('boardDesigner.tileConfiguration')}</CardTitle>
+        <CardDescription>{t('boardDesigner.tileConfigurationDescription')}</CardDescription>
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[400px] pr-4">
@@ -102,25 +109,25 @@ export function BoardDesigner() {
                       >
                        {tile.ui.icon || TILE_TYPE_EMOJIS[tile.type] || TILE_TYPE_EMOJIS.empty}
                       </span>
-                    <span className="font-medium">Tile {tile.position + 1}</span>
-                    <span className="text-sm text-muted-foreground capitalize">{tile.type}</span>
+                    <span className="font-medium">{t('boardDesigner.tile')} {tile.position + 1}</span>
+                    <span className="text-sm text-muted-foreground capitalize">{getTileTypeDisplayName(tile.type)}</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => handleEditTile(tile)} aria-label={`Edit Tile ${tile.position + 1}`}>
+                    <Button variant="ghost" size="icon" onClick={() => handleEditTile(tile)} aria-label={t('boardDesigner.editTile', {position: tile.position + 1 })}>
                       <Edit3 className="h-4 w-4" />
                     </Button>
                     {(tile.type !== 'empty' && tile.type !== 'start' && tile.type !== 'finish') && (
-                       <Button variant="ghost" size="icon" onClick={() => handleDeleteTileConfig(tile.id)} aria-label={`Clear Tile ${tile.position + 1} Configuration`}>
+                       <Button variant="ghost" size="icon" onClick={() => handleDeleteTileConfig(tile.id)} aria-label={t('boardDesigner.clearTileConfig', {position: tile.position + 1 })}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     )}
                   </div>
                 </div>
                 {tile.config && tile.type === 'quiz' && (
-                  <p className="text-xs text-muted-foreground mt-1 truncate">Q: {tile.config.question}</p>
+                  <p className="text-xs text-muted-foreground mt-1 truncate">{t('boardDesigner.questionShort')}: {tile.config.question}</p>
                 )}
                  {tile.config && tile.type === 'info' && (
-                  <p className="text-xs text-muted-foreground mt-1 truncate">Info: {tile.config.message}</p>
+                  <p className="text-xs text-muted-foreground mt-1 truncate">{t('boardDesigner.infoShort')}: {tile.config.message}</p>
                 )}
               </Card>
             ))}

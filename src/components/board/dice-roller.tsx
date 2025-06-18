@@ -1,12 +1,15 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useGame } from '@/components/game/game-provider';
 import { Dices } from 'lucide-react';
+import { useLanguage } from '@/context/language-context';
 
 export function DiceRoller() {
   const { state, dispatch } = useGame();
+  const { t } = useLanguage();
   const [rolledValue, setRolledValue] = useState<number | null>(null);
   const [isRolling, setIsRolling] = useState(false);
 
@@ -16,23 +19,19 @@ export function DiceRoller() {
     if (isRolling) return;
     setIsRolling(true);
     
-    // Simulate rolling animation
-    let rollCount = 0; // Corrected variable declaration
+    let currentRollCount = 0; 
     const rollInterval = setInterval(() => {
       setRolledValue(Math.floor(Math.random() * diceSides) + 1);
-      rollCount++;
-      if (rollCount > 10) { // Number of "fast" rolls for animation
+      currentRollCount++;
+      if (currentRollCount > 10) { 
         clearInterval(rollInterval);
         const finalValue = Math.floor(Math.random() * diceSides) + 1;
         setRolledValue(finalValue);
-        // dispatch({ type: 'SET_DICE_ROLL', payload: finalValue }); // Update game state
         setIsRolling(false);
-        // Here, you'd typically trigger pawn movement or other game logic
       }
     }, 50);
   };
   
-  // Effect to clear rolled value if dice sides change (e.g. new board loaded)
   useEffect(() => {
     setRolledValue(null);
   }, [diceSides]);
@@ -42,13 +41,13 @@ export function DiceRoller() {
       <div 
         className="w-24 h-24 border-2 border-primary rounded-lg flex items-center justify-center text-4xl font-bold text-primary bg-background shadow-inner"
         aria-live="polite"
-        title={rolledValue ? `Dice rolled: ${rolledValue}` : "Dice not rolled yet"}
+        title={rolledValue !== null ? t('diceRoller.diceRolled', {value: rolledValue}) : t('diceRoller.diceNotRolled')}
       >
         {rolledValue !== null ? rolledValue : <Dices size={48} className="text-muted-foreground" />}
       </div>
       <Button onClick={rollDice} disabled={isRolling} className="w-full max-w-xs">
         <Dices className="mr-2 h-5 w-5" />
-        {isRolling ? 'Rolling...' : `Roll D${diceSides}`}
+        {isRolling ? t('diceRoller.rolling') : t('diceRoller.roll', {sides: diceSides})}
       </Button>
     </div>
   );

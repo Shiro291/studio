@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useState } from 'react';
@@ -10,9 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Terminal } from "lucide-react";
+import { useLanguage } from '@/context/language-context';
 
 export default function BoardDesignerPage() {
   const { state, initializeNewBoard, loadBoardFromBase64 } = useGame();
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const [initialLoadDone, setInitialLoadDone] = useState(false);
 
@@ -45,9 +48,9 @@ export default function BoardDesignerPage() {
     return (
       <Alert variant="destructive" className="max-w-lg mx-auto">
         <Terminal className="h-4 w-4" />
-        <AlertTitle>Error Loading Board</AlertTitle>
+        <AlertTitle>{t('boardDesignerPage.errorLoadingBoard')}</AlertTitle>
         <AlertDescription>
-          {state.error} Please try creating a new board or checking the shared link.
+          {state.error} {t('boardDesignerPage.errorLoadingBoardDescription')}
         </AlertDescription>
       </Alert>
     );
@@ -57,7 +60,7 @@ export default function BoardDesignerPage() {
   if (!state.boardConfig) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p>No board configuration loaded. Try creating a new board.</p>
+        <p>{t('boardDesignerPage.noBoardLoaded')}</p>
       </div>
     );
   }
@@ -72,7 +75,7 @@ export default function BoardDesignerPage() {
         <div className="lg:col-span-2 space-y-8">
           <Card>
             <CardHeader>
-              <CardTitle className="font-headline">Game Board</CardTitle>
+              <CardTitle className="font-headline">{t('boardDesignerPage.gameBoard')}</CardTitle>
             </CardHeader>
             <CardContent>
               <GameBoardDisplay boardConfig={state.boardConfig} />
@@ -80,11 +83,10 @@ export default function BoardDesignerPage() {
           </Card>
           <Card>
             <CardHeader>
-                <CardTitle className="font-headline">Game Controls</CardTitle>
+                <CardTitle className="font-headline">{t('boardDesignerPage.gameControls')}</CardTitle>
             </CardHeader>
             <CardContent>
                 <DiceRoller />
-                {/* Player info, scores etc. will go here */}
             </CardContent>
           </Card>
         </div>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -21,9 +22,11 @@ import { MAX_TILES, MIN_TILES } from '@/lib/constants';
 import { Gem, Settings, Share2, Zap, Rows3, Palette, Info, Wand2 } from 'lucide-react';
 import type { BoardSettings } from '@/types';
 import React from 'react';
+import { useLanguage } from '@/context/language-context';
 
 export function AppSidebarContent() {
   const { state, dispatch, initializeNewBoard } = useGame();
+  const { t } = useLanguage();
   const boardSettings = state.boardConfig?.settings;
 
   const handleSettingChange = <K extends keyof BoardSettings>(key: K, value: BoardSettings[K]) => {
@@ -34,8 +37,6 @@ export function AppSidebarContent() {
     const newNumberOfTiles = value[0];
     if (boardSettings && newNumberOfTiles !== boardSettings.numberOfTiles) {
       handleSettingChange('numberOfTiles', newNumberOfTiles);
-      // Potentially re-initialize tiles or adjust existing ones.
-      // For now, just updating settings. Tile array adjustment logic will be in BoardDesigner.
     }
   };
 
@@ -46,11 +47,11 @@ export function AppSidebarContent() {
         const base64Data = btoa(jsonString);
         const shareUrl = `${window.location.origin}/?board=${encodeURIComponent(base64Data)}`;
         navigator.clipboard.writeText(shareUrl)
-          .then(() => alert('Shareable link copied to clipboard!'))
+          .then(() => alert('Shareable link copied to clipboard!')) // TODO: Use toast for notifications
           .catch(err => console.error('Failed to copy URL: ', err));
       } catch (error) {
         console.error("Error creating share link:", error);
-        alert("Error creating share link.");
+        alert("Error creating share link."); // TODO: Use toast
       }
     }
   };
@@ -60,14 +61,14 @@ export function AppSidebarContent() {
     <ScrollArea className="h-full flex-1">
       <SidebarMenu>
         <SidebarGroup>
-          <SidebarGroupLabel className="font-headline">BoardWise Designer</SidebarGroupLabel>
+          <SidebarGroupLabel className="font-headline">{t('sidebar.title')}</SidebarGroupLabel>
           <SidebarGroupContent className="space-y-4">
             <Button onClick={initializeNewBoard} className="w-full" variant="outline">
-              <Wand2 className="mr-2 h-4 w-4" /> New Board
+              <Wand2 className="mr-2 h-4 w-4" /> {t('sidebar.newBoard')}
             </Button>
              {boardSettings && (
               <Button onClick={handleShare} className="w-full">
-                <Share2 className="mr-2 h-4 w-4" /> Share Board
+                <Share2 className="mr-2 h-4 w-4" /> {t('sidebar.shareBoard')}
               </Button>
             )}
           </SidebarGroupContent>
@@ -79,11 +80,11 @@ export function AppSidebarContent() {
           <>
             <SidebarGroup>
               <SidebarGroupLabel className="flex items-center gap-2 font-headline">
-                <Settings size={16} /> Board Settings
+                <Settings size={16} /> {t('sidebar.boardSettings')}
               </SidebarGroupLabel>
               <SidebarGroupContent className="space-y-4">
                 <div>
-                  <Label htmlFor="boardName" className="text-sm font-medium">Board Name</Label>
+                  <Label htmlFor="boardName" className="text-sm font-medium">{t('sidebar.boardName')}</Label>
                   <Input 
                     id="boardName" 
                     value={boardSettings.name} 
@@ -92,7 +93,7 @@ export function AppSidebarContent() {
                   />
                 </div>
                  <div>
-                  <Label htmlFor="boardDescription" className="text-sm font-medium">Description</Label>
+                  <Label htmlFor="boardDescription" className="text-sm font-medium">{t('sidebar.description')}</Label>
                   <Input 
                     id="boardDescription" 
                     value={boardSettings.description || ''} 
@@ -102,7 +103,7 @@ export function AppSidebarContent() {
                 </div>
                 <div>
                   <Label htmlFor="numTiles" className="text-sm font-medium">
-                    Number of Tiles: {boardSettings.numberOfTiles}
+                    {t('sidebar.numberOfTiles', { count: boardSettings.numberOfTiles })}
                   </Label>
                   <Slider
                     id="numTiles"
@@ -115,7 +116,7 @@ export function AppSidebarContent() {
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="punishmentMode" className="text-sm font-medium">Punishment Mode</Label>
+                  <Label htmlFor="punishmentMode" className="text-sm font-medium">{t('sidebar.punishmentMode')}</Label>
                   <Switch
                     id="punishmentMode"
                     checked={boardSettings.punishmentMode}
@@ -123,7 +124,7 @@ export function AppSidebarContent() {
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="randomizeTiles" className="text-sm font-medium">Randomize Tiles</Label>
+                  <Label htmlFor="randomizeTiles" className="text-sm font-medium">{t('sidebar.randomizeTiles')}</Label>
                   <Switch
                     id="randomizeTiles"
                     checked={boardSettings.randomizeTiles}
@@ -137,11 +138,11 @@ export function AppSidebarContent() {
 
             <SidebarGroup>
               <SidebarGroupLabel className="flex items-center gap-2 font-headline">
-                <Gem size={16} /> Dice Configuration
+                <Gem size={16} /> {t('sidebar.diceConfiguration')}
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <div>
-                  <Label htmlFor="diceSides" className="text-sm font-medium">Dice Sides: {boardSettings.diceSides}</Label>
+                  <Label htmlFor="diceSides" className="text-sm font-medium">{t('sidebar.diceSides', { count: boardSettings.diceSides })}</Label>
                   <Slider
                     id="diceSides"
                     min={1}
@@ -157,25 +158,24 @@ export function AppSidebarContent() {
             <SidebarSeparator />
              <SidebarGroup>
                 <SidebarGroupLabel className="flex items-center gap-2 font-headline">
-                    <Palette size={16} /> Tile Editor (Selected Tile)
+                    <Palette size={16} /> {t('sidebar.tileEditor')}
                 </SidebarGroupLabel>
                 <SidebarGroupContent>
-                    <p className="text-sm text-muted-foreground">Select a tile on the board to edit its properties here.</p>
-                    {/* Placeholder for TileEditor component or its contents */}
+                    <p className="text-sm text-muted-foreground">{t('sidebar.selectTileToEdit')}</p>
                 </SidebarGroupContent>
             </SidebarGroup>
           </>
         )}
 
         <SidebarMenuItem>
-          <SidebarMenuButton tooltip="Coming Soon!" disabled>
-            <Zap size={16} /> AI Generation
+          <SidebarMenuButton tooltip={t('sidebar.comingSoon')} disabled>
+            <Zap size={16} /> {t('sidebar.aiGeneration')}
           </SidebarMenuButton>
         </SidebarMenuItem>
         
         <SidebarMenuItem>
-          <SidebarMenuButton tooltip="Guide & Info">
-            <Info size={16} /> Tutorial & Info
+          <SidebarMenuButton tooltip={t('sidebar.tutorialAndInfo')}>
+            <Info size={16} /> {t('sidebar.tutorialAndInfo')}
           </SidebarMenuButton>
         </SidebarMenuItem>
 
