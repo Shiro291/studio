@@ -3,8 +3,9 @@
 
 import type { Tile, Player } from '@/types';
 import { cn } from '@/lib/utils';
-import { TILE_TYPE_EMOJIS, DEFAULT_TILE_COLOR, START_TILE_COLOR, FINISH_TILE_COLOR } from '@/lib/constants';
+import { TILE_TYPE_EMOJIS, DEFAULT_TILE_COLOR } from '@/lib/constants';
 import { Flag, FlagOff, Info, HelpCircle, Star } from 'lucide-react';
+import React from 'react'; // Import React for React.memo
 
 interface TileComponentProps {
   tile: Tile;
@@ -30,10 +31,11 @@ function isColorDark(hexColor?: string): boolean {
   const g = parseInt(color.substring(2, 4), 16);
   const b = parseInt(color.substring(4, 6), 16);
   const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return luminance < 140; 
+  return luminance < 140;
 }
 
-export function TileComponent({ tile, onClick, isInteractive, playersOnTile = [], isAnimatingPlayerStep = false }: TileComponentProps) {
+// Wrap TileComponent with React.memo
+export const TileComponent = React.memo(function TileComponent({ tile, onClick, isInteractive, playersOnTile = [], isAnimatingPlayerStep = false }: TileComponentProps) {
   const IconComponent = tileTypeIcons[tile.type];
   const tileEmoji = tile.ui.icon || TILE_TYPE_EMOJIS[tile.type] || '';
 
@@ -75,8 +77,8 @@ export function TileComponent({ tile, onClick, isInteractive, playersOnTile = []
       aria-label={`Tile ${tile.position + 1}, type: ${tile.type}`}
       role="gridcell"
     >
-      <div 
-        className="absolute top-1 left-1 text-[0.6rem] font-bold opacity-90" 
+      <div
+        className="absolute top-1 left-1 text-[0.6rem] font-bold opacity-90"
         style={{ color: determinedTextColor, ...textShadowStyle }}
       >
         {tile.position + 1}
@@ -108,4 +110,6 @@ export function TileComponent({ tile, onClick, isInteractive, playersOnTile = []
       )}
     </button>
   );
-}
+});
+
+TileComponent.displayName = 'TileComponent'; // Good practice for memoized components
