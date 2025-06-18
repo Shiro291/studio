@@ -16,11 +16,18 @@ export function GameBoardDisplay({ boardConfig, onTileClick, activePlayerId, pla
   const { tiles, settings } = boardConfig;
   const numTiles = settings.numberOfTiles;
 
-  const displayCols = Math.max(1, Math.ceil(Math.sqrt(numTiles)));
+  // Dynamically adjust columns for better layout, aiming for squarish look
+  let displayCols = Math.max(1, Math.ceil(Math.sqrt(numTiles)));
+  if (numTiles <= 10) displayCols = Math.min(numTiles, 5); // Max 5 cols for few tiles
+  else if (numTiles <= 20) displayCols = Math.min(numTiles, 6); // Max 6 cols for up to 20
+  else if (numTiles <= 30) displayCols = Math.min(numTiles, 7);
+  else if (numTiles <= 50) displayCols = Math.min(numTiles, 8);
+  else displayCols = Math.min(numTiles, 10); // General max columns
+
   const displayRows = Math.max(1, Math.ceil(numTiles / displayCols));
   
-  const tileSize = "minmax(60px, 1fr)";
-  const minDimension = 60;
+  const tileSize = "minmax(60px, 1fr)"; // Tiles will try to fill space but have a min size
+  const minDimension = 60; // Minimum px width/height for a tile
 
   const boardBackgroundStyle: React.CSSProperties = {};
   if (settings.boardBackgroundImage) {
@@ -32,8 +39,8 @@ export function GameBoardDisplay({ boardConfig, onTileClick, activePlayerId, pla
 
   return (
     <div 
-      className="w-full aspect-square max-w-2xl mx-auto bg-muted/30 p-2 rounded-lg shadow-inner overflow-hidden"
-      style={boardBackgroundStyle}
+      className="w-full aspect-square mx-auto bg-muted/30 p-2 rounded-lg shadow-inner overflow-hidden"
+      style={boardBackgroundStyle} // max-w-2xl removed to allow expansion
     >
       <ScrollArea className="w-full h-full whitespace-nowrap">
         <div

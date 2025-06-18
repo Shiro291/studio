@@ -7,6 +7,7 @@ import { useGame } from '@/components/game/game-provider';
 import { Dices } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
 import { playSound } from '@/lib/sound-service';
+import { cn } from '@/lib/utils';
 
 interface DiceRollerProps {
   isDesignerMode?: boolean;
@@ -27,9 +28,9 @@ export function DiceRoller({ isDesignerMode = false }: DiceRollerProps) {
   const rollDice = () => {
     if (isRolling || !canRoll) return;
     setIsRolling(true);
-    setRolledValueDisplay(null); // Set to null initially for the "..." or brief blank before first number
+    setRolledValueDisplay(null); 
 
-    let currentRollCount = 0; // Local counter for animation frames
+    let currentRollCount = 0; 
     const rollInterval = setInterval(() => {
       setRolledValueDisplay(Math.floor(Math.random() * diceSides) + 1);
       currentRollCount++;
@@ -58,9 +59,15 @@ export function DiceRoller({ isDesignerMode = false }: DiceRollerProps) {
 
 
   return (
-    <div className="flex flex-col items-center space-y-4 p-4 rounded-lg shadow-md bg-card">
+    <div className={cn(
+        "flex flex-col items-center space-y-4 p-4 rounded-lg shadow-md bg-card",
+        isDesignerMode ? "p-3 space-y-2" : "p-4 space-y-4" // More compact for designer
+    )}>
       <div
-        className="w-24 h-24 border-2 border-primary rounded-lg flex items-center justify-center text-4xl font-bold text-primary bg-background shadow-inner"
+        className={cn(
+            "border-2 border-primary rounded-lg flex items-center justify-center text-4xl font-bold text-primary bg-background shadow-inner",
+            isDesignerMode ? "w-16 h-16 text-3xl" : "w-24 h-24 text-4xl" // Smaller dice face for designer
+        )}
         aria-live="polite"
         title={rolledValueDisplay !== null ? t('diceRoller.diceRolled', {value: rolledValueDisplay}) : t('diceRoller.diceNotRolled')}
       >
@@ -69,15 +76,18 @@ export function DiceRoller({ isDesignerMode = false }: DiceRollerProps) {
          ) : rolledValueDisplay !== null ? (
             rolledValueDisplay
          ) : (
-            <Dices size={48} className="text-muted-foreground" />
+            <Dices size={isDesignerMode ? 36 : 48} className="text-muted-foreground" />
          )}
       </div>
       <Button 
         onClick={rollDice} 
         disabled={isRolling || !canRoll || (!isDesignerMode && !!state.winner)} 
-        className="w-full max-w-xs"
+        className={cn(
+            "w-full max-w-xs",
+            isDesignerMode ? "h-9 text-sm" : "h-10" // Smaller button for designer
+        )}
       >
-        <Dices className="mr-2 h-5 w-5" />
+        <Dices className={cn("mr-2", isDesignerMode ? "h-4 w-4" : "h-5 w-5")} />
         {isRolling ? t('diceRoller.rolling') : ((!isDesignerMode && state.winner) ? t('playPage.gameOver') : t('diceRoller.roll', {sides: diceSides}))}
       </Button>
     </div>

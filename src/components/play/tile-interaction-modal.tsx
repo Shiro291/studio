@@ -10,7 +10,6 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -42,6 +41,7 @@ export function TileInteractionModal({
   const [isCorrectQuizAnswer, setIsCorrectQuizAnswer] = useState<boolean | null>(null);
 
   useEffect(() => {
+    // Reset local modal state when it opens with a new tile
     if (isOpen && tileForModal) {
       setSelectedQuizOptionIdFromModal(undefined);
       setQuizAttemptedFromModal(false);
@@ -65,7 +65,7 @@ export function TileInteractionModal({
   };
   
   const handleQuizFeedbackContinue = () => {
-     onModalClose(true); // Proceed to next turn
+     onModalClose(true); // Proceed to next turn after seeing feedback
   };
 
 
@@ -112,14 +112,14 @@ export function TileInteractionModal({
     return null;
   }
 
-  let modalTitle = t('playPage.tileInteractionTitle');
+  let modalTitleContent = t('playPage.tileInteractionTitle');
   let modalContent = null;
   let modalFooter = null;
 
   switch (tileForModal.type) {
     case 'quiz': {
       const config = tileForModal.config as TileConfigQuiz;
-      modalTitle = `${t('playPage.tileInteractionTitle')} - ${t('capitalize.quiz')}`;
+      modalTitleContent = `${t('playPage.tileInteractionTitle')} - ${t('capitalize.quiz')}`;
       if (!quizAttemptedFromModal) {
         modalContent = (
           <div className="space-y-3">
@@ -143,7 +143,7 @@ export function TileInteractionModal({
             {t('playPage.submitAnswer')}
           </Button>
         );
-      } else {
+      } else { // Quiz attempted, show feedback
         modalContent = (
            <div className="space-y-2 p-3 rounded-md text-center">
             {isCorrectQuizAnswer ? (
@@ -172,7 +172,7 @@ export function TileInteractionModal({
     }
     case 'info': {
       const config = tileForModal.config as TileConfigInfo;
-      modalTitle = `${t('playPage.tileInteractionTitle')} - ${t('capitalize.info')}`;
+      modalTitleContent = `${t('playPage.tileInteractionTitle')} - ${t('capitalize.info')}`;
       modalContent = (
         <div className="space-y-3 text-center">
           <InfoIcon className="h-8 w-8 text-primary mx-auto mb-2" />
@@ -189,7 +189,7 @@ export function TileInteractionModal({
     }
     case 'reward': {
       const config = tileForModal.config as TileConfigReward;
-      modalTitle = `${t('playPage.tileInteractionTitle')} - ${t('capitalize.reward')}`;
+      modalTitleContent = `${t('playPage.tileInteractionTitle')} - ${t('capitalize.reward')}`;
       modalContent = (
         <div className="space-y-3 text-center">
           <GiftIcon className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
@@ -209,20 +209,20 @@ export function TileInteractionModal({
       break;
     }
     default:
-      // Should not happen for interactive tiles, but as a fallback.
-      return null;
+      return null; // Should not happen for interactive tiles
   }
 
   return (
     <Dialog 
         open={isOpen} 
         onOpenChange={(open) => {
-            // Prevent closing via Esc or overlay click if quiz is not yet attempted.
-            if (tileForModal.type === 'quiz' && !quizAttemptedFromModal && !open) {
-                return; 
-            }
-            if (!open) {
-                onModalClose(false); // Don't proceed if modal is closed externally
+            if (!open) { // If the modal is attempting to close
+                // If it's a quiz and not yet attempted, prevent closing by 'X' or overlay click.
+                // Allow closing only through designated buttons after interaction or for non-quiz types.
+                if (tileForModal.type === 'quiz' && !quizAttemptedFromModal) {
+                    return; // Don't close
+                }
+                onModalClose(false); // Call close handler, indicating not to proceed to next turn automatically
             }
         }}
     >
@@ -232,14 +232,14 @@ export function TileInteractionModal({
             {tileForModal.type === 'quiz' && <HelpCircle className="h-6 w-6 text-primary" />}
             {tileForModal.type === 'info' && <InfoIcon className="h-6 w-6 text-blue-500" />}
             {tileForModal.type === 'reward' && <GiftIcon className="h-6 w-6 text-yellow-500" />}
-            {modalTitle}
+            {modalTitleContent}
           </DialogTitle>
           {tileForModal.position !== undefined && (
             <DialogDescription>{t('playPage.tileNumber', { number: tileForModal.position + 1 })}</DialogDescription>
           )}
         </DialogHeader>
-        <ScrollArea className="max-h-[60vh] pr-2 -mr-2"> {/* Offset padding for scrollbar */}
-         <div className="py-4 pr-4">  {/* Add padding for content */}
+        <ScrollArea className="max-h-[60vh] pr-2 -mr-2">
+         <div className="py-4 pr-4">
             {modalContent}
           </div>
         </ScrollArea>
@@ -248,5 +248,3 @@ export function TileInteractionModal({
     </Dialog>
   );
 }
-
-    

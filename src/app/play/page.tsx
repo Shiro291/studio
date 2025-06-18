@@ -42,14 +42,16 @@ export default function PlayPage() {
     if (state.activeTileForInteraction && state.gameStatus === 'interaction_pending') {
       const tile = state.activeTileForInteraction;
       if (tile.type === 'quiz' || tile.type === 'info' || tile.type === 'reward') {
-        setCurrentTileForModal(tile);
-        setIsInteractionModalOpen(true);
+        if (!isInteractionModalOpen || currentTileForModal?.id !== tile.id) {
+            setCurrentTileForModal(tile);
+            setIsInteractionModalOpen(true);
+        }
       } else if (tile.type === 'empty' || tile.type === 'start' || tile.type === 'finish') {
         // Auto-proceed for non-interactive tiles after a short delay
         const timer = setTimeout(() => {
-          dispatch({ type: 'ACKNOWLEDGE_INTERACTION' }); // Acknowledge landing
+          dispatch({ type: 'ACKNOWLEDGE_INTERACTION' }); 
           dispatch({ type: 'PROCEED_TO_NEXT_TURN' });
-        }, 500); // Delay for player to see pawn move
+        }, 500); 
         return () => clearTimeout(timer);
       }
     } else if (!state.activeTileForInteraction && isInteractionModalOpen) {
@@ -58,14 +60,24 @@ export default function PlayPage() {
       setIsInteractionModalOpen(false);
       setCurrentTileForModal(null);
     }
-  }, [state.activeTileForInteraction, state.gameStatus, dispatch, isInteractionModalOpen]);
+  }, [state.activeTileForInteraction, state.gameStatus, dispatch, isInteractionModalOpen, currentTileForModal]);
 
 
   const handleModalClose = (proceedToNextTurn: boolean) => {
     setIsInteractionModalOpen(false);
-    setCurrentTileForModal(null);
+    // Don't clear currentTileForModal here immediately if interaction is not complete.
+    // It will be cleared when state.activeTileForInteraction is cleared by PROCEED_TO_NEXT_TURN
     if (proceedToNextTurn) {
       dispatch({ type: 'PROCEED_TO_NEXT_TURN' });
+    } else if (state.activeTileForInteraction && state.gameStatus === 'interaction_pending' && state.activeTileForInteraction.type === 'quiz') {
+        // Quiz modal closed via 'X' without submitting, keep interaction pending.
+        // The useEffect above will reopen it.
+    } else {
+        // For info/reward closed via 'X', or quiz closed AFTER submission, proceed to clear.
+        setCurrentTileForModal(null); 
+        if (state.activeTileForInteraction) { // if it wasn't cleared by proceedToNextTurn
+            dispatch({ type: 'PROCEED_TO_NEXT_TURN' }); // ensure we move on if it was info/reward closed with X
+        }
     }
   };
 
@@ -179,5 +191,3 @@ export default function PlayPage() {
     </div>
   );
 }
-
-    

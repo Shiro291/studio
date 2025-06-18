@@ -22,11 +22,41 @@ const tileTypeIcons: Record<Tile['type'], React.ElementType | null> = {
   empty: null,
 };
 
+// Basic luminance calculation to determine if a color is dark or light
+function isColorDark(hexColor?: string): boolean {
+  if (!hexColor) return false;
+  const color = hexColor.startsWith('#') ? hexColor.substring(1) : hexColor;
+  const r = parseInt(color.substring(0, 2), 16);
+  const g = parseInt(color.substring(2, 4), 16);
+  const b = parseInt(color.substring(4, 6), 16);
+  // Standard luminance formula
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luminance < 140; // Threshold can be adjusted
+}
+
 export function TileComponent({ tile, onClick, isInteractive, playersOnTile = [] }: TileComponentProps) {
   const IconComponent = tileTypeIcons[tile.type];
   const tileEmoji = tile.ui.icon || TILE_TYPE_EMOJIS[tile.type] || '';
 
-  const textColor = tile.ui.color && tile.ui.color !== DEFAULT_TILE_COLOR && tile.ui.color !== START_TILE_COLOR && tile.ui.color !== FINISH_TILE_COLOR ? 'white' : 'black';
+  const defaultTextColor = 'black';
+  const darkBgTextColor = 'white';
+
+  let determinedTextColor = defaultTextColor;
+  if (tile.ui.color && tile.ui.color !== DEFAULT_TILE_COLOR) {
+    determinedTextColor = isColorDark(tile.ui.color) ? darkBgTextColor : defaultTextColor;
+  }
+
+
+  const textShadowStyle: React.CSSProperties = {
+     textShadow: `
+      -1px -1px 0 ${determinedTextColor === darkBgTextColor ? defaultTextColor : darkBgTextColor},  
+       1px -1px 0 ${determinedTextColor === darkBgTextColor ? defaultTextColor : darkBgTextColor},
+      -1px  1px 0 ${determinedTextColor === darkBgTextColor ? defaultTextColor : darkBgTextColor},
+       1px  1px 0 ${determinedTextColor === darkBgTextColor ? defaultTextColor : darkBgTextColor},
+       0px 0px 3px ${determinedTextColor === darkBgTextColor ? defaultTextColor : darkBgTextColor}
+     `
+  };
+
 
   return (
     <button
@@ -46,17 +76,23 @@ export function TileComponent({ tile, onClick, isInteractive, playersOnTile = []
       aria-label={`Tile ${tile.position + 1}, type: ${tile.type}`}
       role="gridcell"
     >
-      <div className="absolute top-1 left-1 text-[0.6rem] font-bold opacity-70" style={{ color: textColor }}>
+      <div 
+        className="absolute top-1 left-1 text-[0.6rem] font-bold opacity-90" 
+        style={{ color: determinedTextColor, ...textShadowStyle }}
+      >
         {tile.position + 1}
       </div>
 
       <div className="text-2xl mb-0.5" role="img" aria-label={`${tile.type} icon`}>
-        {tileEmoji || (IconComponent ? <IconComponent size={20} style={{ color: textColor }} /> : null)}
+        {tileEmoji || (IconComponent ? <IconComponent size={20} style={{ color: determinedTextColor }} /> : null)}
       </div>
 
-      <span className="truncate text-[0.65rem] capitalize" style={{ color: textColor }}>
+      {/* Removed tile type text:
+      <span className="truncate text-[0.65rem] capitalize" style={{ color: determinedTextColor }}>
         {tile.type !== 'empty' ? tile.type : ''}
       </span>
+      */}
+
 
       {playersOnTile.length > 0 && (
         <div className="absolute bottom-0.5 right-0.5 left-0.5 flex flex-wrap justify-end items-end p-px gap-px max-w-full">

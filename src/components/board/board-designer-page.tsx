@@ -71,7 +71,7 @@ export default function BoardDesignerPage() {
         {state.boardConfig.settings.name}
       </h1>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2 space-y-8">
           <Card>
             <CardHeader>
@@ -81,9 +81,9 @@ export default function BoardDesignerPage() {
               <GameBoardDisplay boardConfig={state.boardConfig} />
             </CardContent>
           </Card>
-          <Card>
+          <Card className="lg:max-w-sm mx-auto"> {/* Constrain dice roller card width */}
             <CardHeader>
-                <CardTitle className="font-headline">{t('boardDesignerPage.gameControls')}</CardTitle>
+                <CardTitle className="font-headline text-lg">{t('boardDesignerPage.gameControls')}</CardTitle>
             </CardHeader>
             <CardContent>
                 <DiceRoller isDesignerMode={true} />
