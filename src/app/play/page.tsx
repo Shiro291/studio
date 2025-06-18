@@ -65,19 +65,25 @@ export default function PlayPage() {
 
   const handleModalClose = (proceedToNextTurn: boolean) => {
     setIsInteractionModalOpen(false);
-    // Don't clear currentTileForModal here immediately if interaction is not complete.
-    // It will be cleared when state.activeTileForInteraction is cleared by PROCEED_TO_NEXT_TURN
+    // currentTileForModal is not cleared here immediately if interaction might not be fully complete.
+    // It will be cleared when state.activeTileForInteraction is cleared by PROCEED_TO_NEXT_TURN,
+    // or the useEffect hook above handles changes to activeTileForInteraction.
+
     if (proceedToNextTurn) {
+      // This is typically called after a quiz is answered, or info/reward is acknowledged.
       dispatch({ type: 'PROCEED_TO_NEXT_TURN' });
-    } else if (state.activeTileForInteraction && state.gameStatus === 'interaction_pending' && state.activeTileForInteraction.type === 'quiz') {
-        // Quiz modal closed via 'X' without submitting, keep interaction pending.
-        // The useEffect above will reopen it.
     } else {
-        // For info/reward closed via 'X', or quiz closed AFTER submission, proceed to clear.
-        setCurrentTileForModal(null); 
-        if (state.activeTileForInteraction) { // if it wasn't cleared by proceedToNextTurn
-            dispatch({ type: 'PROCEED_TO_NEXT_TURN' }); // ensure we move on if it was info/reward closed with X
-        }
+      // This branch is reached if the modal is closed via 'X' or overlay click (for allowed cases).
+      // For Info/Reward tiles, or an *attempted* Quiz tile, closing via 'X' should still proceed the turn.
+      // Unattempted Quiz modals prevent 'X'/'overlay' close from TileInteractionModal's Dialog logic.
+      
+      // Clear the local tile state for the modal.
+      setCurrentTileForModal(null); 
+      
+      // If an interaction was genuinely pending (e.g., an Info modal closed with 'X'), ensure the game moves on.
+      if (state.activeTileForInteraction && state.gameStatus === 'interaction_pending') {
+          dispatch({ type: 'PROCEED_TO_NEXT_TURN' });
+      }
     }
   };
 
@@ -191,3 +197,4 @@ export default function PlayPage() {
     </div>
   );
 }
+
