@@ -17,7 +17,7 @@ export function DiceRoller() {
     setIsRolling(true);
     
     // Simulate rolling animation
-    let-rollCount = 0;
+    let rollCount = 0; // Corrected variable declaration
     const rollInterval = setInterval(() => {
       setRolledValue(Math.floor(Math.random() * diceSides) + 1);
       rollCount++;
