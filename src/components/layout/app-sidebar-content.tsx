@@ -17,7 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGame } from '@/components/game/game-provider';
 import { MAX_TILES, MIN_TILES, MIN_PLAYERS, MAX_PLAYERS } from '@/lib/constants';
 import { Settings, Palette, Info, Wand2, RefreshCwIcon, Users, Image as ImageIcon, XCircle, Link as LinkIcon, Download, Upload, Dices, ShieldAlert, ClipboardCopy, ClipboardPaste } from 'lucide-react';
-import type { BoardConfig, BoardSettings, WinningCondition, PunishmentType } from '@/types';
+import type { BoardConfig, BoardSettings, WinningCondition, PunishmentType, TileConfigQuiz } from '@/types';
 import React, { useRef, useState } from 'react';
 import { useLanguage } from '@/context/language-context';
 import { useToast } from '@/hooks/use-toast';
@@ -82,12 +82,35 @@ export function AppSidebarContent() {
       try {
         if (state.pawnAnimation?.timerId) {
             clearTimeout(state.pawnAnimation.timerId);
+             // Finalize pawn position if animation was interrupted
+            const playerIndex = state.players.findIndex(p => p.id === state.pawnAnimation!.playerId);
+            if (playerIndex !== -1 && state.pawnAnimation!.path.length > 0) {
+                const finalPosition = state.pawnAnimation!.path[state.pawnAnimation!.path.length - 1];
+                const updatedPlayers = [...state.players];
+                updatedPlayers[playerIndex] = { ...updatedPlayers[playerIndex], position: finalPosition, visualPosition: finalPosition };
+                dispatch({ type: 'SET_PLAYERS', payload: updatedPlayers }); // Dispatch sync update
+            }
         }
         
+        // Create a deep clone to modify for the link, assign new ID
         const boardConfigForLink: BoardConfig = {
           ...JSON.parse(JSON.stringify(state.boardConfig)), 
           id: nanoid(), 
         };
+
+        // Strip AI-generated option images to reduce URL length
+        boardConfigForLink.tiles.forEach(tile => {
+          if (tile.type === 'quiz' && tile.config) {
+            const quizConfig = tile.config as TileConfigQuiz;
+            if (quizConfig.options && Array.isArray(quizConfig.options)) {
+              quizConfig.options.forEach(option => {
+                if (option.image && option.image.startsWith('data:image/')) { // Check if it's a data URI
+                  delete option.image; // Remove AI-generated image data URI
+                }
+              });
+            }
+          }
+        });
 
         const jsonString = JSON.stringify(boardConfigForLink);
         const utf8Encoded = unescape(encodeURIComponent(jsonString));
@@ -117,7 +140,7 @@ export function AppSidebarContent() {
         toast({
           variant: "destructive",
           title: t('sidebar.linkErrorTitle'),
-          description: t('sidebar.linkErrorDescription'),
+          description: t('sidebar.linkErrorDescription') + (error instanceof Error ? ` ${error.message}` : ''),
         });
       }
     }
@@ -187,7 +210,7 @@ export function AppSidebarContent() {
             toast({
               variant: "destructive",
               title: t('sidebar.copyFailedTitle'),
-              description: t('sidebar.copyFailedDescription'), // Re-use general copy failed
+              description: t('sidebar.copyFailedDescription'), 
             });
           });
       } catch (error) {
@@ -208,11 +231,10 @@ export function AppSidebarContent() {
       toast({ variant: "destructive", title: t('sidebar.pasteErrorTitle'), description: t('sidebar.pasteEmptyError') });
       return;
     }
-    // loadBoardFromJson will handle its own success/error toasts for parsing and validation.
+    
     if (loadBoardFromJson(jsonPasteContent)) {
-        setJsonPasteContent(''); // Clear textarea on successful load by loadBoardFromJson
+        setJsonPasteContent(''); 
     }
-    // If loadBoardFromJson returns false, it means it encountered an error and showed a toast.
   };
 
 
