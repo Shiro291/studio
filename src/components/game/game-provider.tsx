@@ -113,7 +113,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, boardConfig: { ...state.boardConfig, tiles: newTiles } };
     }
      case 'PLAYER_ROLLED_DICE': {
-      if (!state.boardConfig || state.gameStatus !== 'playing') return state;
+      if (!state.boardConfig || state.gameStatus !== 'playing' || state.winner) return state;
       
       const { diceValue } = action.payload;
       const currentPlayer = state.players[state.currentPlayerIndex];
@@ -127,21 +127,30 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       
       const landedTile = state.boardConfig.tiles[newPosition];
       
+      // If landed on empty, start, or finish (and not already finished), proceed to next turn or handle finish
       if (landedTile.type === 'empty' || landedTile.type === 'start' || (landedTile.type === 'finish' && state.gameStatus !== 'finished')) {
          if (landedTile.type === 'finish') {
             playSound('finishSound');
+            const finishedPlayer = newPlayers[state.currentPlayerIndex];
+            let gameWinner = state.winner;
+            if (state.boardConfig.settings.winningCondition === 'firstToFinish') {
+                gameWinner = finishedPlayer;
+            }
+            // For 'highestScore', winner is determined in PROCEED_TO_NEXT_TURN if it's end of round
             return { 
                 ...state, 
                 players: newPlayers, 
                 diceRoll: diceValue, 
-                activeTileForInteraction: null, 
-                gameStatus: state.boardConfig.settings.winningCondition === 'firstToFinish' ? 'finished' : 'playing', 
-                winner: state.boardConfig.settings.winningCondition === 'firstToFinish' ? currentPlayer : null,
+                activeTileForInteraction: null, // No interaction for finish itself other than ending game
+                gameStatus: gameWinner ? 'finished' : 'playing', // If firstToFinish, game is finished
+                winner: gameWinner,
              };
         }
+        // Auto-proceed for empty/start
         return { ...state, players: newPlayers, diceRoll: diceValue, activeTileForInteraction: null, gameStatus: 'playing' }; 
       }
 
+      // For other tiles (quiz, info, reward), set up for interaction
       return { ...state, players: newPlayers, diceRoll: diceValue, activeTileForInteraction: landedTile, gameStatus: 'interaction_pending' };
     }
     case 'ANSWER_QUIZ': {
@@ -162,7 +171,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         playSound(soundToPlay);
         newPlayers[state.currentPlayerIndex] = { ...currentPlayer, score: newScore };
         
-        return { ...state, players: newPlayers, activeTileForInteraction: state.activeTileForInteraction }; 
+        // Interaction remains active until acknowledged, even after answering quiz (to show feedback)
+        return { ...state, players: newPlayers }; 
     }
     case 'ACKNOWLEDGE_INTERACTION': {
         if (!state.boardConfig || !state.activeTileForInteraction || state.gameStatus !== 'interaction_pending') return state;
@@ -177,37 +187,42 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             newPlayers[state.currentPlayerIndex] = { ...currentPlayer, score: newScore };
             playSound('correctAnswer'); 
         }
+        // For quiz, score is already updated in ANSWER_QUIZ. This just acknowledges the feedback.
+        // For info, no score change here.
 
-        return { ...state, players: newPlayers, activeTileForInteraction: state.activeTileForInteraction }; 
+        // Interaction is now complete for this tile.
+        return { ...state, players: newPlayers }; 
     }
 
     case 'PROCEED_TO_NEXT_TURN': {
         if (!state.boardConfig || state.gameStatus === 'finished') return state;
 
         let nextPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
-        let gameStatus = state.gameStatus;
-        let winner = state.winner;
+        let currentWinner = state.winner; // Carry over existing winner if any (e.g. from firstToFinish)
+        let gameIsFinished = !!currentWinner;
 
-        const currentPlayer = state.players[state.currentPlayerIndex];
-        const currentTile = state.boardConfig.tiles[currentPlayer.position];
-        
-        if (currentTile.type === 'finish' && state.boardConfig.settings.winningCondition === 'highestScore') {
-            const allPlayersFinishedOrLastPlayerOfRound = nextPlayerIndex === 0; 
-            if (allPlayersFinishedOrLastPlayerOfRound) {
-                gameStatus = 'finished';
-                winner = state.players.reduce((prev, current) => (prev.score > current.score) ? prev : current);
+
+        // Check for 'highestScore' win condition if the round is completing
+        if (!currentWinner && state.boardConfig.settings.winningCondition === 'highestScore') {
+            const currentPlayer = state.players[state.currentPlayerIndex]; // Player who just finished their turn
+            const currentTile = state.boardConfig.tiles[currentPlayer.position];
+            
+            // Check if the current player landed on finish AND it's the end of a full round of turns
+            if (currentTile.type === 'finish' && nextPlayerIndex === 0) { 
+                // All players have completed the round where someone hit finish
+                gameIsFinished = true;
+                currentWinner = state.players.reduce((prev, current) => (prev.score > current.score) ? prev : current);
                 playSound('finishSound');
             }
         }
-
-
+        
         return { 
             ...state, 
             currentPlayerIndex: nextPlayerIndex, 
             activeTileForInteraction: null, 
-            diceRoll: null,
-            gameStatus: winner ? 'finished' : 'playing', 
-            winner: winner
+            diceRoll: null, // Clear dice roll for next player
+            gameStatus: gameIsFinished ? 'finished' : 'playing', 
+            winner: currentWinner
         };
     }
     case 'RESET_GAME_FOR_PLAY': {
@@ -219,6 +234,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         players, 
         isLoading: false,
         gameStatus: 'playing', 
+        winner: null,
+        activeTileForInteraction: null,
+        diceRoll: null,
+        currentPlayerIndex: 0,
       };
     }
     default:
@@ -275,16 +294,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
         boardConfig.settings.boardBackgroundImage = boardConfig.settings.boardBackgroundImage || DEFAULT_BOARD_SETTINGS.boardBackgroundImage;
         
         dispatch({ type: 'SET_BOARD_CONFIG', payload: boardConfig });
-        dispatch({ type: 'RESET_GAME_FOR_PLAY' }); 
+        // RESET_GAME_FOR_PLAY will be called by PlayPage after setting board config
       } else {
         throw new Error("Invalid board data structure from Base64.");
       }
     } catch (error) {
       console.error("Failed to load board from Base64:", error);
       dispatch({ type: 'SET_ERROR', payload: 'Failed to load board data from link. The link might be corrupted or invalid.' });
-      initializeNewBoard(); 
+      // initializeNewBoard(); // Don't initialize if loading from link fails on play page, let PlayPage handle error display
     }
-  }, [initializeNewBoard]);
+  }, []);
   
   const loadBoardFromJson = useCallback((jsonString: string): boolean => {
     dispatch({ type: 'START_LOADING' });
@@ -297,7 +316,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         boardConfig.settings.boardBackgroundImage = boardConfig.settings.boardBackgroundImage || DEFAULT_BOARD_SETTINGS.boardBackgroundImage;
         
         dispatch({ type: 'SET_BOARD_CONFIG', payload: boardConfig });
-        dispatch({ type: 'RESET_GAME_FOR_PLAY' });
+        // RESET_GAME_FOR_PLAY will be called by editor/play page as needed
         return true;
       } else {
         throw new Error("Invalid board data structure from JSON file.");
@@ -305,7 +324,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Failed to load board from JSON:", error);
       dispatch({ type: 'SET_ERROR', payload: 'Failed to load board from file. The file might be corrupted or not a valid BoardWise configuration.' });
-      // Do not initialize new board here, let user try again or create new.
       return false;
     }
   }, []);
@@ -328,3 +346,4 @@ export function useGame() {
   }
   return context;
 }
+

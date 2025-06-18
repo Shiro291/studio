@@ -37,10 +37,13 @@ export function DiceRoller() {
     }, 75); // Slightly slower roll for better visual
   };
 
-  // Reset display when current player changes or game resets
+  // Reset display when current player changes or game resets, or interaction starts
   useEffect(() => {
     if (state.gameStatus === 'playing' && state.activeTileForInteraction === null) {
       setRolledValueDisplay(null);
+    }
+    if (state.activeTileForInteraction !== null) { // Clear display when interaction starts
+        setRolledValueDisplay(null);
     }
   }, [state.currentPlayerIndex, state.gameStatus, state.activeTileForInteraction]);
 
@@ -65,3 +68,4 @@ export function DiceRoller() {
     </div>
   );
 }
+
