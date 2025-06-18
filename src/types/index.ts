@@ -38,7 +38,7 @@ export interface Tile {
 }
 
 export type WinningCondition = 'firstToFinish' | 'highestScore';
-export type BoardLayoutType = 'grid' | 'linear-horizontal';
+export type BoardLayoutType = 'grid'; // Removed 'linear-horizontal'
 
 export interface BoardSettings {
   name: string;
@@ -50,6 +50,7 @@ export interface BoardSettings {
   numberOfPlayers: number; // 1-10
   winningCondition: WinningCondition;
   layout: BoardLayoutType;
+  boardBackgroundImage?: string; // Data URI for the board background
 }
 
 export interface BoardConfig {
@@ -86,4 +87,6 @@ export const DEFAULT_BOARD_SETTINGS: BoardSettings = {
   numberOfPlayers: 2,
   winningCondition: 'firstToFinish',
   layout: 'grid',
+  boardBackgroundImage: undefined,
 };
+

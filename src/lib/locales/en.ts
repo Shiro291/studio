@@ -16,11 +16,16 @@ export const en = {
   'sidebar.boardLayout': 'Board Layout',
   'sidebar.selectBoardLayout': 'Select board layout',
   'sidebar.layoutGrid': 'Grid (Wrapping)',
-  'sidebar.layoutLinearHorizontal': 'Linear (Horizontal)',
   'sidebar.numberOfTiles': 'Number of Tiles: {count}',
   'sidebar.punishmentMode': 'Punishment Mode',
   'sidebar.randomizeTilesOnLoad': 'Randomize Tiles (on Load)',
   
+  'sidebar.boardAppearance': 'Board Appearance',
+  'sidebar.boardBackgroundImage': 'Board Background Image',
+  'sidebar.boardBackgroundImageHelp': 'Upload an image to set as the board background.',
+  'sidebar.boardBackgroundPreview': 'Board Background Preview',
+  'sidebar.removeBoardBackgroundImage': 'Remove Board Background Image',
+
   'sidebar.playerSettings': 'Player Settings',
   'sidebar.numberOfPlayers': 'Number of Players: {count}',
   'sidebar.winningCondition': 'Winning Condition',

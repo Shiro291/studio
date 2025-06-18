@@ -19,12 +19,13 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGame } from '@/components/game/game-provider';
 import { MAX_TILES, MIN_TILES, MIN_PLAYERS, MAX_PLAYERS } from '@/lib/constants';
-import { Gem, Settings, Share2, Zap, Rows3, Palette, Info, Wand2, RefreshCwIcon, Users, Trophy, LayoutGrid, ArrowRightLeft } from 'lucide-react';
+import { Gem, Settings, Share2, Zap, Rows3, Palette, Info, Wand2, RefreshCwIcon, Users, Trophy, LayoutGrid, Image as ImageIcon, XCircle } from 'lucide-react';
 import type { BoardSettings, WinningCondition, BoardLayoutType } from '@/types';
-import React from 'react';
+import React, { useRef } from 'react';
 import { useLanguage } from '@/context/language-context';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import Image from 'next/image';
 
 
 export function AppSidebarContent() {
@@ -32,6 +33,7 @@ export function AppSidebarContent() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const boardSettings = state.boardConfig?.settings;
+  const boardBgInputRef = useRef<HTMLInputElement>(null);
 
   const handleSettingChange = <K extends keyof BoardSettings>(key: K, value: BoardSettings[K]) => {
     dispatch({ type: 'UPDATE_BOARD_SETTINGS', payload: { [key]: value } });
@@ -40,6 +42,28 @@ export function AppSidebarContent() {
   const handleSliderChange = (key: 'numberOfTiles' | 'diceSides' | 'numberOfPlayers') => (value: number[]) => {
      if (boardSettings && value[0] !== boardSettings[key]) {
       handleSettingChange(key, value[0]);
+    }
+  };
+
+  const handleBoardBackgroundImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUri = reader.result as string;
+        handleSettingChange('boardBackgroundImage', dataUri);
+      };
+      reader.readAsDataURL(file);
+    }
+    if (event.target) {
+      event.target.value = ''; // Reset file input
+    }
+  };
+
+  const removeBoardBackgroundImage = () => {
+    handleSettingChange('boardBackgroundImage', undefined);
+    if (boardBgInputRef.current) {
+      boardBgInputRef.current.value = '';
     }
   };
 
@@ -132,7 +156,7 @@ export function AppSidebarContent() {
                 <div>
                   <Label htmlFor="layout" className="text-sm font-medium">{t('sidebar.boardLayout')}</Label>
                    <Select
-                    value={boardSettings.layout}
+                    value={boardSettings.layout} // This will always be 'grid' for now
                     onValueChange={(value: BoardLayoutType) => handleSettingChange('layout', value)}
                   >
                     <SelectTrigger id="layout" className="mt-1">
@@ -143,11 +167,6 @@ export function AppSidebarContent() {
                         <div className="flex items-center gap-2">
                            <LayoutGrid size={14} /> {t('sidebar.layoutGrid')}
                         </div>
-                        </SelectItem>
-                      <SelectItem value="linear-horizontal">
-                         <div className="flex items-center gap-2">
-                           <ArrowRightLeft size={14} /> {t('sidebar.layoutLinearHorizontal')}
-                         </div>
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -184,6 +203,43 @@ export function AppSidebarContent() {
                 </div>
               </SidebarGroupContent>
             </SidebarGroup>
+
+            <SidebarSeparator />
+            
+            <SidebarGroup>
+              <SidebarGroupLabel className="flex items-center gap-2 font-headline">
+                <ImageIcon size={16} /> {t('sidebar.boardAppearance')}
+              </SidebarGroupLabel>
+              <SidebarGroupContent className="space-y-2">
+                 <div>
+                    <Label htmlFor="boardBgImage" className="text-sm font-medium">{t('sidebar.boardBackgroundImage')}</Label>
+                    {boardSettings.boardBackgroundImage && (
+                      <div className="mt-2 relative w-full aspect-video border rounded-md overflow-hidden">
+                        <Image src={boardSettings.boardBackgroundImage} alt={t('sidebar.boardBackgroundPreview')} layout="fill" objectFit="contain" unoptimized />
+                        <Button 
+                          variant="destructive" 
+                          size="icon" 
+                          className="absolute top-1 right-1 h-7 w-7 z-10"
+                          onClick={removeBoardBackgroundImage}
+                          aria-label={t('sidebar.removeBoardBackgroundImage')}
+                        >
+                          <XCircle className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                    <Input 
+                      id="boardBgImage" 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleBoardBackgroundImageChange}
+                      className="mt-1 text-xs"
+                      ref={boardBgInputRef}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">{t('sidebar.boardBackgroundImageHelp')}</p>
+                  </div>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
 
             <SidebarSeparator />
 

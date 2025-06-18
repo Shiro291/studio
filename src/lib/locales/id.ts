@@ -16,10 +16,15 @@ export const id = {
   'sidebar.boardLayout': 'Tata Letak Papan',
   'sidebar.selectBoardLayout': 'Pilih tata letak papan',
   'sidebar.layoutGrid': 'Kotak (Membungkus)',
-  'sidebar.layoutLinearHorizontal': 'Linear (Horizontal)',
   'sidebar.numberOfTiles': 'Jumlah Petak: {count}',
   'sidebar.punishmentMode': 'Mode Hukuman',
   'sidebar.randomizeTilesOnLoad': 'Acak Petak (saat Muat)',
+
+  'sidebar.boardAppearance': 'Tampilan Papan',
+  'sidebar.boardBackgroundImage': 'Gambar Latar Papan',
+  'sidebar.boardBackgroundImageHelp': 'Unggah gambar untuk dijadikan latar belakang papan.',
+  'sidebar.boardBackgroundPreview': 'Pratinjau Latar Papan',
+  'sidebar.removeBoardBackgroundImage': 'Hapus Gambar Latar Papan',
 
   'sidebar.playerSettings': 'Pengaturan Pemain',
   'sidebar.numberOfPlayers': 'Jumlah Pemain: {count}',

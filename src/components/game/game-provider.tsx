@@ -147,7 +147,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     
     const newBoardConfig: BoardConfig = {
       id: newBoardId,
-      settings: { ...DEFAULT_BOARD_SETTINGS }, // Includes default layout
+      settings: { ...DEFAULT_BOARD_SETTINGS }, // Includes default layout and boardBackgroundImage
       tiles: initialTiles,
     };
     dispatch({ type: 'SET_BOARD_CONFIG', payload: newBoardConfig });
@@ -162,7 +162,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         boardConfig.settings.numberOfTiles = Math.max(MIN_TILES, Math.min(MAX_TILES, boardConfig.settings.numberOfTiles || DEFAULT_BOARD_SETTINGS.numberOfTiles));
         boardConfig.settings.numberOfPlayers = Math.max(MIN_PLAYERS, Math.min(MAX_PLAYERS, boardConfig.settings.numberOfPlayers || DEFAULT_BOARD_SETTINGS.numberOfPlayers));
         boardConfig.settings.winningCondition = boardConfig.settings.winningCondition || DEFAULT_BOARD_SETTINGS.winningCondition;
-        boardConfig.settings.layout = boardConfig.settings.layout || DEFAULT_BOARD_SETTINGS.layout; // Ensure layout is set
+        boardConfig.settings.layout = boardConfig.settings.layout || DEFAULT_BOARD_SETTINGS.layout;
+        boardConfig.settings.boardBackgroundImage = boardConfig.settings.boardBackgroundImage || DEFAULT_BOARD_SETTINGS.boardBackgroundImage;
         
         dispatch({ type: 'SET_BOARD_CONFIG', payload: boardConfig });
       } else {

@@ -16,22 +16,26 @@ export function GameBoardDisplay({ boardConfig, onTileClick, activePlayerId, pla
   const { tiles, settings } = boardConfig;
   const numTiles = settings.numberOfTiles;
 
-  let displayCols: number;
-  let displayRows: number;
-
-  if (settings.layout === 'linear-horizontal') {
-    displayCols = numTiles;
-    displayRows = 1;
-  } else { // Default to 'grid'
-    displayCols = Math.max(1, Math.ceil(Math.sqrt(numTiles))); // Ensure at least 1 column
-    displayRows = Math.max(1, Math.ceil(numTiles / displayCols)); // Ensure at least 1 row
-  }
+  // Only grid layout is supported for now
+  const displayCols = Math.max(1, Math.ceil(Math.sqrt(numTiles)));
+  const displayRows = Math.max(1, Math.ceil(numTiles / displayCols));
   
-  const tileSize = "minmax(60px, 1fr)"; // Responsive tile size
-  const minDimension = 60; // Minimum size for a tile in pixels for minWidth/minHeight calc
+  const tileSize = "minmax(60px, 1fr)";
+  const minDimension = 60;
+
+  const boardBackgroundStyle: React.CSSProperties = {};
+  if (settings.boardBackgroundImage) {
+    boardBackgroundStyle.backgroundImage = `url(${settings.boardBackgroundImage})`;
+    boardBackgroundStyle.backgroundSize = 'cover'; // Or 'contain' or specific values
+    boardBackgroundStyle.backgroundPosition = 'center';
+    boardBackgroundStyle.backgroundRepeat = 'no-repeat';
+  }
 
   return (
-    <div className="w-full aspect-square max-w-2xl mx-auto bg-muted/30 p-2 rounded-lg shadow-inner overflow-hidden">
+    <div 
+      className="w-full aspect-square max-w-2xl mx-auto bg-muted/30 p-2 rounded-lg shadow-inner overflow-hidden"
+      style={boardBackgroundStyle}
+    >
       <ScrollArea className="w-full h-full whitespace-nowrap">
         <div
             className="grid gap-1.5 h-full"
