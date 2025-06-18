@@ -10,7 +10,7 @@
     "diceSides": 6,
     "numberOfPlayers": 2,
     "winningCondition": "firstToFinish",
-    "boardBackgroundImage": undefined,
+    "boardBackgroundImage": null,
     "epilepsySafeMode": false
   },
   "tiles": [
@@ -804,5 +804,3 @@
     }
   ]
 }
-
-    
