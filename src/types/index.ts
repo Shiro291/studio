@@ -38,12 +38,14 @@ export interface Tile {
 }
 
 export type WinningCondition = 'firstToFinish' | 'highestScore';
+export type PunishmentType = 'none' | 'revertMove' | 'moveBackFixed' | 'moveBackLevelBased';
 
 export interface BoardSettings {
   name: string;
   description?: string;
   numberOfTiles: number; // Max 100
-  punishmentMode: boolean; // Pawn doesn't move on wrong answer
+  punishmentType: PunishmentType; 
+  punishmentValue: number; // Used for 'moveBackFixed'
   randomizeTiles: boolean; // On load or new game, tile types/content could be randomized
   diceSides: number; // 1-12
   numberOfPlayers: number; // 1-10
@@ -83,7 +85,8 @@ export interface GameState {
 export const DEFAULT_BOARD_SETTINGS: BoardSettings = {
   name: 'My Awesome Board Game',
   numberOfTiles: 20,
-  punishmentMode: false,
+  punishmentType: 'none',
+  punishmentValue: 1,
   randomizeTiles: false,
   diceSides: 6,
   numberOfPlayers: 2,
@@ -97,6 +100,6 @@ export interface PersistedPlayState {
   currentPlayerIndex: number;
   diceRoll: number | null;
   gameStatus: GameStatus;
-  activeTileForInteraction: Tile | null; // Storing the full tile for simplicity, consider ID/position if size becomes an issue
+  activeTileForInteraction: Tile | null; 
   winner: Player | null;
 }

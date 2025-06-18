@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import type { Tile, TileConfigQuiz, TileConfigInfo, TileConfigReward, BoardSettings, QuizOption } from '@/types';
+import type { Tile, TileConfigQuiz, TileConfigInfo, TileConfigReward, BoardSettings, QuizOption, PunishmentType } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -11,12 +11,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
 import { useGame } from '@/components/game/game-provider';
 import { useLanguage } from '@/context/language-context';
-import { CheckCircle, XCircle, InfoIcon, GiftIcon, ChevronRight, HelpCircle } from 'lucide-react'; // Added HelpCircle
+import { CheckCircle, XCircle, InfoIcon, GiftIcon, ChevronRight, HelpCircle } from 'lucide-react';
+import { DIFFICULTY_POINTS } from '@/lib/constants';
 
 interface TileInteractionAreaProps {
   tile: Tile | null;
   boardSettings: BoardSettings;
-  isQuizCorrect?: boolean; // To show feedback after answering
+  isQuizCorrect?: boolean; 
 }
 
 export function TileInteractionArea({ tile, boardSettings, isQuizCorrect }: TileInteractionAreaProps) {
@@ -26,14 +27,9 @@ export function TileInteractionArea({ tile, boardSettings, isQuizCorrect }: Tile
   const [quizAttempted, setQuizAttempted] = useState(false);
 
   useEffect(() => {
-    // Reset local state when the tile changes OR interaction is fully over (gameStatus back to 'playing')
-    if (!tile || state.gameStatus === 'playing') {
+    if (!tile || state.gameStatus === 'playing' || (tile && tile.id !== state.activeTileForInteraction?.id)) {
       setSelectedQuizOptionId(undefined);
       setQuizAttempted(false);
-    }
-    // Specifically reset attempted state for a new quiz tile, even if interaction was pending for something else
-    if (tile?.type === 'quiz' && !state.activeTileForInteraction) { // Check if interaction for THIS tile is starting
-        setQuizAttempted(false);
     }
   }, [tile, state.gameStatus, state.activeTileForInteraction]);
 
@@ -41,13 +37,13 @@ export function TileInteractionArea({ tile, boardSettings, isQuizCorrect }: Tile
   const handleQuizSubmit = () => {
     if (selectedQuizOptionId) {
       dispatch({ type: 'ANSWER_QUIZ', payload: { selectedOptionId } });
-      setQuizAttempted(true);
+      setQuizAttempted(true); // This component now knows an attempt was made
     }
   };
 
   const handleAcknowledge = () => {
-    dispatch({ type: 'ACKNOWLEDGE_INTERACTION' }); // Acknowledge reward/info or quiz feedback
-    dispatch({ type: 'PROCEED_TO_NEXT_TURN' }); // Then proceed
+    dispatch({ type: 'ACKNOWLEDGE_INTERACTION' }); 
+    dispatch({ type: 'PROCEED_TO_NEXT_TURN' }); 
   };
   
   const renderImage = (src?: string, altKey?: string, hint?:string) => {
@@ -57,6 +53,25 @@ export function TileInteractionArea({ tile, boardSettings, isQuizCorrect }: Tile
         <Image src={src} alt={t(altKey || 'tileEditor.imagePreview')} layout="fill" objectFit="contain" unoptimized />
       </div>
     );
+  };
+
+  const getPunishmentDescription = (quizConfig: TileConfigQuiz) => {
+    if (!boardSettings || boardSettings.punishmentType === 'none') return null;
+
+    switch (boardSettings.punishmentType) {
+      case 'revertMove':
+        return t('playPage.punishment.revertMove');
+      case 'moveBackFixed':
+        return t('playPage.punishment.moveBackFixed', { count: boardSettings.punishmentValue });
+      case 'moveBackLevelBased':
+        let moveBackAmount = 0;
+        if (quizConfig.difficulty === 1) moveBackAmount = 1;
+        else if (quizConfig.difficulty === 2) moveBackAmount = 2;
+        else if (quizConfig.difficulty === 3) moveBackAmount = 3;
+        return t('playPage.punishment.moveBackLevelBased', { count: moveBackAmount });
+      default:
+        return null;
+    }
   };
 
 
@@ -73,7 +88,7 @@ export function TileInteractionArea({ tile, boardSettings, isQuizCorrect }: Tile
     );
   }
   
-  if (!tile || state.gameStatus === 'playing' || !state.activeTileForInteraction) { 
+  if (!tile || state.gameStatus === 'playing' || !state.activeTileForInteraction || tile.id !== state.activeTileForInteraction.id) { 
     return (
        <Card className="bg-muted/30 shadow-sm">
         <CardHeader>
@@ -113,7 +128,6 @@ export function TileInteractionArea({ tile, boardSettings, isQuizCorrect }: Tile
               </Button>
             </>
           ) : (
-            // Feedback after attempting quiz
             <div className="space-y-2 p-3 rounded-md text-center" style={{ backgroundColor: isQuizCorrect ? 'hsl(var(--muted))' : 'hsl(var(--destructive))'}}>
                 {isQuizCorrect ? (
                     <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
@@ -123,12 +137,12 @@ export function TileInteractionArea({ tile, boardSettings, isQuizCorrect }: Tile
                 <p className={`font-semibold ${isQuizCorrect ? 'text-green-700 dark:text-green-300' : 'text-destructive-foreground'}`}>
                 {isQuizCorrect ? t('playPage.correctAnswer') : t('playPage.wrongAnswer')}
                 </p>
-                {!isQuizCorrect && boardSettings.punishmentMode && (
-                    <p className="text-xs text-destructive-foreground/80">{t('playPage.punishmentModeActive')}</p>
-                )}
-                 <p className={`text-sm ${isQuizCorrect ? 'text-foreground' : 'text-destructive-foreground'}`}>
+                <p className={`text-sm ${isQuizCorrect ? 'text-foreground' : 'text-destructive-foreground'}`}>
                     {isQuizCorrect ? t('playPage.pointsAwarded', { points: config.points }) : t('playPage.noPoints')}
-                 </p>
+                </p>
+                {!isQuizCorrect && boardSettings.punishmentType !== 'none' && (
+                    <p className="text-xs text-destructive-foreground/80">{getPunishmentDescription(config)}</p>
+                )}
                 <Button onClick={handleAcknowledge} className="w-full mt-3" variant={isQuizCorrect ? 'default' : 'outline'}>
                     {t('playPage.nextTurn')} <ChevronRight className="ml-1 h-4 w-4"/>
                 </Button>
@@ -166,13 +180,17 @@ export function TileInteractionArea({ tile, boardSettings, isQuizCorrect }: Tile
       );
       break;
     }
-    default: // empty, start, finish (though finish should be handled by game end)
-      // This case should ideally not be reached if activeTileForInteraction is null for these.
-      // If it is reached, it means PROCEED_TO_NEXT_TURN should be called.
-      if (state.activeTileForInteraction) { // Should always be true here due to outer condition
-         setTimeout(() => dispatch({ type: 'PROCEED_TO_NEXT_TURN' }), 0); // Auto-proceed
-      }
-      interactionContent = <p className="text-sm text-muted-foreground">{t('playPage.landedOnEmpty', {type: tile.type})}</p>;
+     case 'start':
+     case 'empty':
+     case 'finish': // Finish tile interactions (like winning) are handled more globally by GameProvider
+        // Auto-proceed for these tiles if interaction somehow lands here
+        if (state.activeTileForInteraction && state.gameStatus === 'interaction_pending') {
+            setTimeout(() => dispatch({ type: 'PROCEED_TO_NEXT_TURN' }), 0);
+        }
+        interactionContent = <p className="text-sm text-muted-foreground">{t('playPage.landedOnEmpty', {type: t(`capitalize.${tile.type}` as any)})}</p>;
+        break;
+    default: 
+      interactionContent = <p className="text-sm text-muted-foreground">{t('playPage.landedOnEmpty', {type: t(`capitalize.${tile.type}` as any)})}</p>;
       break;
   }
 
@@ -195,4 +213,3 @@ export function TileInteractionArea({ tile, boardSettings, isQuizCorrect }: Tile
     </Card>
   );
 }
-

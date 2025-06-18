@@ -18,8 +18,8 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGame } from '@/components/game/game-provider';
 import { MAX_TILES, MIN_TILES, MIN_PLAYERS, MAX_PLAYERS } from '@/lib/constants';
-import { Settings, Palette, Info, Wand2, RefreshCwIcon, Users, Image as ImageIcon, XCircle, Link as LinkIcon, Download, Upload } from 'lucide-react';
-import type { BoardSettings, WinningCondition } from '@/types';
+import { Settings, Palette, Info, Wand2, RefreshCwIcon, Users, Image as ImageIcon, XCircle, Link as LinkIcon, Download, Upload, MinusCircle, ShieldAlert, RotateCcw } from 'lucide-react';
+import type { BoardSettings, WinningCondition, PunishmentType } from '@/types';
 import React, { useRef, useState } from 'react';
 import { useLanguage } from '@/context/language-context';
 import { useToast } from '@/hooks/use-toast';
@@ -41,7 +41,7 @@ export function AppSidebarContent() {
     dispatch({ type: 'UPDATE_BOARD_SETTINGS', payload: { [key]: value } });
   };
   
-  const handleSliderChange = (key: 'numberOfTiles' | 'diceSides' | 'numberOfPlayers') => (value: number[]) => {
+  const handleSliderChange = (key: 'numberOfTiles' | 'diceSides' | 'numberOfPlayers' | 'punishmentValue') => (value: number[]) => {
      if (boardSettings && value[0] !== boardSettings[key]) {
       handleSettingChange(key, value[0]);
     }
@@ -240,14 +240,42 @@ export function AppSidebarContent() {
                     className="mt-2"
                   />
                 </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="punishmentMode" className="text-sm font-medium">{t('sidebar.punishmentMode')}</Label>
-                  <Switch
-                    id="punishmentMode"
-                    checked={boardSettings.punishmentMode}
-                    onCheckedChange={(checked) => handleSettingChange('punishmentMode', checked)}
-                  />
+                
+                <div>
+                  <Label htmlFor="punishmentType" className="text-sm font-medium">{t('sidebar.punishmentType.label')}</Label>
+                  <Select
+                    value={boardSettings.punishmentType}
+                    onValueChange={(value: PunishmentType) => handleSettingChange('punishmentType', value)}
+                  >
+                    <SelectTrigger id="punishmentType" className="mt-1">
+                      <SelectValue placeholder={t('sidebar.punishmentType.selectPlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{t('sidebar.punishmentType.none')}</SelectItem>
+                      <SelectItem value="revertMove">{t('sidebar.punishmentType.revertMove')}</SelectItem>
+                      <SelectItem value="moveBackFixed">{t('sidebar.punishmentType.moveBackFixed')}</SelectItem>
+                      <SelectItem value="moveBackLevelBased">{t('sidebar.punishmentType.moveBackLevelBased')}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+
+                {boardSettings.punishmentType === 'moveBackFixed' && (
+                  <div>
+                    <Label htmlFor="punishmentValue" className="text-sm font-medium">
+                      {t('sidebar.punishmentValue', { count: boardSettings.punishmentValue })}
+                    </Label>
+                    <Slider
+                      id="punishmentValue"
+                      min={1}
+                      max={5} // Max 5 tiles back for fixed punishment, can be adjusted
+                      step={1}
+                      value={[boardSettings.punishmentValue]}
+                      onValueChange={handleSliderChange('punishmentValue')}
+                      className="mt-2"
+                    />
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between">
                   <Label htmlFor="randomizeTilesOnLoad" className="text-sm font-medium">{t('sidebar.randomizeTilesOnLoad')}</Label>
                   <Switch
