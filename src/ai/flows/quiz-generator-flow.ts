@@ -1,7 +1,7 @@
 
 'use server';
 /**
- * @fileOverview An AI flow to generate quiz questions.
+ * @fileOverview An AI flow to generate quiz questions, potentially with images for options.
  *
  * - generateQuizQuestion - A function that handles quiz question generation.
  * - GenerateQuizInput - The input type for the generateQuizQuestion function.
@@ -18,16 +18,34 @@ const GenerateQuizInputSchema = z.object({
 });
 export type GenerateQuizInput = z.infer<typeof GenerateQuizInputSchema>;
 
-const QuizOptionSchema = z.object({
+// Schema for the final output options (as expected by the client)
+const FinalQuizOptionSchema = z.object({
     id: z.string().default(() => nanoid()),
     text: z.string().describe('The text of the answer option.'),
     isCorrect: z.boolean().describe('Whether this option is the correct answer.'),
-    image: z.string().optional().describe('An optional image URL for the option.'),
+    image: z.string().optional().describe("A data URI of a generated image for this option, if applicable. Expected format: 'data:image/png;base64,<encoded_data>'."),
 });
 
+// Schema for the output structure of the main text-generating prompt
+// This includes a description for image generation if an image is desired for an option.
+const PromptOutputOptionSchema = z.object({
+    id: z.string().default(() => nanoid()),
+    text: z.string().describe('The text of the answer option.'),
+    isCorrect: z.boolean().describe('Whether this option is the correct answer.'),
+    imageDescriptionForGeneration: z.string().optional().describe("If an image would be beneficial for this option, provide a concise text description (max 15 words) suitable for an image generation model. Example: 'A detailed diagram of a plant cell'. If no image is needed, omit this field."),
+});
+
+const PromptOutputSchema = z.object({
+  question: z.string().describe('The generated quiz question.'),
+  options: z.array(PromptOutputOptionSchema).describe('An array of multiple-choice options, potentially with image descriptions.'),
+  suggestedDifficulty: z.enum(['1', '2', '3']).describe('The suggested difficulty level (1, 2, or 3).'),
+});
+
+
+// Schema for the final output of the flow (as expected by the client)
 const GenerateQuizOutputSchema = z.object({
   question: z.string().describe('The generated quiz question.'),
-  options: z.array(QuizOptionSchema).describe('An array of multiple-choice options.'),
+  options: z.array(FinalQuizOptionSchema).describe('An array of multiple-choice options, potentially with generated images.'),
   suggestedDifficulty: z.enum(['1', '2', '3']).describe('The suggested difficulty level (1, 2, or 3).'),
 });
 export type GenerateQuizOutput = z.infer<typeof GenerateQuizOutputSchema>;
@@ -37,10 +55,10 @@ export async function generateQuizQuestion(input: GenerateQuizInput): Promise<Ge
   return quizGeneratorFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'quizGeneratorPrompt',
+const quizTextPrompt = ai.definePrompt({
+  name: 'quizGeneratorTextPrompt',
   input: {schema: GenerateQuizInputSchema},
-  output: {schema: GenerateQuizOutputSchema},
+  output: {schema: PromptOutputSchema}, // Uses the intermediate schema with imageDescriptionForGeneration
   prompt: `Based on the following source text, generate one multiple-choice quiz question.
 
 Source Text:
@@ -48,10 +66,14 @@ Source Text:
 
 The question should have {{{numberOfOptions}}} answer options.
 One option must be clearly correct, and the others should be plausible but incorrect distractors.
-The output should include the question, the array of options (each with 'text' and 'isCorrect' fields), and a suggestedDifficulty ('1' for easy, '2' for medium, '3' for hard).
+
+For each answer option, decide if an image would be significantly helpful to understanding or visualizing the option.
+If an image IS helpful for an option, provide a concise text description for that image in a field named 'imageDescriptionForGeneration'. This description should be suitable for an image generation model and be a maximum of 15 words (e.g., "A diagram of a plant cell with labels", "A photo of a red delicious apple").
+If an image IS NOT helpful or not applicable for an option, omit the 'imageDescriptionForGeneration' field for that option.
+
+The output should include the question, the array of options (each with 'text', 'isCorrect', and optionally 'imageDescriptionForGeneration' fields), and a suggestedDifficulty ('1' for easy, '2' for medium, '3' for hard).
 
 Ensure exactly one option has isCorrect set to true.
-Do not include images in the options.
 Present the difficulty as a string: "1", "2", or "3".
 `,
 });
@@ -60,19 +82,48 @@ const quizGeneratorFlow = ai.defineFlow(
   {
     name: 'quizGeneratorFlow',
     inputSchema: GenerateQuizInputSchema,
-    outputSchema: GenerateQuizOutputSchema,
+    outputSchema: GenerateQuizOutputSchema, // Flow's final output uses FinalQuizOptionSchema
   },
   async (input) => {
-    const {output} = await prompt(input);
-    if (!output) {
-      throw new Error('AI failed to generate quiz content.');
+    // 1. Generate text content for the quiz, including image descriptions
+    const {output: textOutput} = await quizTextPrompt(input);
+    if (!textOutput) {
+      throw new Error('AI failed to generate quiz text content.');
     }
-    // Ensure options have unique IDs if not provided by LLM, and ensure one is correct
-    const processedOptions = output.options.map(opt => ({ ...opt, id: opt.id || nanoid() }));
+
+    // 2. Process options: generate images if descriptions are provided
+    const processedOptions: GenerateQuizOutput['options'] = [];
+    for (const promptOption of textOutput.options) {
+      let imageUrl: string | undefined = undefined;
+      if (promptOption.imageDescriptionForGeneration && promptOption.imageDescriptionForGeneration.trim() !== "") {
+        try {
+          console.log(`Generating image for: ${promptOption.imageDescriptionForGeneration}`);
+          const {media} = await ai.generate({
+            model: 'googleai/gemini-2.0-flash-exp',
+            prompt: promptOption.imageDescriptionForGeneration,
+            config: {
+              responseModalities: ['TEXT', 'IMAGE'],
+            },
+          });
+          imageUrl = media?.url;
+          console.log(`Image generated: ${imageUrl ? 'Success' : 'Failed or no media URL'}`);
+        } catch (imgError) {
+          console.error(`Failed to generate image for option '${promptOption.text}':`, imgError);
+          // Continue without image for this option
+        }
+      }
+      processedOptions.push({
+        id: promptOption.id || nanoid(),
+        text: promptOption.text,
+        isCorrect: promptOption.isCorrect,
+        image: imageUrl,
+      });
+    }
+
+    // Ensure options have unique IDs and at least one correct answer logic (fallback)
     if (!processedOptions.some(opt => opt.isCorrect) && processedOptions.length > 0) {
-        processedOptions[0].isCorrect = true; // Fallback: mark first as correct if none are
+        processedOptions[0].isCorrect = true;
     } else if (processedOptions.filter(opt => opt.isCorrect).length > 1) {
-        // Fallback: if multiple correct, keep only the first one
         let foundCorrect = false;
         for (const opt of processedOptions) {
             if (opt.isCorrect) {
@@ -81,11 +132,17 @@ const quizGeneratorFlow = ai.defineFlow(
             }
         }
     }
+     // If still no correct option after processing (e.g., all were marked false by LLM and then image gen failed for the one auto-marked true),
+     // ensure the first one is correct.
+    if (!processedOptions.some(opt => opt.isCorrect) && processedOptions.length > 0) {
+        processedOptions[0].isCorrect = true;
+    }
+
 
     return {
-        ...output,
+        question: textOutput.question,
         options: processedOptions,
-        suggestedDifficulty: output.suggestedDifficulty || "1", // Ensure difficulty is always a string "1", "2", or "3"
+        suggestedDifficulty: textOutput.suggestedDifficulty || "1",
     };
   }
 );
