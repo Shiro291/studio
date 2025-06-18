@@ -27,7 +27,7 @@ export interface TileConfigReward {
 }
 
 export interface Tile {
-  id: string;
+  id:string;
   type: TileType;
   position: number; // 0-indexed
   config?: TileConfigQuiz | TileConfigInfo | TileConfigReward; // Specific config based on type
@@ -38,6 +38,7 @@ export interface Tile {
 }
 
 export type WinningCondition = 'firstToFinish' | 'highestScore';
+export type BoardLayoutType = 'grid' | 'linear-horizontal';
 
 export interface BoardSettings {
   name: string;
@@ -48,6 +49,7 @@ export interface BoardSettings {
   diceSides: number; // 1-12
   numberOfPlayers: number; // 1-10
   winningCondition: WinningCondition;
+  layout: BoardLayoutType;
 }
 
 export interface BoardConfig {
@@ -83,5 +85,5 @@ export const DEFAULT_BOARD_SETTINGS: BoardSettings = {
   diceSides: 6,
   numberOfPlayers: 2,
   winningCondition: 'firstToFinish',
+  layout: 'grid',
 };
-

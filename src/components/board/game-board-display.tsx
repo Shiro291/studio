@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { BoardConfig, Tile } from '@/types';
@@ -8,22 +9,26 @@ interface GameBoardDisplayProps {
   boardConfig: BoardConfig;
   onTileClick?: (tile: Tile) => void; // For designer interaction
   activePlayerId?: string;
-  players?: { id: string; position: number; color: string }[];
+  players?: { id: string; position: number; color: string; name?: string }[];
 }
 
 export function GameBoardDisplay({ boardConfig, onTileClick, activePlayerId, players = [] }: GameBoardDisplayProps) {
   const { tiles, settings } = boardConfig;
   const numTiles = settings.numberOfTiles;
 
-  // Determine grid layout - simple linear for now, can be more complex (e.g. snake, spiral)
-  // For a linear board, a horizontal scroll might be best for many tiles.
-  // Let's try to make it wrap if possible, aiming for a squarish layout.
-  const cols = Math.ceil(Math.sqrt(numTiles));
-  const rows = Math.ceil(numTiles / cols);
+  let displayCols: number;
+  let displayRows: number;
+
+  if (settings.layout === 'linear-horizontal') {
+    displayCols = numTiles;
+    displayRows = 1;
+  } else { // Default to 'grid'
+    displayCols = Math.max(1, Math.ceil(Math.sqrt(numTiles))); // Ensure at least 1 column
+    displayRows = Math.max(1, Math.ceil(numTiles / displayCols)); // Ensure at least 1 row
+  }
   
-  // Calculate tile size based on container width/height for responsiveness
-  // This is a simplified approach. For perfect squares and responsiveness, more complex CSS or JS is needed.
   const tileSize = "minmax(60px, 1fr)"; // Responsive tile size
+  const minDimension = 60; // Minimum size for a tile in pixels for minWidth/minHeight calc
 
   return (
     <div className="w-full aspect-square max-w-2xl mx-auto bg-muted/30 p-2 rounded-lg shadow-inner overflow-hidden">
@@ -31,11 +36,10 @@ export function GameBoardDisplay({ boardConfig, onTileClick, activePlayerId, pla
         <div
             className="grid gap-1.5 h-full"
             style={{
-                gridTemplateColumns: `repeat(${cols}, ${tileSize})`,
-                gridTemplateRows: `repeat(${rows}, ${tileSize})`,
-                // Ensure the grid itself can be smaller than the scroll area if few tiles
-                minWidth: `${cols * 60}px`, 
-                minHeight: `${rows * 60}px`,
+                gridTemplateColumns: `repeat(${displayCols}, ${tileSize})`,
+                gridTemplateRows: `repeat(${displayRows}, ${tileSize})`,
+                minWidth: `${displayCols * minDimension}px`, 
+                minHeight: `${displayRows * minDimension}px`,
             }}
             role="grid"
             aria-label="Game Board"

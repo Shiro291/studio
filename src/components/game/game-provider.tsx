@@ -60,6 +60,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'SET_BOARD_CONFIG':
       const boardConfig = action.payload;
+      // Ensure layout is set, defaulting if undefined from loaded data
+      boardConfig.settings.layout = boardConfig.settings.layout || DEFAULT_BOARD_SETTINGS.layout;
       const players = generatePlayers(boardConfig.settings.numberOfPlayers);
       return { ...state, boardConfig, players, isLoading: false, error: null, gameStatus: 'setup' };
     case 'UPDATE_BOARD_SETTINGS':
@@ -145,7 +147,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     
     const newBoardConfig: BoardConfig = {
       id: newBoardId,
-      settings: { ...DEFAULT_BOARD_SETTINGS },
+      settings: { ...DEFAULT_BOARD_SETTINGS }, // Includes default layout
       tiles: initialTiles,
     };
     dispatch({ type: 'SET_BOARD_CONFIG', payload: newBoardConfig });
@@ -160,7 +162,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         boardConfig.settings.numberOfTiles = Math.max(MIN_TILES, Math.min(MAX_TILES, boardConfig.settings.numberOfTiles || DEFAULT_BOARD_SETTINGS.numberOfTiles));
         boardConfig.settings.numberOfPlayers = Math.max(MIN_PLAYERS, Math.min(MAX_PLAYERS, boardConfig.settings.numberOfPlayers || DEFAULT_BOARD_SETTINGS.numberOfPlayers));
         boardConfig.settings.winningCondition = boardConfig.settings.winningCondition || DEFAULT_BOARD_SETTINGS.winningCondition;
-
+        boardConfig.settings.layout = boardConfig.settings.layout || DEFAULT_BOARD_SETTINGS.layout; // Ensure layout is set
+        
         dispatch({ type: 'SET_BOARD_CONFIG', payload: boardConfig });
       } else {
         throw new Error("Invalid board data structure.");
