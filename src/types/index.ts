@@ -65,12 +65,14 @@ export interface Player {
   score: number;
 }
 
+export type GameStatus = 'setup' | 'playing' | 'interaction_pending' | 'finished';
+
 export interface GameState {
   boardConfig: BoardConfig | null;
   players: Player[];
   currentPlayerIndex: number;
   diceRoll: number | null; // Stores the value of the last dice roll
-  gameStatus: 'setup' | 'playing' | 'interaction_pending' | 'finished';
+  gameStatus: GameStatus;
   isLoading: boolean;
   error: string | null;
   activeTileForInteraction: Tile | null; // Tile current player landed on and needs to interact with
@@ -88,3 +90,13 @@ export const DEFAULT_BOARD_SETTINGS: BoardSettings = {
   winningCondition: 'firstToFinish',
   boardBackgroundImage: undefined,
 };
+
+// For persisting play state in localStorage
+export interface PersistedPlayState {
+  players: Player[];
+  currentPlayerIndex: number;
+  diceRoll: number | null;
+  gameStatus: GameStatus;
+  activeTileForInteraction: Tile | null; // Storing the full tile for simplicity, consider ID/position if size becomes an issue
+  winner: Player | null;
+}
