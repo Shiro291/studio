@@ -1,0 +1,808 @@
+
+{
+  "id": "board-energy-grade4-12345",
+  "settings": {
+    "name": "Energy Conversion Adventure (Grade 4)",
+    "numberOfTiles": 45,
+    "punishmentType": "none",
+    "punishmentValue": 1,
+    "randomizeTiles": true,
+    "diceSides": 6,
+    "numberOfPlayers": 2,
+    "winningCondition": "firstToFinish",
+    "boardBackgroundImage": undefined,
+    "epilepsySafeMode": false
+  },
+  "tiles": [
+    {
+      "id": "tile-start-0",
+      "type": "start",
+      "position": 0,
+      "ui": {
+        "color": "#4CAF50",
+        "icon": "🏁"
+      }
+    },
+    {
+      "id": "tile-quiz-1",
+      "type": "quiz",
+      "position": 1,
+      "config": {
+        "question": "Which of these is a way the sun's energy helps plants grow?",
+        "questionImage": "https://placehold.co/300x200.png",
+        "options": [
+          { "id": "opt-q1-1", "text": "Photosynthesis", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q1-2", "text": "By making wind", "isCorrect": false },
+          { "id": "opt-q1-3", "text": "By cooling them down", "isCorrect": false }
+        ],
+        "difficulty": 1,
+        "points": 5
+      },
+      "ui": {
+        "icon": "☀️",
+        "color": "#FFD6A5"
+      },
+      "data-ai-hint": "sun plant"
+    },
+    {
+      "id": "tile-info-2",
+      "type": "info",
+      "position": 2,
+      "config": {
+        "message": "Did you know? Wind is moving air, and it has kinetic energy (energy of motion)!",
+        "image": "https://placehold.co/300x200.png"
+      },
+      "ui": {
+        "icon": "🌬️",
+        "color": "#9BF6FF"
+      },
+      "data-ai-hint": "wind energy"
+    },
+    {
+      "id": "tile-reward-3",
+      "type": "reward",
+      "position": 3,
+      "config": {
+        "message": "Energy Expert! You remembered that food gives us energy. +5 points!",
+        "points": 5
+      },
+      "ui": {
+        "icon": "🍎",
+        "color": "#FFADAD"
+      }
+    },
+    {
+      "id": "tile-quiz-4",
+      "type": "quiz",
+      "position": 4,
+      "config": {
+        "question": "What form of energy does a ringing bell produce?",
+        "options": [
+          { "id": "opt-q2-1", "text": "Light energy", "isCorrect": false },
+          { "id": "opt-q2-2", "text": "Sound energy", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q2-3", "text": "Heat energy", "isCorrect": false },
+          { "id": "opt-q2-4", "text": "Chemical energy", "isCorrect": false }
+        ],
+        "difficulty": 1,
+        "points": 5
+      },
+      "ui": {
+        "icon": "🔔",
+        "color": "#CAFFBF"
+      },
+      "data-ai-hint": "sound bell"
+    },
+    {
+      "id": "tile-info-5",
+      "type": "info",
+      "position": 5,
+      "config": {
+        "message": "A battery stores chemical energy, which can be converted into electrical energy to power your toys!"
+      },
+      "ui": {
+        "icon": "🔋",
+        "color": "#A0C4FF"
+      }
+    },
+    {
+      "id": "tile-quiz-6",
+      "type": "quiz",
+      "position": 6,
+      "config": {
+        "question": "When you rub your hands together quickly, what type of energy is mainly produced?",
+        "options": [
+          { "id": "opt-q3-1", "text": "Light energy", "isCorrect": false },
+          { "id": "opt-q3-2", "text": "Heat energy (thermal energy)", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q3-3", "text": "Sound energy", "isCorrect": false }
+        ],
+        "difficulty": 2,
+        "points": 10
+      },
+      "ui": {
+        "icon": "🔥",
+        "color": "#BDB2FF"
+      },
+      "data-ai-hint": "heat hands"
+    },
+    {
+      "id": "tile-reward-7",
+      "type": "reward",
+      "position": 7,
+      "config": {
+        "message": "Bright idea! You know how a light bulb works. +10 points!",
+        "points": 10
+      },
+      "ui": {
+        "icon": "💡",
+        "color": "#FFC6FF"
+      }
+    },
+    {
+      "id": "tile-info-8",
+      "type": "info",
+      "position": 8,
+      "config": {
+        "message": "Fossil fuels like coal and oil are non-renewable energy sources. This means they can run out!",
+        "image": "https://placehold.co/300x200.png"
+      },
+      "ui": {
+        "icon": "🏭",
+        "color": "#FFB3BA"
+      },
+      "data-ai-hint": "fossil fuel"
+    },
+    {
+      "id": "tile-quiz-9",
+      "type": "quiz",
+      "position": 9,
+      "config": {
+        "question": "Which of these is a renewable energy source?",
+        "questionImage": "https://placehold.co/300x200.png",
+        "options": [
+          { "id": "opt-q4-1", "text": "Coal", "isCorrect": false },
+          { "id": "opt-q4-2", "text": "Natural Gas", "isCorrect": false },
+          { "id": "opt-q4-3", "text": "Wind power", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q4-4", "text": "Oil", "isCorrect": false }
+        ],
+        "difficulty": 2,
+        "points": 10
+      },
+      "ui": {
+        "icon": "💨",
+        "color": "#FFDFBA"
+      },
+      "data-ai-hint": "renewable wind"
+    },
+    {
+      "id": "tile-info-10",
+      "type": "info",
+      "position": 10,
+      "config": {
+        "message": "Turning off lights when you leave a room helps save electrical energy!"
+      },
+      "ui": {
+        "icon": "🔌",
+        "color": "#FFFFBA"
+      }
+    },
+    {
+      "id": "tile-quiz-11",
+      "type": "quiz",
+      "position": 11,
+      "config": {
+        "question": "What energy conversion happens in a solar panel?",
+        "options": [
+          { "id": "opt-q5-1", "text": "Electrical to Light", "isCorrect": false },
+          { "id": "opt-q5-2", "text": "Light to Electrical", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q5-3", "text": "Heat to Light", "isCorrect": false }
+        ],
+        "difficulty": 3,
+        "points": 15
+      },
+      "ui": {
+        "icon": "☀️",
+        "color": "#BAFFC9"
+      },
+      "data-ai-hint": "solar panel"
+    },
+    {
+      "id": "tile-reward-12",
+      "type": "reward",
+      "position": 12,
+      "config": {
+        "message": "Super Saver! You're good at saving energy. +5 points.",
+        "points": 5
+      },
+      "ui": {
+        "icon": "♻️",
+        "color": "#BAE1FF"
+      }
+    },
+    {
+      "id": "tile-info-13",
+      "type": "info",
+      "position": 13,
+      "config": {
+        "message": "Energy cannot be created or destroyed, only changed from one form to another. This is called the law of conservation of energy.",
+        "image": "https://placehold.co/300x200.png"
+      },
+      "ui": {
+        "icon": "📜",
+        "color": "#E0BBE4"
+      },
+      "data-ai-hint": "science law"
+    },
+    {
+      "id": "tile-quiz-14",
+      "type": "quiz",
+      "position": 14,
+      "config": {
+        "question": "A windmill converts wind energy into mainly what other form of energy?",
+        "options": [
+          { "id": "opt-q6-1", "text": "Sound energy", "isCorrect": false },
+          { "id": "opt-q6-2", "text": "Electrical energy", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q6-3", "text": "Chemical energy", "isCorrect": false },
+          { "id": "opt-q6-4", "text": "Light energy", "isCorrect": false }
+        ],
+        "difficulty": 2,
+        "points": 10
+      },
+      "ui": {
+        "icon": "⚙️",
+        "color": "#FFADAD"
+      },
+      "data-ai-hint": "windmill electricity"
+    },
+    {
+      "id": "tile-info-15",
+      "type": "info",
+      "position": 15,
+      "config": {
+        "message": "Food contains chemical energy that our bodies convert into energy for moving, thinking, and growing."
+      },
+      "ui": {
+        "icon": "🥕",
+        "color": "#FFD6A5"
+      }
+    },
+    {
+      "id": "tile-quiz-16",
+      "type": "quiz",
+      "position": 16,
+      "config": {
+        "question": "Which of these is NOT a form of energy?",
+        "options": [
+          { "id": "opt-q7-1", "text": "Heat", "isCorrect": false },
+          { "id": "opt-q7-2", "text": "Sound", "isCorrect": false },
+          { "id": "opt-q7-3", "text": "Water", "isCorrect": true },
+          { "id": "opt-q7-4", "text": "Light", "isCorrect": false }
+        ],
+        "difficulty": 1,
+        "points": 5
+      },
+      "ui": {
+        "icon": "🤔",
+        "color": "#FDFFB6"
+      }
+    },
+    {
+      "id": "tile-reward-17",
+      "type": "reward",
+      "position": 17,
+      "config": {
+        "message": "Hydro Power! You know water can generate energy! +10 points!",
+        "points": 10
+      },
+      "ui": {
+        "icon": "💧",
+        "color": "#CAFFBF"
+      }
+    },
+    {
+      "id": "tile-info-18",
+      "type": "info",
+      "position": 18,
+      "config": {
+        "message": "Hydroelectric power plants use the energy of moving water to generate electricity.",
+        "image": "https://placehold.co/300x200.png"
+      },
+      "ui": {
+        "icon": "🌊",
+        "color": "#9BF6FF"
+      },
+      "data-ai-hint": "water dam"
+    },
+    {
+      "id": "tile-quiz-19",
+      "type": "quiz",
+      "position": 19,
+      "config": {
+        "question": "When you eat an apple, what kind of energy are you taking in?",
+        "options": [
+          { "id": "opt-q8-1", "text": "Electrical energy", "isCorrect": false },
+          { "id": "opt-q8-2", "text": "Chemical energy", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q8-3", "text": "Mechanical energy", "isCorrect": false }
+        ],
+        "difficulty": 2,
+        "points": 10
+      },
+      "ui": {
+        "icon": "🍎",
+        "color": "#A0C4FF"
+      },
+      "data-ai-hint": "food chemical"
+    },
+    {
+      "id": "tile-info-20",
+      "type": "info",
+      "position": 20,
+      "config": {
+        "message": "Geothermal energy comes from the heat deep inside the Earth."
+      },
+      "ui": {
+        "icon": "🌋",
+        "color": "#BDB2FF"
+      }
+    },
+    {
+      "id": "tile-quiz-21",
+      "type": "quiz",
+      "position": 21,
+      "config": {
+        "question": "What is the main energy source for planet Earth?",
+        "options": [
+          { "id": "opt-q9-1", "text": "The Moon", "isCorrect": false },
+          { "id": "opt-q9-2", "text": "Fossil Fuels", "isCorrect": false },
+          { "id": "opt-q9-3", "text": "The Sun", "isCorrect": true, "image": "https://placehold.co/150x100.png" }
+        ],
+        "difficulty": 1,
+        "points": 5
+      },
+      "ui": {
+        "icon": "🌍",
+        "color": "#FFC6FF"
+      },
+      "data-ai-hint": "earth sun"
+    },
+    {
+      "id": "tile-reward-22",
+      "type": "reward",
+      "position": 22,
+      "config": {
+        "message": "You're on fire! (Metaphorically). Great energy knowledge! +15 points",
+        "points": 15
+      },
+      "ui": {
+        "icon": "🌟",
+        "color": "#FFB3BA"
+      }
+    },
+    {
+      "id": "tile-info-23",
+      "type": "info",
+      "position": 23,
+      "config": {
+        "message": "Sound travels in waves. These waves carry sound energy.",
+        "image": "https://placehold.co/300x200.png"
+      },
+      "ui": {
+        "icon": "🔊",
+        "color": "#FFDFBA"
+      },
+      "data-ai-hint": "sound wave"
+    },
+    {
+      "id": "tile-quiz-24",
+      "type": "quiz",
+      "position": 24,
+      "config": {
+        "question": "A toaster converts electrical energy into mostly...?",
+        "options": [
+          { "id": "opt-q10-1", "text": "Sound energy", "isCorrect": false },
+          { "id": "opt-q10-2", "text": "Light energy", "isCorrect": false },
+          { "id": "opt-q10-3", "text": "Heat energy", "isCorrect": true, "image": "https://placehold.co/150x100.png" }
+        ],
+        "difficulty": 1,
+        "points": 5
+      },
+      "ui": {
+        "icon": "🍞",
+        "color": "#FFFFBA"
+      },
+      "data-ai-hint": "toaster heat"
+    },
+    {
+      "id": "tile-quiz-25",
+      "type": "quiz",
+      "position": 25,
+      "config": {
+        "question": "Energy from the sun is called:",
+        "options": [
+          { "id": "opt-q11-1", "text": "Lunar energy", "isCorrect": false },
+          { "id": "opt-q11-2", "text": "Solar energy", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q11-3", "text": "Geo energy", "isCorrect": false }
+        ],
+        "difficulty": 1,
+        "points": 5
+      },
+      "ui": {
+        "icon": "☀️",
+        "color": "#BAFFC9"
+      },
+      "data-ai-hint": "solar definition"
+    },
+    {
+      "id": "tile-quiz-26",
+      "type": "quiz",
+      "position": 26,
+      "config": {
+        "question": "Which item uses electrical energy to produce light and heat?",
+        "options": [
+          { "id": "opt-q12-1", "text": "A bicycle", "isCorrect": false },
+          { "id": "opt-q12-2", "text": "A light bulb", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q12-3", "text": "A book", "isCorrect": false }
+        ],
+        "difficulty": 1,
+        "points": 5
+      },
+      "ui": {
+        "icon": "💡",
+        "color": "#BAE1FF"
+      },
+      "data-ai-hint": "lightbulb energy"
+    },
+    {
+      "id": "tile-quiz-27",
+      "type": "quiz",
+      "position": 27,
+      "config": {
+        "question": "What is 'kinetic energy'?",
+        "options": [
+          { "id": "opt-q13-1", "text": "Stored energy", "isCorrect": false },
+          { "id": "opt-q13-2", "text": "Energy of motion", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q13-3", "text": "Energy from the sun", "isCorrect": false }
+        ],
+        "difficulty": 2,
+        "points": 10
+      },
+      "ui": {
+        "icon": "🏃",
+        "color": "#E0BBE4"
+      },
+      "data-ai-hint": "kinetic motion"
+    },
+    {
+      "id": "tile-quiz-28",
+      "type": "quiz",
+      "position": 28,
+      "config": {
+        "question": "What is 'potential energy'?",
+        "options": [
+          { "id": "opt-q14-1", "text": "Energy of heat", "isCorrect": false },
+          { "id": "opt-q14-2", "text": "Energy of sound", "isCorrect": false },
+          { "id": "opt-q14-3", "text": "Stored energy", "isCorrect": true, "image": "https://placehold.co/150x100.png" }
+        ],
+        "difficulty": 2,
+        "points": 10
+      },
+      "ui": {
+        "icon": "🔋",
+        "color": "#FFADAD"
+      },
+      "data-ai-hint": "potential stored"
+    },
+    {
+      "id": "tile-quiz-29",
+      "type": "quiz",
+      "position": 29,
+      "config": {
+        "question": "A stretched rubber band has what kind of energy?",
+        "options": [
+          { "id": "opt-q15-1", "text": "Kinetic energy", "isCorrect": false },
+          { "id": "opt-q15-2", "text": "Potential energy", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q15-3", "text": "Sound energy", "isCorrect": false }
+        ],
+        "difficulty": 2,
+        "points": 10
+      },
+      "ui": {
+        "icon": "🎯",
+        "color": "#FFD6A5"
+      },
+      "data-ai-hint": "rubberband potential"
+    },
+     {
+      "id": "tile-quiz-30",
+      "type": "quiz",
+      "position": 30,
+      "config": {
+        "question": "Burning wood is an example of converting chemical energy into...?",
+        "questionImage": "https://placehold.co/300x200.png",
+        "options": [
+          { "id": "opt-q16-1", "text": "Electrical and Sound energy", "isCorrect": false },
+          { "id": "opt-q16-2", "text": "Heat and Light energy", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q16-3", "text": "Mechanical energy", "isCorrect": false }
+        ],
+        "difficulty": 3,
+        "points": 15
+      },
+      "ui": {
+        "icon": "🪵",
+        "color": "#FDFFB6"
+      },
+      "data-ai-hint": "burning wood"
+    },
+    {
+      "id": "tile-quiz-31",
+      "type": "quiz",
+      "position": 31,
+      "config": {
+        "question": "Which of these helps to save energy at home?",
+        "options": [
+          { "id": "opt-q17-1", "text": "Leaving the TV on all day", "isCorrect": false },
+          { "id": "opt-q17-2", "text": "Turning off lights when not in use", "isCorrect": true },
+          { "id": "opt-q17-3", "text": "Keeping the refrigerator door open", "isCorrect": false, "image": "https://placehold.co/150x100.png" }
+        ],
+        "difficulty": 1,
+        "points": 5
+      },
+      "ui": {
+        "icon": "🏡",
+        "color": "#CAFFBF"
+      },
+      "data-ai-hint": "save energy"
+    },
+    {
+      "id": "tile-quiz-32",
+      "type": "quiz",
+      "position": 32,
+      "config": {
+        "question": "What energy transformation happens when you play a guitar?",
+        "options": [
+          { "id": "opt-q18-1", "text": "Chemical to Sound", "isCorrect": false },
+          { "id": "opt-q18-2", "text": "Mechanical to Sound", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q18-3", "text": "Electrical to Light", "isCorrect": false }
+        ],
+        "difficulty": 2,
+        "points": 10
+      },
+      "ui": {
+        "icon": "🎸",
+        "color": "#9BF6FF"
+      },
+      "data-ai-hint": "guitar sound"
+    },
+    {
+      "id": "tile-quiz-33",
+      "type": "quiz",
+      "position": 33,
+      "config": {
+        "question": "True or False: All energy originally comes from the sun.",
+        "options": [
+          { "id": "opt-q19-1", "text": "True", "isCorrect": true },
+          { "id": "opt-q19-2", "text": "False", "isCorrect": false, "image": "https://placehold.co/150x100.png" }
+        ],
+        "difficulty": 3,
+        "points": 15
+      },
+      "ui": {
+        "icon": "🤔",
+        "color": "#A0C4FF"
+      },
+      "data-ai-hint": "sun origin"
+    },
+    {
+      "id": "tile-quiz-34",
+      "type": "quiz",
+      "position": 34,
+      "config": {
+        "question": "A car moving down the road has which type of energy?",
+        "options": [
+          { "id": "opt-q20-1", "text": "Potential energy", "isCorrect": false },
+          { "id": "opt-q20-2", "text": "Kinetic energy", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q20-3", "text": "Chemical energy (only)", "isCorrect": false }
+        ],
+        "difficulty": 1,
+        "points": 5
+      },
+      "ui": {
+        "icon": "🚗",
+        "color": "#BDB2FF"
+      },
+      "data-ai-hint": "car kinetic"
+    },
+    {
+      "id": "tile-quiz-35",
+      "type": "quiz",
+      "position": 35,
+      "config": {
+        "question": "Which of these is NOT a fossil fuel?",
+        "options": [
+          { "id": "opt-q21-1", "text": "Coal", "isCorrect": false },
+          { "id": "opt-q21-2", "text": "Oil", "isCorrect": false },
+          { "id": "opt-q21-3", "text": "Sunlight", "isCorrect": true, "image": "https://placehold.co/150x100.png" }
+        ],
+        "difficulty": 1,
+        "points": 5
+      },
+      "ui": {
+        "icon": "⛽",
+        "color": "#FFC6FF"
+      },
+      "data-ai-hint": "fossil fuel type"
+    },
+    {
+      "id": "tile-quiz-36",
+      "type": "quiz",
+      "position": 36,
+      "config": {
+        "question": "What form of energy do we get from food?",
+        "options": [
+          { "id": "opt-q22-1", "text": "Electrical energy", "isCorrect": false },
+          { "id": "opt-q22-2", "text": "Chemical energy", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q22-3", "text": "Light energy", "isCorrect": false }
+        ],
+        "difficulty": 1,
+        "points": 5
+      },
+      "ui": {
+        "icon": "🍔",
+        "color": "#FFB3BA"
+      },
+      "data-ai-hint": "food chemical"
+    },
+    {
+      "id": "tile-quiz-37",
+      "type": "quiz",
+      "position": 37,
+      "config": {
+        "question": "What does a hydroelectric dam use to generate electricity?",
+        "questionImage": "https://placehold.co/300x200.png",
+        "options": [
+          { "id": "opt-q23-1", "text": "Wind", "isCorrect": false },
+          { "id": "opt-q23-2", "text": "Sunlight", "isCorrect": false },
+          { "id": "opt-q23-3", "text": "Moving water", "isCorrect": true, "image": "https://placehold.co/150x100.png" }
+        ],
+        "difficulty": 2,
+        "points": 10
+      },
+      "ui": {
+        "icon": "댐",
+        "color": "#FFDFBA"
+      },
+      "data-ai-hint": "dam water"
+    },
+    {
+      "id": "tile-quiz-38",
+      "type": "quiz",
+      "position": 38,
+      "config": {
+        "question": "If you leave a hot cup of cocoa on the table, its heat energy will mostly transfer to the...?",
+        "options": [
+          { "id": "opt-q24-1", "text": "Floor", "isCorrect": false },
+          { "id": "opt-q24-2", "text": "Surrounding air and table", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q24-3", "text": "Ceiling", "isCorrect": false }
+        ],
+        "difficulty": 3,
+        "points": 15
+      },
+      "ui": {
+        "icon": "☕",
+        "color": "#FFFFBA"
+      },
+      "data-ai-hint": "heat transfer"
+    },
+    {
+      "id": "tile-quiz-39",
+      "type": "quiz",
+      "position": 39,
+      "config": {
+        "question": "Which of these is an example of energy conservation (saving energy)?",
+        "options": [
+          { "id": "opt-q25-1", "text": "Leaving the computer on overnight", "isCorrect": false },
+          { "id": "opt-q25-2", "text": "Taking shorter showers", "isCorrect": true },
+          { "id": "opt-q25-3", "text": "Using more plastic bags", "isCorrect": false, "image": "https://placehold.co/150x100.png" }
+        ],
+        "difficulty": 1,
+        "points": 5
+      },
+      "ui": {
+        "icon": "💡",
+        "color": "#BAFFC9"
+      },
+      "data-ai-hint": "energy saving"
+    },
+    {
+      "id": "tile-quiz-40",
+      "type": "quiz",
+      "position": 40,
+      "config": {
+        "question": "A battery converts chemical energy into what form of energy to power a flashlight?",
+        "options": [
+          { "id": "opt-q26-1", "text": "Heat energy", "isCorrect": false },
+          { "id": "opt-q26-2", "text": "Electrical energy", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q26-3", "text": "Sound energy", "isCorrect": false }
+        ],
+        "difficulty": 2,
+        "points": 10
+      },
+      "ui": {
+        "icon": "🔦",
+        "color": "#BAE1FF"
+      },
+      "data-ai-hint": "battery flashlight"
+    },
+    {
+      "id": "tile-quiz-41",
+      "type": "quiz",
+      "position": 41,
+      "config": {
+        "question": "What energy is stored in wood, coal, and oil?",
+        "options": [
+          { "id": "opt-q27-1", "text": "Nuclear energy", "isCorrect": false },
+          { "id": "opt-q27-2", "text": "Chemical energy", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q27-3", "text": "Mechanical energy", "isCorrect": false }
+        ],
+        "difficulty": 2,
+        "points": 10
+      },
+      "ui": {
+        "icon": "🪵",
+        "color": "#E0BBE4"
+      },
+      "data-ai-hint": "fuel chemical"
+    },
+    {
+      "id": "tile-quiz-42",
+      "type": "quiz",
+      "position": 42,
+      "config": {
+        "question": "When a drummer hits a drum, mechanical energy is converted into primarily...?",
+        "options": [
+          { "id": "opt-q28-1", "text": "Light energy", "isCorrect": false },
+          { "id": "opt-q28-2", "text": "Sound energy and some heat", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q28-3", "text": "Electrical energy", "isCorrect": false }
+        ],
+        "difficulty": 2,
+        "points": 10
+      },
+      "ui": {
+        "icon": "🥁",
+        "color": "#FFADAD"
+      },
+      "data-ai-hint": "drum sound"
+    },
+    {
+      "id": "tile-quiz-43",
+      "type": "quiz",
+      "position": 43,
+      "config": {
+        "question": "What energy transformation allows a TV to work?",
+        "questionImage": "https://placehold.co/300x200.png",
+        "options": [
+          { "id": "opt-q29-1", "text": "Heat to Light and Sound", "isCorrect": false },
+          { "id": "opt-q29-2", "text": "Electrical to Light and Sound", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q29-3", "text": "Chemical to Electrical", "isCorrect": false }
+        ],
+        "difficulty": 2,
+        "points": 10
+      },
+      "ui": {
+        "icon": "📺",
+        "color": "#FFD6A5"
+      },
+      "data-ai-hint": "tv energy"
+    },
+    {
+      "id": "tile-finish-44",
+      "type": "finish",
+      "position": 44,
+      "ui": {
+        "color": "#F44336",
+        "icon": "🏆"
+      }
+    }
+  ]
+}
+
+    
