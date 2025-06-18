@@ -51,7 +51,7 @@ export const id = {
   'sidebar.mobileTitle': 'Menu',
 
   'sidebar.linkCopiedTitle': 'Tautan Disalin & Dibuka!',
-  'sidebar.linkCopiedDescriptionPlay': 'Tautan permainan disalin & dibuka di tab baru. Jika tidak, tempel di tab browser baru untuk bermain!',
+  'sidebar.linkCopiedDescriptionPlay': 'Tautan permainan disalin! Tempel di tab browser baru untuk bermain. Tab baru juga telah dibuka.',
   'sidebar.copyFailedTitle': 'Penyalinan Gagal',
   'sidebar.copyFailedDescription': 'Tidak dapat menyalin tautan. Silakan coba lagi.',
   'sidebar.linkErrorTitle': 'Kesalahan Pembuatan Tautan',
@@ -166,10 +166,9 @@ export const id = {
   'tutorialModal.sharing.text': '"Buat Tautan Main" membuat URL agar orang lain dapat memainkan permainan Anda secara langsung. "Ekspor Berkas Papan" menyimpan desain Anda sebagai berkas untuk cadangan atau berbagi versi yang dapat diedit. Orang lain dapat menggunakan "Impor Berkas Papan" untuk memuat desain Anda.',
   'tutorialModal.haveFun': 'Selamat berkreasi!',
 
-  // PlayPage
+  // PlayPage & TileInteractionModal
   'playPage.loadingGame': 'Memuat permainan, harap tunggu...',
   'playPage.errorLoadingTitle': 'Gagal Memuat Permainan',
-  'playPage.errorLoadingDescription': 'Permainan tidak dapat dimuat. Silakan periksa tautan atau coba lagi.',
   'playPage.noBoardConfigTitle': 'Papan Tidak Ditemukan',
   'playPage.noBoardConfig': 'Papan permainan tidak ditemukan. Tautan mungkin tidak valid atau data permainan hilang.',
   'playPage.noBoardDataError': 'Tidak ada data papan yang ditemukan di tautan.',
@@ -180,19 +179,15 @@ export const id = {
   'playPage.score': "Skor",
   'playPage.waitingForPlayers': "Menunggu pemain...",
   'playPage.tileInteractionTitle': 'Interaksi Petak',
-  'playPage.noInteractionYet': 'Kocok dadu untuk memulai!',
-  'playPage.rollDiceToMove': 'Kocok dadu untuk bergerak!',
   'playPage.quizQuestion': 'Pertanyaan Kuis',
   'playPage.questionImageAlt': 'Gambar pertanyaan',
   'playPage.optionImageAlt': 'Gambar pilihan',
   'playPage.infoImageAlt': 'Gambar info',
   'playPage.submitAnswer': 'Kirim Jawaban',
   'playPage.infoMessage': 'Informasi',
-  'playPage.acknowledge': 'Mengerti!',
   'playPage.acknowledgeAndContinue': 'Lanjutkan',
   'playPage.collectAndContinue': 'Ambil & Lanjutkan',
   'playPage.rewardMessage': 'Hadiah!',
-  'playPage.collectReward': 'Ambil Hadiah',
   'playPage.pointsAwarded': '{points} poin diberikan!',
   'playPage.landedOnTile': 'Mendarat di petak {type}.',
   'playPage.tileNumber': 'Petak {number}',
@@ -201,7 +196,6 @@ export const id = {
   'playPage.noPoints': 'Tidak ada poin kali ini.',
   'playPage.nextTurn': 'Giliran Berikutnya',
   'playPage.gameOver': 'Permainan Selesai!',
-  'playPage.gameHasEnded': 'Permainan telah berakhir. Lihat hasilnya di atas.',
   'playPage.winnerIs': '🎉 Pemenang: {name} dengan {score} poin! 🎉',
   'playPage.playAgain': 'Main Lagi',
   'playPage.gameLogTitle': 'Log Permainan',
@@ -227,7 +221,7 @@ export const id = {
   'log.event.errorOccurred': 'Terjadi kesalahan: {error}',
   'log.streakIncreased': "Rentetan jawaban benar {name} sekarang {streak}!",
   'log.streakBroken': "Rentetan jawaban benar {name} terputus.",
-
+  'log.landedOnSimpleTile': '{name} mendarat di petak {tileType}.',
 
   // Misc
   'capitalize.empty': 'Kosong',
@@ -237,3 +231,5 @@ export const id = {
   'capitalize.info': 'Info',
   'capitalize.reward': 'Hadiah',
 };
+
+    

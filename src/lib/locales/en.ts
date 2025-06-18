@@ -52,7 +52,7 @@ export const en = {
   'sidebar.mobileTitle': 'Menu',
 
   'sidebar.linkCopiedTitle': 'Link Copied & Opened!',
-  'sidebar.linkCopiedDescriptionPlay': 'Playable link copied & opened in a new tab. If not, paste it into a new browser tab to play!',
+  'sidebar.linkCopiedDescriptionPlay': 'Playable game link copied! Paste it into a new browser tab or window to play. A new tab has also been opened.',
   'sidebar.copyFailedTitle': 'Copy Failed',
   'sidebar.copyFailedDescription': 'Could not copy the link. Please try again.',
   'sidebar.linkErrorTitle': 'Link Creation Error',
@@ -168,10 +168,9 @@ export const en = {
   'tutorialModal.sharing.text': '"Generate Play Link" creates a URL for others to play your game immediately. "Export Board File" saves your design as a file for backup or sharing the editable version. Others can use "Import Board File" to load your design.',
   'tutorialModal.haveFun': 'Have fun creating!',
 
-  // PlayPage
+  // PlayPage & TileInteractionModal
   'playPage.loadingGame': 'Loading game, please wait...',
   'playPage.errorLoadingTitle': 'Error Loading Game',
-  'playPage.errorLoadingDescription': 'The game could not be loaded. Please check the link or try again.',
   'playPage.noBoardConfigTitle': 'Board Not Found',
   'playPage.noBoardConfig': 'No game board found. The link might be invalid or the game data is missing.',
   'playPage.noBoardDataError': 'No board data found in the link.',
@@ -182,19 +181,15 @@ export const en = {
   'playPage.score': "Score",
   'playPage.waitingForPlayers': "Waiting for players...",
   'playPage.tileInteractionTitle': 'Tile Interaction',
-  'playPage.noInteractionYet': 'Roll the dice to start!',
-  'playPage.rollDiceToMove': 'Roll the dice to move!',
   'playPage.quizQuestion': 'Quiz Question',
   'playPage.questionImageAlt': 'Question image',
   'playPage.optionImageAlt': 'Option image',
   'playPage.infoImageAlt': 'Info image',
   'playPage.submitAnswer': 'Submit Answer',
   'playPage.infoMessage': 'Information',
-  'playPage.acknowledge': 'Got it!',
   'playPage.acknowledgeAndContinue': 'Continue',
   'playPage.collectAndContinue': 'Collect & Continue',
   'playPage.rewardMessage': 'Reward!',
-  'playPage.collectReward': 'Collect Reward',
   'playPage.pointsAwarded': '{points} points awarded!',
   'playPage.landedOnTile': 'Landed on a {type} tile.',
   'playPage.tileNumber': 'Tile {number}',
@@ -203,7 +198,6 @@ export const en = {
   'playPage.noPoints': 'No points this time.',
   'playPage.nextTurn': 'Next Turn',
   'playPage.gameOver': 'Game Over!',
-  'playPage.gameHasEnded': 'The game has ended. See the results above.',
   'playPage.winnerIs': '🎉 Winner: {name} with {score} points! 🎉',
   'playPage.playAgain': 'Play Again',
   'playPage.gameLogTitle': 'Game Log',
@@ -229,6 +223,7 @@ export const en = {
   'log.event.errorOccurred': 'An error occurred: {error}',
   'log.streakIncreased': "{name}'s correct answer streak is now {streak}!",
   'log.streakBroken': "{name}'s correct answer streak was broken.",
+  'log.landedOnSimpleTile': '{name} landed on {tileType} tile.',
 
 
   // Misc
@@ -239,3 +234,5 @@ export const en = {
   'capitalize.info': 'Info',
   'capitalize.reward': 'Reward',
 };
+
+    

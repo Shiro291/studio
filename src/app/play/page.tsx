@@ -13,10 +13,9 @@ import { Button } from '@/components/ui/button';
 import { Terminal, Trophy } from "lucide-react";
 import { useLanguage } from '@/context/language-context';
 import { PlayerInfoBar } from '@/components/play/player-info-bar';
-import { TileInteractionArea } from '@/components/play/tile-interaction-area';
 import { GameLogDisplay } from '@/components/play/game-log-display';
-import Link from 'next/link';
-import type { TileConfigQuiz } from '@/types';
+import type { Tile } from '@/types';
+import { TileInteractionModal } from '@/components/play/tile-interaction-modal';
 
 
 export default function PlayPage() {
@@ -24,6 +23,8 @@ export default function PlayPage() {
   const { t } = useLanguage();
   const searchParams = useSearchParams();
   const [initialLoadDone, setInitialLoadDone] = useState(false);
+  const [isInteractionModalOpen, setIsInteractionModalOpen] = useState(false);
+  const [currentTileForModal, setCurrentTileForModal] = useState<Tile | null>(null);
 
   useEffect(() => {
     if (!initialLoadDone) {
@@ -37,9 +38,36 @@ export default function PlayPage() {
     }
   }, [searchParams, loadBoardFromBase64, initialLoadDone, t, dispatch]);
 
+  useEffect(() => {
+    if (state.activeTileForInteraction && state.gameStatus === 'interaction_pending') {
+      const tile = state.activeTileForInteraction;
+      if (tile.type === 'quiz' || tile.type === 'info' || tile.type === 'reward') {
+        setCurrentTileForModal(tile);
+        setIsInteractionModalOpen(true);
+      } else if (tile.type === 'empty' || tile.type === 'start' || tile.type === 'finish') {
+        // Auto-proceed for non-interactive tiles after a short delay
+        const timer = setTimeout(() => {
+          dispatch({ type: 'ACKNOWLEDGE_INTERACTION' }); // Acknowledge landing
+          dispatch({ type: 'PROCEED_TO_NEXT_TURN' });
+        }, 500); // Delay for player to see pawn move
+        return () => clearTimeout(timer);
+      }
+    } else if (!state.activeTileForInteraction && isInteractionModalOpen) {
+      // If active tile is cleared by game logic (e.g. player moved due to punishment)
+      // ensure modal closes if it was open for that tile.
+      setIsInteractionModalOpen(false);
+      setCurrentTileForModal(null);
+    }
+  }, [state.activeTileForInteraction, state.gameStatus, dispatch, isInteractionModalOpen]);
 
-  const isCurrentQuizCorrect = state.activeTileForInteraction?.type === 'quiz' && state.gameStatus === 'interaction_pending' && state.logs.length > 0 &&
-    state.logs[0].type === 'quiz_correct';
+
+  const handleModalClose = (proceedToNextTurn: boolean) => {
+    setIsInteractionModalOpen(false);
+    setCurrentTileForModal(null);
+    if (proceedToNextTurn) {
+      dispatch({ type: 'PROCEED_TO_NEXT_TURN' });
+    }
+  };
 
 
   if (state.isLoading || (!initialLoadDone && !state.error && !state.boardConfig)) {
@@ -60,7 +88,7 @@ export default function PlayPage() {
           <Terminal className="h-4 w-4" />
           <AlertTitle>{t('playPage.errorLoadingTitle')}</AlertTitle>
           <AlertDescription>
-            {state.error} {t('playPage.errorLoadingDescription')}
+            {state.error}
           </AlertDescription>
         </Alert>
       </div>
@@ -136,15 +164,20 @@ export default function PlayPage() {
                     <DiceRoller />
                 </CardContent>
               </Card>
-              <TileInteractionArea
-                tile={state.activeTileForInteraction}
-                boardSettings={state.boardConfig.settings}
-                isQuizCorrect={isCurrentQuizCorrect}
-              />
             </>
           )}
         </div>
       </div>
+      {state.boardConfig && (
+         <TileInteractionModal
+            tileForModal={currentTileForModal}
+            isOpen={isInteractionModalOpen}
+            onModalClose={handleModalClose}
+            boardSettings={state.boardConfig.settings}
+          />
+      )}
     </div>
   );
 }
+
+    

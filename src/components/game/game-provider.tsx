@@ -261,9 +261,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         if (state.boardConfig.settings.winningCondition === 'firstToFinish') {
             gameWinner = newPlayers[finishedPlayerIndex]; 
             newGameStatus = 'finished';
-        } else if (newPlayersFinishedCount === newPlayers.length) { // All players finished
-             // Winner determination for 'highestScore' or 'combinedOrderScore' will happen in PROCEED_TO_NEXT_TURN
-            newGameStatus = 'interaction_pending'; // Allow final tile interaction
+        } else if (newPlayersFinishedCount === newPlayers.length) { 
+            newGameStatus = 'interaction_pending'; 
         }
         
         return {
@@ -278,10 +277,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
          };
       }
       
-      if (landedTile.type === 'empty' || landedTile.type === 'start') {
-        return { ...state, players: newPlayers, diceRoll: diceValue, activeTileForInteraction: landedTile, gameStatus: 'interaction_pending', logs: currentLogs };
-      }
-
       return { ...state, players: newPlayers, diceRoll: diceValue, activeTileForInteraction: landedTile, gameStatus: 'interaction_pending', logs: currentLogs };
     }
     case 'ANSWER_QUIZ': {
@@ -305,7 +300,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             newStreak++;
             soundToPlay = 'correctAnswer';
             currentLogs = addLogEntry(currentLogs, 'log.quizCorrect', 'quiz_correct', { name: currentPlayer.name, points: quizConfig.points });
-            currentLogs = addLogEntry(currentLogs, 'log.streakIncreased', 'streak', { name: currentPlayer.name, streak: newStreak });
+            if (newStreak > 1) {
+               currentLogs = addLogEntry(currentLogs, 'log.streakIncreased', 'streak', { name: currentPlayer.name, streak: newStreak });
+            }
         } else {
             if (newStreak > 0) {
                 currentLogs = addLogEntry(currentLogs, 'log.streakBroken', 'streak', { name: currentPlayer.name });
@@ -354,10 +351,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             const rewardConfig = state.activeTileForInteraction.config as TileConfigReward;
             newScore += rewardConfig.points || 0;
             newPlayers[state.currentPlayerIndex] = { ...currentPlayer, score: newScore };
-            playSound('correctAnswer');
+            playSound('correctAnswer'); // Assuming reward gives a positive sound
             currentLogs = addLogEntry(currentLogs, 'log.rewardCollected', 'reward', { name: currentPlayer.name, points: rewardConfig.points || 0 });
         } else if (state.activeTileForInteraction.type === 'info') {
              currentLogs = addLogEntry(currentLogs, 'log.infoAcknowledged', 'info', { name: currentPlayer.name });
+        } else if (['empty', 'start', 'finish'].includes(state.activeTileForInteraction.type)) {
+             currentLogs = addLogEntry(currentLogs, 'log.landedOnSimpleTile', 'move', { name: currentPlayer.name, tileType: state.activeTileForInteraction.type});
         }
         return { ...state, players: newPlayers, logs: currentLogs };
     }
@@ -386,9 +385,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 currentWinner = playersWithCombinedScore.reduce((prev, current) => {
                     if (prev.combinedScore === current.combinedScore) {
                         if (prev.finishOrder === current.finishOrder) {
-                           return prev.score > current.score ? prev : current; // Tie break by raw score
+                           return prev.score > current.score ? prev : current; 
                         }
-                        return (prev.finishOrder || Infinity) < (current.finishOrder || Infinity) ? prev : current; // Tie break by finish order
+                        return (prev.finishOrder || Infinity) < (current.finishOrder || Infinity) ? prev : current; 
                     }
                     return prev.combinedScore > current.combinedScore ? prev : current;
                 });
@@ -409,18 +408,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         
         let nextPlayerIndex = state.currentPlayerIndex;
         if (!gameIsFinished) {
-            // Find next player who hasn't finished
             let attempts = 0;
             do {
                 nextPlayerIndex = (nextPlayerIndex + 1) % state.players.length;
                 attempts++;
             } while (state.players[nextPlayerIndex].hasFinished && attempts <= state.players.length);
             
-            // If all remaining players have finished, but game isn't over (e.g. highest score mode waiting for all)
-            // this loop might not find anyone. The winner check above should handle game end.
             if (attempts > state.players.length && !allPlayersHaveFinished) {
-                // This case should ideally not be hit if winner logic is correct
-                console.warn("Could not find next active player, but game not determined to be over.");
+                 console.warn("Could not find next active player, but game not determined to be over.");
             }
         }
 
@@ -638,3 +633,5 @@ export function useGame() {
   }
   return context;
 }
+
+    
