@@ -17,7 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGame } from '@/components/game/game-provider';
 import { MAX_TILES, MIN_TILES, MIN_PLAYERS, MAX_PLAYERS } from '@/lib/constants';
 import { Settings, Palette, Info, Wand2, RefreshCwIcon, Users, Image as ImageIcon, XCircle, Link as LinkIcon, Download, Upload, Dices, ShieldAlert, ClipboardCopy, ClipboardPaste } from 'lucide-react';
-import type { BoardConfig, BoardSettings, WinningCondition, PunishmentType, TileConfigQuiz } from '@/types';
+import type { BoardConfig, BoardSettings, WinningCondition, PunishmentType, TileConfigQuiz, TileConfigInfo } from '@/types';
 import React, { useRef, useState } from 'react';
 import { useLanguage } from '@/context/language-context';
 import { useToast } from '@/hooks/use-toast';
@@ -82,32 +82,40 @@ export function AppSidebarContent() {
       try {
         if (state.pawnAnimation?.timerId) {
             clearTimeout(state.pawnAnimation.timerId);
-             // Finalize pawn position if animation was interrupted
             const playerIndex = state.players.findIndex(p => p.id === state.pawnAnimation!.playerId);
             if (playerIndex !== -1 && state.pawnAnimation!.path.length > 0) {
                 const finalPosition = state.pawnAnimation!.path[state.pawnAnimation!.path.length - 1];
                 const updatedPlayers = [...state.players];
                 updatedPlayers[playerIndex] = { ...updatedPlayers[playerIndex], position: finalPosition, visualPosition: finalPosition };
-                dispatch({ type: 'SET_PLAYERS', payload: updatedPlayers }); // Dispatch sync update
+                dispatch({ type: 'SET_PLAYERS', payload: updatedPlayers }); 
             }
         }
         
-        // Create a deep clone to modify for the link, assign new ID
-        const boardConfigForLink: BoardConfig = {
-          ...JSON.parse(JSON.stringify(state.boardConfig)), 
-          id: nanoid(), 
-        };
+        const boardConfigForLink: BoardConfig = JSON.parse(JSON.stringify(state.boardConfig));
+        boardConfigForLink.id = nanoid(); 
 
-        // Strip AI-generated option images to reduce URL length
+        // Strip all image data URIs for the link
+        if (boardConfigForLink.settings.boardBackgroundImage?.startsWith('data:image/')) {
+            delete boardConfigForLink.settings.boardBackgroundImage;
+        }
+
         boardConfigForLink.tiles.forEach(tile => {
           if (tile.type === 'quiz' && tile.config) {
             const quizConfig = tile.config as TileConfigQuiz;
+            if (quizConfig.questionImage?.startsWith('data:image/')) {
+              delete quizConfig.questionImage;
+            }
             if (quizConfig.options && Array.isArray(quizConfig.options)) {
               quizConfig.options.forEach(option => {
-                if (option.image && option.image.startsWith('data:image/')) { // Check if it's a data URI
-                  delete option.image; // Remove AI-generated image data URI
+                if (option.image?.startsWith('data:image/')) {
+                  delete option.image;
                 }
               });
+            }
+          } else if (tile.type === 'info' && tile.config) {
+            const infoConfig = tile.config as TileConfigInfo;
+            if (infoConfig.image?.startsWith('data:image/')) {
+              delete infoConfig.image;
             }
           }
         });
@@ -233,7 +241,10 @@ export function AppSidebarContent() {
     }
     
     if (loadBoardFromJson(jsonPasteContent)) {
+        toast({ title: t('sidebar.boardImportedTitle'), description: t('sidebar.boardImportedDescription') });
         setJsonPasteContent(''); 
+    } else {
+        toast({ variant: "destructive", title: t('sidebar.importErrorTitle'), description: t('sidebar.pasteInvalidJsonError') });
     }
   };
 
@@ -564,5 +575,4 @@ export function AppSidebarContent() {
     </>
   );
 }
-
     
