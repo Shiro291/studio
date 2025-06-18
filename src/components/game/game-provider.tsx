@@ -154,7 +154,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const loadBoardFromBase64 = useCallback((base64Data: string) => {
     dispatch({ type: 'START_LOADING' });
     try {
-      const jsonString = atob(base64Data);
+      // Decode Base64 to Unicode string: decodeURIComponent(escape(atob(str)))
+      const jsonString = decodeURIComponent(escape(atob(base64Data)));
       const boardConfig = JSON.parse(jsonString) as BoardConfig;
       if (boardConfig && boardConfig.id && boardConfig.settings && boardConfig.tiles) {
         boardConfig.settings.numberOfTiles = Math.max(MIN_TILES, Math.min(MAX_TILES, boardConfig.settings.numberOfTiles || DEFAULT_BOARD_SETTINGS.numberOfTiles));

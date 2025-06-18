@@ -73,7 +73,8 @@ export function AppSidebarContent() {
     if (state.boardConfig) {
       try {
         const jsonString = JSON.stringify(state.boardConfig);
-        const base64Data = btoa(jsonString);
+        // Encode Unicode string to Base64: btoa(unescape(encodeURIComponent(str)))
+        const base64Data = btoa(unescape(encodeURIComponent(jsonString)));
         const shareUrl = `${window.location.origin}/play?board=${encodeURIComponent(base64Data)}`;
         navigator.clipboard.writeText(shareUrl)
           .then(() => {
