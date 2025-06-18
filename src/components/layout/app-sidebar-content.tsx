@@ -3,8 +3,6 @@
 
 import {
   SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
   SidebarGroup,
   SidebarGroupLabel,
   SidebarGroupContent,
@@ -18,14 +16,14 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGame } from '@/components/game/game-provider';
 import { MAX_TILES, MIN_TILES, MIN_PLAYERS, MAX_PLAYERS } from '@/lib/constants';
-import { Settings, Palette, Info, Wand2, RefreshCwIcon, Users, Image as ImageIcon, XCircle, Link as LinkIcon, Download, Upload, ShieldAlert, Dices } from 'lucide-react';
+import { Settings, Palette, Info, Wand2, RefreshCwIcon, Users, Image as ImageIcon, XCircle, Link as LinkIcon, Download, Upload, Dices } from 'lucide-react';
 import type { BoardSettings, WinningCondition, PunishmentType } from '@/types';
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { useLanguage } from '@/context/language-context';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import NextImage from 'next/image'; 
-import { TutorialModal } from './tutorial-modal';
+import NextImage from 'next/image';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Accordion,
   AccordionContent,
@@ -41,7 +39,6 @@ export function AppSidebarContent() {
   const boardSettings = state.boardConfig?.settings;
   const boardBgInputRef = useRef<HTMLInputElement>(null);
   const importFileInputRef = useRef<HTMLInputElement>(null);
-  const [isTutorialModalOpen, setIsTutorialModalOpen] = useState(false);
 
   const handleSettingChange = <K extends keyof BoardSettings>(key: K, value: BoardSettings[K]) => {
     dispatch({ type: 'UPDATE_BOARD_SETTINGS', payload: { [key]: value } });
@@ -163,7 +160,6 @@ export function AppSidebarContent() {
     }
   };
 
-
   const handleRandomizeVisuals = () => {
     randomizeTileVisuals();
     toast({
@@ -172,6 +168,14 @@ export function AppSidebarContent() {
     });
   };
 
+  const renderTooltip = (contentKey: string, children: React.ReactNode) => (
+    <Tooltip>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent side="right" className="max-w-xs">
+        <p className="text-xs">{t(contentKey)}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
 
   return (
     <>
@@ -180,22 +184,30 @@ export function AppSidebarContent() {
         <SidebarGroup>
           <SidebarGroupLabel className="font-headline">{t('sidebar.title')}</SidebarGroupLabel>
           <SidebarGroupContent className="space-y-2">
-            <Button onClick={initializeNewBoard} className="w-full" variant="outline">
-              <Wand2 className="mr-2 h-4 w-4" /> {t('sidebar.newBoard')}
-            </Button>
+             {renderTooltip("tooltip.newBoard", 
+              <Button onClick={initializeNewBoard} className="w-full" variant="outline">
+                <Wand2 className="mr-2 h-4 w-4" /> {t('sidebar.newBoard')}
+              </Button>
+             )}
              {boardSettings && (
               <>
-                <Button onClick={handleGeneratePlayLink} className="w-full">
-                    <LinkIcon className="mr-2 h-4 w-4" /> {t('sidebar.generatePlayLink')}
-                </Button>
-                <Button onClick={handleExportBoardFile} className="w-full" variant="outline">
-                    <Download className="mr-2 h-4 w-4" /> {t('sidebar.exportBoardFile')}
-                </Button>
-                <Button asChild variant="outline" className="w-full cursor-pointer">
-                  <Label htmlFor="import-board-file" className="flex items-center cursor-pointer">
-                    <Upload className="mr-2 h-4 w-4" /> {t('sidebar.importBoardFile')}
-                  </Label>
-                </Button>
+                {renderTooltip("tooltip.generatePlayLink",
+                  <Button onClick={handleGeneratePlayLink} className="w-full">
+                      <LinkIcon className="mr-2 h-4 w-4" /> {t('sidebar.generatePlayLink')}
+                  </Button>
+                )}
+                {renderTooltip("tooltip.exportBoardFile",
+                  <Button onClick={handleExportBoardFile} className="w-full" variant="outline">
+                      <Download className="mr-2 h-4 w-4" /> {t('sidebar.exportBoardFile')}
+                  </Button>
+                )}
+                {renderTooltip("tooltip.importBoardFile",
+                  <Button asChild variant="outline" className="w-full cursor-pointer">
+                    <Label htmlFor="import-board-file" className="flex items-center cursor-pointer w-full justify-center">
+                      <Upload className="mr-2 h-4 w-4" /> {t('sidebar.importBoardFile')}
+                    </Label>
+                  </Button>
+                )}
                 <input 
                     type="file" 
                     id="import-board-file" 
@@ -221,27 +233,36 @@ export function AppSidebarContent() {
               </AccordionTrigger>
               <AccordionContent className="space-y-4 pt-2 pb-4">
                 <div>
-                  <Label htmlFor="boardName" className="text-xs font-medium">{t('sidebar.boardName')}</Label>
+                  <div className="flex items-center gap-1 mb-1">
+                    <Label htmlFor="boardName" className="text-xs font-medium">{t('sidebar.boardName')}</Label>
+                    {renderTooltip("tooltip.boardName.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
+                  </div>
                   <Input 
                     id="boardName" 
                     value={boardSettings.name} 
                     onChange={(e) => handleSettingChange('name', e.target.value)}
-                    className="mt-1 h-8 text-xs"
+                    className="h-8 text-xs"
                   />
                 </div>
                  <div>
-                  <Label htmlFor="boardDescription" className="text-xs font-medium">{t('sidebar.description')}</Label>
+                  <div className="flex items-center gap-1 mb-1">
+                    <Label htmlFor="boardDescription" className="text-xs font-medium">{t('sidebar.description')}</Label>
+                    {renderTooltip("tooltip.description.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
+                  </div>
                   <Input 
                     id="boardDescription" 
                     value={boardSettings.description || ''} 
                     onChange={(e) => handleSettingChange('description', e.target.value)}
-                    className="mt-1 h-8 text-xs"
+                    className="h-8 text-xs"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="numTiles" className="text-xs font-medium">
-                    {t('sidebar.numberOfTiles', { count: boardSettings.numberOfTiles })}
-                  </Label>
+                  <div className="flex items-center gap-1 mb-1">
+                    <Label htmlFor="numTiles" className="text-xs font-medium">
+                      {t('sidebar.numberOfTiles', { count: boardSettings.numberOfTiles })}
+                    </Label>
+                     {renderTooltip("tooltip.numberOfTiles.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
+                  </div>
                   <Slider
                     id="numTiles"
                     min={MIN_TILES}
@@ -254,12 +275,15 @@ export function AppSidebarContent() {
                 </div>
                 
                 <div>
-                  <Label htmlFor="punishmentType" className="text-xs font-medium">{t('sidebar.punishmentType.label')}</Label>
+                  <div className="flex items-center gap-1 mb-1">
+                    <Label htmlFor="punishmentType" className="text-xs font-medium">{t('sidebar.punishmentType.label')}</Label>
+                    {renderTooltip("tooltip.punishmentType.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
+                  </div>
                   <Select
                     value={boardSettings.punishmentType}
                     onValueChange={(value: PunishmentType) => handleSettingChange('punishmentType', value)}
                   >
-                    <SelectTrigger id="punishmentType" className="mt-1 h-8 text-xs">
+                    <SelectTrigger id="punishmentType" className="h-8 text-xs">
                       <SelectValue placeholder={t('sidebar.punishmentType.selectPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
@@ -273,9 +297,12 @@ export function AppSidebarContent() {
 
                 {boardSettings.punishmentType === 'moveBackFixed' && (
                   <div>
-                    <Label htmlFor="punishmentValue" className="text-xs font-medium">
-                      {t('sidebar.punishmentValue', { count: boardSettings.punishmentValue })}
-                    </Label>
+                    <div className="flex items-center gap-1 mb-1">
+                      <Label htmlFor="punishmentValue" className="text-xs font-medium">
+                        {t('sidebar.punishmentValue', { count: boardSettings.punishmentValue })}
+                      </Label>
+                      {renderTooltip("tooltip.punishmentValue.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
+                    </div>
                     <Slider
                       id="punishmentValue"
                       min={1}
@@ -289,7 +316,10 @@ export function AppSidebarContent() {
                 )}
 
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="randomizeTilesOnLoad" className="text-xs font-medium">{t('sidebar.randomizeTilesOnLoad')}</Label>
+                  <div className="flex items-center gap-1">
+                    <Label htmlFor="randomizeTilesOnLoad" className="text-xs font-medium">{t('sidebar.randomizeTilesOnLoad')}</Label>
+                    {renderTooltip("tooltip.randomizeTiles.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
+                  </div>
                   <Switch
                     id="randomizeTilesOnLoad"
                     checked={boardSettings.randomizeTiles} 
@@ -307,7 +337,10 @@ export function AppSidebarContent() {
               </AccordionTrigger>
               <AccordionContent className="space-y-2 pt-2 pb-4">
                  <div>
-                    <Label htmlFor="boardBgImage" className="text-xs font-medium">{t('sidebar.boardBackgroundImage')}</Label>
+                    <div className="flex items-center gap-1 mb-1">
+                      <Label htmlFor="boardBgImage" className="text-xs font-medium">{t('sidebar.boardBackgroundImage')}</Label>
+                      {renderTooltip("tooltip.boardBackground.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
+                    </div>
                     {boardSettings.boardBackgroundImage && (
                       <div className="mt-2 relative w-full aspect-video border rounded-md overflow-hidden">
                         <NextImage src={boardSettings.boardBackgroundImage} alt={t('sidebar.boardBackgroundPreview')} layout="fill" objectFit="contain" unoptimized />
@@ -343,9 +376,12 @@ export function AppSidebarContent() {
               </AccordionTrigger>
               <AccordionContent className="space-y-4 pt-2 pb-4">
                 <div>
-                  <Label htmlFor="numPlayers" className="text-xs font-medium">
-                    {t('sidebar.numberOfPlayers', { count: boardSettings.numberOfPlayers })}
-                  </Label>
+                  <div className="flex items-center gap-1 mb-1">
+                    <Label htmlFor="numPlayers" className="text-xs font-medium">
+                      {t('sidebar.numberOfPlayers', { count: boardSettings.numberOfPlayers })}
+                    </Label>
+                    {renderTooltip("tooltip.numberOfPlayers.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
+                  </div>
                   <Slider
                     id="numPlayers"
                     min={MIN_PLAYERS}
@@ -357,12 +393,15 @@ export function AppSidebarContent() {
                   />
                 </div>
                  <div>
-                  <Label htmlFor="winningCondition" className="text-xs font-medium">{t('sidebar.winningCondition')}</Label>
+                  <div className="flex items-center gap-1 mb-1">
+                    <Label htmlFor="winningCondition" className="text-xs font-medium">{t('sidebar.winningCondition')}</Label>
+                    {renderTooltip("tooltip.winningCondition.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
+                  </div>
                    <Select
                     value={boardSettings.winningCondition}
                     onValueChange={(value: WinningCondition) => handleSettingChange('winningCondition', value)}
                   >
-                    <SelectTrigger id="winningCondition" className="mt-1 h-8 text-xs">
+                    <SelectTrigger id="winningCondition" className="h-8 text-xs">
                       <SelectValue placeholder={t('sidebar.selectWinningCondition')} />
                     </SelectTrigger>
                     <SelectContent>
@@ -383,7 +422,10 @@ export function AppSidebarContent() {
               </AccordionTrigger>
               <AccordionContent className="pt-2 pb-4">
                 <div>
-                  <Label htmlFor="diceSides" className="text-xs font-medium">{t('sidebar.diceSides', { count: boardSettings.diceSides })}</Label>
+                  <div className="flex items-center gap-1 mb-1">
+                    <Label htmlFor="diceSides" className="text-xs font-medium">{t('sidebar.diceSides', { count: boardSettings.diceSides })}</Label>
+                    {renderTooltip("tooltip.diceSides.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
+                  </div>
                   <Slider
                     id="diceSides"
                     min={1}
@@ -404,24 +446,23 @@ export function AppSidebarContent() {
                     </div>
                 </AccordionTrigger>
                 <AccordionContent className="space-y-2 pt-2 pb-4">
-                    <p className="text-xs text-muted-foreground">{t('sidebar.selectTileToEdit')}</p>
-                    <Button onClick={handleRandomizeVisuals} className="w-full h-8 text-xs" variant="outline">
-                        <RefreshCwIcon className="mr-2 h-3 w-3" /> {t('sidebar.randomizeVisuals')}
-                    </Button>
+                    {renderTooltip("tooltip.tileCustomization.description",
+                        <p className="text-xs text-muted-foreground">{t('sidebar.selectTileToEdit')}</p>
+                    )}
+                    {renderTooltip("tooltip.randomizeVisuals.description",
+                        <Button onClick={handleRandomizeVisuals} className="w-full h-8 text-xs" variant="outline">
+                            <RefreshCwIcon className="mr-2 h-3 w-3" /> {t('sidebar.randomizeVisuals')}
+                        </Button>
+                    )}
                 </AccordionContent>
             </AccordionItem>
           </Accordion>
         )}
         
-        <SidebarMenuItem className="px-2 mt-auto pt-2">
-          <SidebarMenuButton onClick={() => setIsTutorialModalOpen(true)} tooltip={t('sidebar.tutorialAndInfoTooltip')} size="sm" variant="ghost">
-            <Info size={16} /> {t('sidebar.tutorialAndInfo')}
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-
       </SidebarMenu>
     </ScrollArea>
-    <TutorialModal isOpen={isTutorialModalOpen} onClose={() => setIsTutorialModalOpen(false)} />
     </>
   );
 }
+
+    
