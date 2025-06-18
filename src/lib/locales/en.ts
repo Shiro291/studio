@@ -115,6 +115,7 @@ export const en = {
   'tileEditor.type': 'Type',
   'tileEditor.selectTileType': 'Select tile type',
   'tileEditor.quizConfiguration': 'Quiz Configuration',
+  'tileEditor.generateWithAI': 'Generate with AI',
   'tileEditor.question': 'Question',
   'tileEditor.questionImage': 'Question Image (Optional)',
   'tileEditor.difficulty': 'Difficulty',
@@ -142,6 +143,21 @@ export const en = {
   'tileEditor.uploadImage': 'Upload Image',
   'tileEditor.removeImage': 'Remove Image',
   'tileEditor.imagePreview': 'Image Preview',
+  'tileEditor.closeColorPicker': 'Close',
+
+  // AIQuizGeneratorDialog
+  'aiQuizGenerator.title': 'Generate Quiz with AI',
+  'aiQuizGenerator.description': 'Provide some source text (e.g., from learning material, a topic summary) and let AI create a quiz question for you.',
+  'aiQuizGenerator.sourceTextLabel': 'Source Text / Topic',
+  'aiQuizGenerator.sourceTextPlaceholder': 'Paste your learning material or describe the topic here (min. 20 characters)...',
+  'aiQuizGenerator.sourceTextHelp': 'The AI will use this text to generate a relevant question and answers.',
+  'aiQuizGenerator.numOptionsLabel': 'Number of Answer Options',
+  'aiQuizGenerator.generateButton': 'Generate Quiz',
+  'aiQuizGenerator.generating': 'Generating...',
+  'aiQuizGenerator.errorTitle': 'AI Generation Failed',
+  'aiQuizGenerator.errorGeneral': 'An unexpected error occurred while generating the quiz. Please try again.',
+  'aiQuizGenerator.errorMinLength': 'Source text must be at least 20 characters long.',
+
 
   // DiceRoller
   'diceRoller.roll': 'Roll D{sides}',
@@ -200,6 +216,7 @@ export const en = {
   'log.rewardCollected': '{name} collected a reward! +{points} points.',
   'log.infoAcknowledged': '{name} read an info message.',
   'log.playerFinished': '{name} reached the finish line! (Finished #{finishOrder})',
+  'log.firstToFinishWinner': '{name} is the first to finish and wins!',
   'log.highestScoreWinner': '{name} wins with the highest score: {score} points!',
   'log.combinedScoreWinner': '{name} wins with a combined score of {score} (Score: {rawScore}, Finish Order: {finishOrder})!',
   'log.event.gameStarted': 'Game "{name}" has started.',
@@ -240,5 +257,3 @@ export const en = {
   'capitalize.info': 'Info',
   'capitalize.reward': 'Reward',
 };
-
-    

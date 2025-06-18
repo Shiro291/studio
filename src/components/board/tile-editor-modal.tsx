@@ -22,9 +22,11 @@ import { nanoid } from 'nanoid';
 import { HexColorPicker } from "react-colorful";
 import { Checkbox } from '../ui/checkbox';
 import { ScrollArea } from '../ui/scroll-area';
-import { Trash2, XCircle } from 'lucide-react';
+import { Trash2, XCircle, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
 import Image from 'next/image';
+import { AIQuizGeneratorDialog } from './ai-quiz-generator-dialog'; // Import the new dialog
+import type { GenerateQuizOutput } from '@/ai/flows/quiz-generator-flow';
 
 interface TileEditorModalProps {
   tile: Tile;
@@ -37,12 +39,13 @@ const availableTileTypes: TileType[] = ['empty', 'quiz', 'info', 'reward'];
 export function TileEditorModal({ tile, onSave, onClose }: TileEditorModalProps) {
   const [editableTile, setEditableTile] = useState<Tile>(JSON.parse(JSON.stringify(tile)));
   const [colorPickerVisible, setColorPickerVisible] = useState(false);
+  const [isAiGeneratorOpen, setIsAiGeneratorOpen] = useState(false); // State for AI dialog
   const { t } = useLanguage();
 
   const fileInputRefs = {
     questionImage: useRef<HTMLInputElement>(null),
     infoImage: useRef<HTMLInputElement>(null),
-    quizOptions: [] as React.RefObject<HTMLInputElement>[], 
+    quizOptions: [] as React.RefObject<HTMLInputElement>[],
   };
 
 
@@ -68,16 +71,16 @@ export function TileEditorModal({ tile, onSave, onClose }: TileEditorModalProps)
         newConfig = { message: '', points: 0 } as TileConfigReward;
         break;
     }
-    setEditableTile(prev => ({ 
-      ...prev, 
-      type: newType, 
+    setEditableTile(prev => ({
+      ...prev,
+      type: newType,
       config: newConfig,
       ui: { ...prev.ui, icon: TILE_TYPE_EMOJIS[newType] || TILE_TYPE_EMOJIS.empty }
     }));
   };
-  
+
   const handleImageChange = (
-    event: React.ChangeEvent<HTMLInputElement>, 
+    event: React.ChangeEvent<HTMLInputElement>,
     target: 'questionImage' | 'infoImage' | `quizOptionImage-${number}`
   ) => {
     const file = event.target.files?.[0];
@@ -176,7 +179,7 @@ export function TileEditorModal({ tile, onSave, onClose }: TileEditorModalProps)
   const handleColorChange = (newColor: string) => {
     setEditableTile(prev => ({ ...prev, ui: { ...prev.ui, color: newColor }}));
   };
-  
+
   const handleIconChange = (newIcon: string) => {
      setEditableTile(prev => ({ ...prev, ui: { ...prev.ui, icon: newIcon }}));
   };
@@ -184,12 +187,51 @@ export function TileEditorModal({ tile, onSave, onClose }: TileEditorModalProps)
   const handleSubmit = () => {
     onSave(editableTile);
   };
-  
+
+  const handleAiGeneratedQuiz = (data: GenerateQuizOutput) => {
+    const newDifficulty = parseInt(data.suggestedDifficulty, 10) as 1 | 2 | 3;
+    const newOptions = data.options.map(opt => ({
+        id: nanoid(), // Ensure fresh client-side ID
+        text: opt.text,
+        isCorrect: opt.isCorrect,
+        image: opt.image, // Keep image if provided, though current flow doesn't
+    }));
+
+     // Ensure at least one option is correct, and only one
+    let correctExists = newOptions.some(opt => opt.isCorrect);
+    if (!correctExists && newOptions.length > 0) {
+        newOptions[0].isCorrect = true;
+    } else if (newOptions.filter(opt => opt.isCorrect).length > 1) {
+        let firstCorrectFound = false;
+        newOptions.forEach(opt => {
+            if (opt.isCorrect) {
+                if (firstCorrectFound) opt.isCorrect = false;
+                else firstCorrectFound = true;
+            }
+        });
+    }
+
+
+    setEditableTile(prev => ({
+        ...prev,
+        type: 'quiz', // Ensure type is quiz
+        config: {
+            ...(prev.config as TileConfigQuiz), // Keep existing quiz config like image if any
+            question: data.question,
+            options: newOptions,
+            difficulty: newDifficulty,
+            points: DIFFICULTY_POINTS[newDifficulty] || DIFFICULTY_POINTS[1],
+        }
+    }));
+    setIsAiGeneratorOpen(false);
+  };
+
+
   const isConfigurableType = (type: TileType) => ['quiz', 'info', 'reward'].includes(type);
 
   const renderImageUpload = (
-    labelKey: string, 
-    target: 'questionImage' | 'infoImage' | `quizOptionImage-${number}`, 
+    labelKey: string,
+    target: 'questionImage' | 'infoImage' | `quizOptionImage-${number}`,
     currentImageUri?: string,
     inputRef?: React.RefObject<HTMLInputElement>
   ) => (
@@ -198,9 +240,9 @@ export function TileEditorModal({ tile, onSave, onClose }: TileEditorModalProps)
       {currentImageUri && (
         <div className="relative w-32 h-32 border rounded-md overflow-hidden">
           <Image src={currentImageUri} alt={t('tileEditor.imagePreview')} layout="fill" objectFit="cover" unoptimized />
-          <Button 
-            variant="destructive" 
-            size="icon" 
+          <Button
+            variant="destructive"
+            size="icon"
             className="absolute top-1 right-1 h-6 w-6"
             onClick={() => removeImage(target)}
             aria-label={t('tileEditor.removeImage')}
@@ -209,9 +251,9 @@ export function TileEditorModal({ tile, onSave, onClose }: TileEditorModalProps)
           </Button>
         </div>
       )}
-      <Input 
-        type="file" 
-        accept="image/*" 
+      <Input
+        type="file"
+        accept="image/*"
         onChange={(e) => handleImageChange(e, target)}
         className="text-sm"
         ref={inputRef}
@@ -225,7 +267,7 @@ export function TileEditorModal({ tile, onSave, onClose }: TileEditorModalProps)
       fileInputRefs.quizOptions.push(React.createRef<HTMLInputElement>());
     }
     if (fileInputRefs.quizOptions.length > numOptions) {
-      fileInputRefs.quizOptions.length = numOptions; 
+      fileInputRefs.quizOptions.length = numOptions;
     }
   }
 
@@ -239,7 +281,7 @@ export function TileEditorModal({ tile, onSave, onClose }: TileEditorModalProps)
             {t('tileEditor.customizeProperties')}
           </DialogDescription>
         </DialogHeader>
-        
+
         <ScrollArea className="max-h-[calc(90vh-200px)] p-1">
         <div className="grid gap-4 py-4 pr-4">
           {(tile.type !== 'start' && tile.type !== 'finish') && (
@@ -262,7 +304,12 @@ export function TileEditorModal({ tile, onSave, onClose }: TileEditorModalProps)
             <>
               {editableTile.type === 'quiz' && (
                 <div className="space-y-4 p-4 border rounded-md bg-muted/30">
-                  <h4 className="font-medium text-primary">{t('tileEditor.quizConfiguration')}</h4>
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-medium text-primary">{t('tileEditor.quizConfiguration')}</h4>
+                    <Button variant="outline" size="sm" onClick={() => setIsAiGeneratorOpen(true)}>
+                        <Sparkles className="mr-2 h-4 w-4" /> {t('tileEditor.generateWithAI')}
+                    </Button>
+                  </div>
                   <div>
                     <Label htmlFor="quiz-question">{t('tileEditor.question')}</Label>
                     <Textarea id="quiz-question" value={(editableTile.config as TileConfigQuiz).question} onChange={e => handleInputChange('question', e.target.value)} className="mt-1"/>
@@ -270,8 +317,8 @@ export function TileEditorModal({ tile, onSave, onClose }: TileEditorModalProps)
                   {renderImageUpload('tileEditor.questionImage', 'questionImage', (editableTile.config as TileConfigQuiz).questionImage, fileInputRefs.questionImage)}
                   <div>
                     <Label htmlFor="quiz-difficulty">{t('tileEditor.difficulty')}</Label>
-                    <Select 
-                      value={(editableTile.config as TileConfigQuiz).difficulty.toString()} 
+                    <Select
+                      value={(editableTile.config as TileConfigQuiz).difficulty.toString()}
                       onValueChange={val => handleInputChange('difficulty', val)}
                     >
                       <SelectTrigger id="quiz-difficulty" className="mt-1">
@@ -289,18 +336,18 @@ export function TileEditorModal({ tile, onSave, onClose }: TileEditorModalProps)
                      {(editableTile.config as TileConfigQuiz).options.map((opt, index) => (
                         <div key={opt.id} className="flex flex-col gap-2 mt-2 border p-2 rounded-md">
                           <div className="flex items-center gap-2">
-                            <Checkbox 
-                              checked={opt.isCorrect} 
+                            <Checkbox
+                              checked={opt.isCorrect}
                               onCheckedChange={(checked) => handleQuizOptionChange(index, 'isCorrect', !!checked)}
                               aria-label={`Mark option ${index + 1} as correct`}
                             />
-                            <Input 
-                              value={opt.text} 
-                              onChange={e => handleQuizOptionChange(index, 'text', e.target.value)} 
+                            <Input
+                              value={opt.text}
+                              onChange={e => handleQuizOptionChange(index, 'text', e.target.value)}
                               placeholder={t('tileEditor.option', { number: index + 1})}
                               className="flex-grow"
                             />
-                            {(editableTile.config as TileConfigQuiz).options.length > 2 && (
+                            {(editableTile.config as TileConfigQuiz).options.length > 1 && ( // Allow removing if more than 1 option
                               <Button variant="ghost" size="icon" onClick={() => removeQuizOption(index)} aria-label={t('tileEditor.removeOption')}>
                                   <Trash2 className="h-4 w-4 text-destructive" />
                               </Button>
@@ -309,7 +356,9 @@ export function TileEditorModal({ tile, onSave, onClose }: TileEditorModalProps)
                            {renderImageUpload('tileEditor.optionImage', `quizOptionImage-${index}`, opt.image, fileInputRefs.quizOptions[index])}
                         </div>
                      ))}
-                     <Button variant="outline" size="sm" onClick={addQuizOption} className="mt-2">{t('tileEditor.addOption')}</Button>
+                     {(editableTile.config as TileConfigQuiz).options.length < 5 && ( // Max 5 options
+                        <Button variant="outline" size="sm" onClick={addQuizOption} className="mt-2">{t('tileEditor.addOption')}</Button>
+                     )}
                   </div>
                 </div>
               )}
@@ -342,8 +391,8 @@ export function TileEditorModal({ tile, onSave, onClose }: TileEditorModalProps)
           <div className="grid grid-cols-4 items-center gap-4">
             <Label className="text-right">{t('tileEditor.color')}</Label>
             <div className="col-span-3 relative">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setColorPickerVisible(!colorPickerVisible)}
                 className="w-full justify-start"
               >
@@ -353,18 +402,18 @@ export function TileEditorModal({ tile, onSave, onClose }: TileEditorModalProps)
               {colorPickerVisible && (
                 <div className="absolute z-10 mt-1 left-0 bg-card p-2 rounded-md shadow-lg">
                    <HexColorPicker color={editableTile.ui.color || DEFAULT_TILE_COLOR} onChange={handleColorChange} />
-                   <Button size="sm" variant="ghost" onClick={() => setColorPickerVisible(false)} className="mt-1 w-full">Close</Button>
+                   <Button size="sm" variant="ghost" onClick={() => setColorPickerVisible(false)} className="mt-1 w-full">{t('tileEditor.closeColorPicker')}</Button>
                 </div>
               )}
             </div>
           </div>
-          
+
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="tile-icon" className="text-right">{t('tileEditor.iconEmoji')}</Label>
-            <Input 
-              id="tile-icon" 
-              value={editableTile.ui.icon || ''} 
-              onChange={e => handleIconChange(e.target.value)} 
+            <Input
+              id="tile-icon"
+              value={editableTile.ui.icon || ''}
+              onChange={e => handleIconChange(e.target.value)}
               className="col-span-3"
               maxLength={2}
               placeholder={TILE_TYPE_EMOJIS[editableTile.type] || t('tileEditor.iconPlaceholder')}
@@ -382,6 +431,13 @@ export function TileEditorModal({ tile, onSave, onClose }: TileEditorModalProps)
           <Button type="submit" onClick={handleSubmit}>{t('tileEditor.saveChanges')}</Button>
         </DialogFooter>
       </DialogContent>
+      {isAiGeneratorOpen && (
+        <AIQuizGeneratorDialog
+            isOpen={isAiGeneratorOpen}
+            onClose={() => setIsAiGeneratorOpen(false)}
+            onGenerated={handleAiGeneratedQuiz}
+        />
+      )}
     </Dialog>
   );
 }

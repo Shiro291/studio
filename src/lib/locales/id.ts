@@ -112,6 +112,7 @@ export const id = {
   'tileEditor.type': 'Jenis',
   'tileEditor.selectTileType': 'Pilih jenis petak',
   'tileEditor.quizConfiguration': 'Konfigurasi Kuis',
+  'tileEditor.generateWithAI': 'Buat dengan AI',
   'tileEditor.question': 'Pertanyaan',
   'tileEditor.questionImage': 'Gambar Pertanyaan (Opsional)',
   'tileEditor.difficulty': 'Kesulitan',
@@ -139,6 +140,21 @@ export const id = {
   'tileEditor.uploadImage': 'Unggah Gambar',
   'tileEditor.removeImage': 'Hapus Gambar',
   'tileEditor.imagePreview': 'Pratinjau Gambar',
+  'tileEditor.closeColorPicker': 'Tutup',
+
+  // AIQuizGeneratorDialog
+  'aiQuizGenerator.title': 'Buat Kuis dengan AI',
+  'aiQuizGenerator.description': 'Berikan teks sumber (misalnya, dari materi pembelajaran, ringkasan topik) dan biarkan AI membuatkan pertanyaan kuis untuk Anda.',
+  'aiQuizGenerator.sourceTextLabel': 'Teks Sumber / Topik',
+  'aiQuizGenerator.sourceTextPlaceholder': 'Tempel materi pembelajaran Anda atau jelaskan topiknya di sini (min. 20 karakter)...',
+  'aiQuizGenerator.sourceTextHelp': 'AI akan menggunakan teks ini untuk membuat pertanyaan dan jawaban yang relevan.',
+  'aiQuizGenerator.numOptionsLabel': 'Jumlah Pilihan Jawaban',
+  'aiQuizGenerator.generateButton': 'Buat Kuis',
+  'aiQuizGenerator.generating': 'Membuat...',
+  'aiQuizGenerator.errorTitle': 'Pembuatan AI Gagal',
+  'aiQuizGenerator.errorGeneral': 'Terjadi kesalahan tak terduga saat membuat kuis. Silakan coba lagi.',
+  'aiQuizGenerator.errorMinLength': 'Teks sumber minimal harus 20 karakter.',
+
 
   // DiceRoller
   'diceRoller.roll': 'Kocok D{sides}',
@@ -196,6 +212,7 @@ export const id = {
   'log.rewardCollected': '{name} mengambil hadiah! +{points} poin.',
   'log.infoAcknowledged': '{name} membaca pesan info.',
   'log.playerFinished': '{name} mencapai garis finish! (Selesai ke-{finishOrder})',
+  'log.firstToFinishWinner': '{name} adalah yang pertama mencapai finish dan menang!',
   'log.highestScoreWinner': '{name} menang dengan skor tertinggi: {score} poin!',
   'log.combinedScoreWinner': '{name} menang dengan skor kombinasi {score} (Skor: {rawScore}, Urutan Selesai: {finishOrder})!',
   'log.event.gameStarted': 'Permainan "{name}" telah dimulai.',
@@ -236,5 +253,3 @@ export const id = {
   'capitalize.info': 'Info',
   'capitalize.reward': 'Hadiah',
 };
-
-    
