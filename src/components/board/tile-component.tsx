@@ -60,12 +60,12 @@ export function TileComponent({ tile, onClick, isInteractive, playersOnTile = []
 
       {playersOnTile.length > 0 && (
         <div className="absolute bottom-0.5 right-0.5 left-0.5 flex flex-wrap justify-end items-end p-px gap-px max-w-full">
-          {playersOnTile.slice(0, 6).map(player => ( // Show max 6 pawns for clarity, can be adjusted
+          {playersOnTile.slice(0, 6).map(player => ( 
             <div
               key={player.id}
               className="w-2 h-2 rounded-full border border-background shadow-sm"
               style={{ backgroundColor: player.color }}
-              title={player.name} // Show player name on hover
+              title={player.name} 
             />
           ))}
           {playersOnTile.length > 6 && (

@@ -21,15 +21,15 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isPlayMode = pathname === '/play';
 
   if (isPlayMode) {
-    // For play mode, AppHeader is rendered directly without SidebarProvider
-    // AppHeader itself needs to conditionally use useSidebar() or not render parts that need it
     return (
-      <div className="flex min-h-svh w-full flex-col">
-        <AppHeader isPlayMode={isPlayMode} />
-        <main className="flex-1 p-4 md:p-6 lg:p-8 bg-background text-foreground">
-          {children}
-        </main>
-      </div>
+      <SidebarProvider defaultOpen={false}> {/* Provider still needed for useSidebar hook in AppHeader, but sidebar itself is not shown */}
+        <div className="flex min-h-svh w-full flex-col">
+          <AppHeader isPlayMode={isPlayMode} />
+          <main className="flex-1 p-4 md:p-6 lg:p-8 bg-background text-foreground">
+            {children}
+          </main>
+        </div>
+      </SidebarProvider>
     );
   }
 
@@ -37,16 +37,14 @@ export function AppShell({ children }: { children: ReactNode }) {
     <SidebarProvider defaultOpen={!isMobile}>
       <Sidebar variant="sidebar" collapsible={isMobile ? "offcanvas" : "icon"}>
         <ShadSidebarHeader>
-          {/* Placeholder for potential logo or trigger in header if needed */}
         </ShadSidebarHeader>
         <ShadSidebarContent>
           <AppSidebarContent />
         </ShadSidebarContent>
-        {/* SidebarFooter can be added here if needed */}
       </Sidebar>
       <SidebarRail />
       <SidebarInset>
-        <AppHeader isPlayMode={isPlayMode} /> {/* AppHeader is inside SidebarProvider here */}
+        <AppHeader isPlayMode={isPlayMode} /> 
         <main className="flex-1 p-4 md:p-6 lg:p-8">
           {children}
         </main>

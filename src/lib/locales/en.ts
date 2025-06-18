@@ -145,6 +145,8 @@ export const en = {
   'tutorialModal.boardSettings.nameDescription.text': 'Give your game a unique identity.',
   'tutorialModal.boardSettings.numberOfTiles.label': 'Number of Tiles',
   'tutorialModal.boardSettings.numberOfTiles.text': 'Adjust the board length (10-100 tiles). Start and Finish tiles are automatic.',
+  'tutorialModal.boardSettings.punishmentType.label': 'Punishment Type',
+  'tutorialModal.boardSettings.punishmentType.text': 'Define what happens when a player answers a quiz incorrectly.',
   'tutorialModal.boardSettings.backgroundImage.label': 'Board Background Image',
   'tutorialModal.boardSettings.backgroundImage.text': 'Personalize your board with a background image.',
   'tutorialModal.boardSettings.playerSettings.label': 'Player & Winning',

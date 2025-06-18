@@ -4,7 +4,7 @@
 import type { ReactNode } from 'react';
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
 import type { BoardConfig, GameState, Player, Tile, TileConfigQuiz, TileConfigReward, QuizOption, GameStatus, PersistedPlayState, PunishmentType } from '@/types';
-import { DEFAULT_BOARD_SETTINGS } from '@/types'; // Corrected import path
+import { DEFAULT_BOARD_SETTINGS } from '@/types';
 import { DEFAULT_TILE_COLOR, FINISH_TILE_COLOR, MAX_PLAYERS, MAX_TILES, MIN_PLAYERS, MIN_TILES, PLAYER_COLORS, RANDOM_COLORS, RANDOM_EMOJIS, START_TILE_COLOR, TILE_TYPE_EMOJIS, DIFFICULTY_POINTS } from '@/lib/constants';
 import { nanoid } from 'nanoid';
 import { playSound } from '@/lib/sound-service';
@@ -29,7 +29,7 @@ const initialState: GameState = {
   players: [],
   currentPlayerIndex: 0,
   diceRoll: null,
-  gameStatus: 'setup', // Initial status
+  gameStatus: 'setup', 
   isLoading: true,
   error: null,
   activeTileForInteraction: null,
@@ -67,7 +67,6 @@ function applyBoardRandomizationSettings(boardConfig: BoardConfig): BoardConfig 
   let newTiles = [...boardConfig.tiles];
 
   if (boardConfig.settings.randomizeTiles) {
-    // Randomize visuals (colors and icons)
     newTiles = newTiles.map(tile => {
       if (tile.type === 'start' || tile.type === 'finish') return tile;
       const randomColor = RANDOM_COLORS[Math.floor(Math.random() * RANDOM_COLORS.length)];
@@ -75,7 +74,6 @@ function applyBoardRandomizationSettings(boardConfig: BoardConfig): BoardConfig 
       return { ...tile, ui: { ...tile.ui, color: randomColor, icon: randomEmoji } };
     });
 
-    // Shuffle quiz options
     newTiles = newTiles.map(tile => {
       if (tile.type === 'quiz' && tile.config) {
         const quizConfig = tile.config as TileConfigQuiz;
@@ -102,7 +100,17 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SET_BOARD_CONFIG': {
       const { boardConfig: rawBoardConfig, persistedPlayState } = action.payload;
 
-      let processedBoardConfig = applyBoardRandomizationSettings(rawBoardConfig);
+      let processedBoardConfig = rawBoardConfig;
+      if (rawBoardConfig.settings.randomizeTiles && !persistedPlayState) { 
+          processedBoardConfig = applyBoardRandomizationSettings(rawBoardConfig);
+      } else if (persistedPlayState && persistedPlayState.activeTileForInteraction?.type === 'quiz') {
+          // If loading from persisted state, ensure quiz options are as they were
+          const activeQuiz = processedBoardConfig.tiles.find(t => t.id === persistedPlayState.activeTileForInteraction!.id);
+          if (activeQuiz && activeQuiz.type === 'quiz' && activeQuiz.config) {
+              (activeQuiz.config as TileConfigQuiz).options = (persistedPlayState.activeTileForInteraction.config as TileConfigQuiz).options;
+          }
+      }
+
 
       let players = generatePlayers(processedBoardConfig.settings.numberOfPlayers);
       let currentPlayerIndex = 0;
@@ -155,9 +163,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
     case 'UPDATE_TILES': {
       if (!state.boardConfig) return state;
-      // The applyBoardRandomizationSettings function is called on SET_BOARD_CONFIG and RESET_GAME_FOR_PLAY.
-      // Individual tile updates in the editor should not trigger full board randomization immediately.
-      // The options are shuffled in applyBoardRandomizationSettings if randomizeTiles is true.
       return {
         ...state,
         boardConfig: { ...state.boardConfig, tiles: action.payload },
@@ -487,5 +492,3 @@ export function useGame() {
   }
   return context;
 }
-
-    

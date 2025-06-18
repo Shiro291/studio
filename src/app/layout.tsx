@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { GameProvider } from '@/components/game/game-provider';
 import { AppShell } from '@/components/layout/app-shell';
-import { LanguageProvider } from '@/context/language-context'; // Added
-import { ThemeProvider } from 'next-themes'; // Added based on AppHeader usage
+import { LanguageProvider } from '@/context/language-context';
+import { ThemeProvider } from 'next-themes';
 
 export const metadata: Metadata = {
   title: 'BoardWise',

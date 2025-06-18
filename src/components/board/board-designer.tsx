@@ -196,5 +196,3 @@ export function BoardDesigner() {
     </Card>
   );
 }
-
-    

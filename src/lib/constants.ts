@@ -30,33 +30,33 @@ export const RANDOM_EMOJIS: string[] = [
 ];
 
 export const RANDOM_COLORS: string[] = [
-  '#FFADAD', // Light Red
-  '#FFD6A5', // Light Orange
-  '#FDFFB6', // Light Yellow
-  '#CAFFBF', // Light Green
-  '#9BF6FF', // Light Cyan
-  '#A0C4FF', // Light Blue
-  '#BDB2FF', // Light Purple
-  '#FFC6FF', // Light Magenta
-  '#FFB3BA', // Pastel Pink
-  '#FFDFBA', // Pastel Peach
-  '#FFFFBA', // Pastel Yellow
-  '#BAFFC9', // Pastel Mint
-  '#BAE1FF', // Pastel Blue
-  '#E0BBE4', // Pastel Lavender
+  '#FFADAD', 
+  '#FFD6A5', 
+  '#FDFFB6', 
+  '#CAFFBF', 
+  '#9BF6FF', 
+  '#A0C4FF', 
+  '#BDB2FF', 
+  '#FFC6FF', 
+  '#FFB3BA', 
+  '#FFDFBA', 
+  '#FFFFBA', 
+  '#BAFFC9', 
+  '#BAE1FF', 
+  '#E0BBE4', 
 ];
 
 export const PLAYER_COLORS: string[] = [
-  '#FF5733', // Red-Orange
-  '#33FF57', // Bright Green
-  '#3357FF', // Bright Blue
-  '#FF33A1', // Pink
-  '#FFB833', // Orange
-  '#33FFF0', // Cyan
-  '#A133FF', // Purple
-  '#FF3333', // Red
-  '#33A1FF', // Sky Blue
-  '#A1FF33', // Lime Green
+  '#FF5733', 
+  '#33FF57', 
+  '#3357FF', 
+  '#FF33A1', 
+  '#FFB833', 
+  '#33FFF0', 
+  '#A133FF', 
+  '#FF3333', 
+  '#33A1FF', 
+  '#A1FF33', 
 ];
 
 export const MIN_PLAYERS = 1;

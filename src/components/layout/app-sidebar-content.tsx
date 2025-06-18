@@ -24,7 +24,7 @@ import React, { useRef, useState } from 'react';
 import { useLanguage } from '@/context/language-context';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import NextImage from 'next/image'; // Renamed to avoid conflict
+import NextImage from 'next/image'; 
 import { TutorialModal } from './tutorial-modal';
 import {
   Accordion,
@@ -80,7 +80,8 @@ export function AppSidebarContent() {
     if (state.boardConfig) {
       try {
         const jsonString = JSON.stringify(state.boardConfig);
-        const base64Data = btoa(unescape(encodeURIComponent(jsonString)));
+        const utf8Encoded = unescape(encodeURIComponent(jsonString));
+        const base64Data = btoa(utf8Encoded);
         const shareUrl = `${window.location.origin}/play?board=${encodeURIComponent(base64Data)}`;
         navigator.clipboard.writeText(shareUrl)
           .then(() => {
@@ -419,5 +420,3 @@ export function AppSidebarContent() {
     </>
   );
 }
-
-    

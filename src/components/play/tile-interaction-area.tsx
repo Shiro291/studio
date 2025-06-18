@@ -37,7 +37,7 @@ export function TileInteractionArea({ tile, boardSettings, isQuizCorrect }: Tile
   const handleQuizSubmit = () => {
     if (selectedQuizOptionId) {
       dispatch({ type: 'ANSWER_QUIZ', payload: { selectedOptionId } });
-      setQuizAttempted(true); // This component now knows an attempt was made
+      setQuizAttempted(true); 
     }
   };
 
@@ -68,7 +68,7 @@ export function TileInteractionArea({ tile, boardSettings, isQuizCorrect }: Tile
         if (quizConfig.difficulty === 1) moveBackAmount = 1;
         else if (quizConfig.difficulty === 2) moveBackAmount = 2;
         else if (quizConfig.difficulty === 3) moveBackAmount = 3;
-        return t('playPage.punishment.moveBackLevelBased', { count: moveBackAmount });
+        return t('playPage.punishment.moveBackLevelBased', { count: moveBackAmount, level: quizConfig.difficulty });
       default:
         return null;
     }
@@ -182,8 +182,7 @@ export function TileInteractionArea({ tile, boardSettings, isQuizCorrect }: Tile
     }
      case 'start':
      case 'empty':
-     case 'finish': // Finish tile interactions (like winning) are handled more globally by GameProvider
-        // Auto-proceed for these tiles if interaction somehow lands here
+     case 'finish': 
         if (state.activeTileForInteraction && state.gameStatus === 'interaction_pending') {
             setTimeout(() => dispatch({ type: 'PROCEED_TO_NEXT_TURN' }), 0);
         }

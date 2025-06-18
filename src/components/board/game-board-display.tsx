@@ -7,7 +7,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 interface GameBoardDisplayProps {
   boardConfig: BoardConfig;
-  onTileClick?: (tile: Tile) => void; // For designer interaction
+  onTileClick?: (tile: Tile) => void; 
   activePlayerId?: string;
   players?: { id: string; position: number; color: string; name?: string }[];
 }
@@ -16,7 +16,6 @@ export function GameBoardDisplay({ boardConfig, onTileClick, activePlayerId, pla
   const { tiles, settings } = boardConfig;
   const numTiles = settings.numberOfTiles;
 
-  // Only grid layout is supported for now
   const displayCols = Math.max(1, Math.ceil(Math.sqrt(numTiles)));
   const displayRows = Math.max(1, Math.ceil(numTiles / displayCols));
   
@@ -26,7 +25,7 @@ export function GameBoardDisplay({ boardConfig, onTileClick, activePlayerId, pla
   const boardBackgroundStyle: React.CSSProperties = {};
   if (settings.boardBackgroundImage) {
     boardBackgroundStyle.backgroundImage = `url(${settings.boardBackgroundImage})`;
-    boardBackgroundStyle.backgroundSize = 'cover'; // Or 'contain' or specific values
+    boardBackgroundStyle.backgroundSize = 'cover'; 
     boardBackgroundStyle.backgroundPosition = 'center';
     boardBackgroundStyle.backgroundRepeat = 'no-repeat';
   }

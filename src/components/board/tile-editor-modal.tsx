@@ -22,9 +22,9 @@ import { nanoid } from 'nanoid';
 import { HexColorPicker } from "react-colorful";
 import { Checkbox } from '../ui/checkbox';
 import { ScrollArea } from '../ui/scroll-area';
-import { Trash2, XCircle } from 'lucide-react'; // Removed UploadCloud
+import { Trash2, XCircle } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
-import Image from 'next/image'; // For Next.js optimized images
+import Image from 'next/image';
 
 interface TileEditorModalProps {
   tile: Tile;
@@ -42,7 +42,7 @@ export function TileEditorModal({ tile, onSave, onClose }: TileEditorModalProps)
   const fileInputRefs = {
     questionImage: useRef<HTMLInputElement>(null),
     infoImage: useRef<HTMLInputElement>(null),
-    quizOptions: [] as React.RefObject<HTMLInputElement>[], // For multiple quiz options
+    quizOptions: [] as React.RefObject<HTMLInputElement>[], 
   };
 
 
@@ -102,7 +102,6 @@ export function TileEditorModal({ tile, onSave, onClose }: TileEditorModalProps)
       };
       reader.readAsDataURL(file);
     }
-     // Reset file input to allow re-uploading the same file
     if (event.target) {
         event.target.value = '';
     }
@@ -220,14 +219,13 @@ export function TileEditorModal({ tile, onSave, onClose }: TileEditorModalProps)
     </div>
   );
 
-  // Ensure refs for quiz options
   if (editableTile.type === 'quiz' && editableTile.config) {
     const numOptions = (editableTile.config as TileConfigQuiz).options.length;
     while (fileInputRefs.quizOptions.length < numOptions) {
       fileInputRefs.quizOptions.push(React.createRef<HTMLInputElement>());
     }
     if (fileInputRefs.quizOptions.length > numOptions) {
-      fileInputRefs.quizOptions.length = numOptions; // Truncate if options were removed
+      fileInputRefs.quizOptions.length = numOptions; 
     }
   }
 
@@ -387,5 +385,3 @@ export function TileEditorModal({ tile, onSave, onClose }: TileEditorModalProps)
     </Dialog>
   );
 }
-
-    

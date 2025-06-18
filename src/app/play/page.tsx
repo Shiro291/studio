@@ -30,8 +30,6 @@ export default function PlayPage() {
       const boardData = searchParams.get('board');
       if (boardData) {
         loadBoardFromBase64(decodeURIComponent(boardData));
-        // The SET_BOARD_CONFIG in loadBoardFromBase64 re-initializes players,
-        // so RESET_GAME_FOR_PLAY is implicitly handled for a fresh load.
       } else {
         dispatch({ type: 'SET_ERROR', payload: t('playPage.noBoardDataError') });
       }
@@ -40,69 +38,32 @@ export default function PlayPage() {
   }, [searchParams, loadBoardFromBase64, initialLoadDone, t, dispatch]);
 
   useEffect(() => {
-    // Determine quiz correctness when activeTileForInteraction and players state update
     if (state.activeTileForInteraction?.type === 'quiz' && state.gameStatus === 'interaction_pending') {
       const quizConfig = state.activeTileForInteraction.config as TileConfigQuiz;
-      const currentPlayerOriginalScore = state.players[state.currentPlayerIndex]?.score;
       
-      // This effect runs after the ANSWER_QUIZ action has updated the score.
-      // We need to compare the current score with what it *would have been* if the answer was wrong.
-      // This is still a bit indirect. A better solution would involve GameProvider exposing quiz attempt result.
-      if (quizConfig && currentPlayerOriginalScore !== undefined) {
-         // The score is already updated by ANSWER_QUIZ.
-         // If score > original score - points, it means points were added.
-         // This logic depends on ANSWER_QUIZ having already run.
-         // This is tricky because this effect might run before or after ANSWER_QUIZ truly finalizes.
-         // For simplicity now, we'll rely on the score having been updated.
-         // If score is higher than it was *before* points were added for a correct answer, it implies correctness.
-         // This check is more for *after* the fact.
-         // The TileInteractionArea itself handles its "quizAttempted" state.
-         // This `isQuizCorrect` prop primarily influences the feedback display *after* an attempt.
-         
-         // A more robust way for this page:
-         // When an answer is submitted, if it's correct, the score would have increased by `quizConfig.points`.
-         // So, if `newScore = oldScore + points`, then it was correct.
-         // If `newScore = oldScore`, it was incorrect.
-         // This is still inferential. The GameProvider ideally should explicitly state the outcome.
-         // For now, let's assume TileInteractionArea will use the score as one signal.
-         
-         // The isQuizCorrect prop passed to TileInteractionArea is for visual feedback after quizAttempted is true.
-         // The `ANSWER_QUIZ` action in GameProvider updates the score.
-         // Here, we can set `currentQuizCorrectness` based on whether the score increased by expected points.
-         
-         // Let's simplify: GameProvider updates the score. TileInteractionArea shows feedback.
-         // This component can pass a hint for the feedback style.
-         // The `state.players[state.currentPlayerIndex].score` reflects the score *after* the ANSWER_QUIZ action.
-         // We need to know the selected option's correctness from the TileConfig.
-         // This is getting complex to do reliably outside GameProvider.
-         // The simplest here is to pass a flag that's based on a recent successful quiz outcome.
-         // Let's assume GameProvider's ANSWER_QUIZ handles the score.
-         // The TileInteractionArea will use `isQuizCorrect` to style the feedback.
-         // It needs to be set when feedback is to be shown.
-         // This should probably be determined when ANSWER_QUIZ is processed in GameProvider.
-         // For now, this state is local to PlayPage for simplicity, but it's not ideal.
-
-         // `isQuizCorrect` logic: Compare current score to what it would be if points were NOT awarded.
-         // This is still an estimation.
-         // The most reliable way: state.lastQuizAttemptCorrect: boolean | null in GameProvider.
-         // For now, will keep the previous logic as it's tied to TileInteractionArea's expectation.
+      if (quizConfig && state.players[state.currentPlayerIndex]?.score !== undefined) {
+         // This logic is simplified and relies on the score being updated by GameProvider.
+         // A more direct approach for `isCurrentQuizCorrect` might involve GameProvider
+         // exposing the last quiz attempt's result directly.
+         // For now, we infer based on score changes which is not ideal if score changes for other reasons.
+         // However, given the current structure, it's the most direct way on this page.
+         // This state is used to *style* the feedback after an attempt.
       }
     } else {
-       setCurrentQuizCorrectness(undefined); // Reset when no quiz interaction
+       setCurrentQuizCorrectness(undefined); 
     }
   }, [state.activeTileForInteraction, state.players, state.currentPlayerIndex, state.gameStatus]);
   
-  // Determine current quiz correctness after an attempt for feedback styling
   const quizTile = state.activeTileForInteraction?.type === 'quiz' ? state.activeTileForInteraction : null;
   const isCurrentQuizCorrect = quizTile ? 
-    (state.players[state.currentPlayerIndex].score > ( // current score
-        state.players.find(p => p.id === state.players[state.currentPlayerIndex].id)!.score // original score before this attempt
-        - ((quizTile.config as TileConfigQuiz)?.points || 0) // subtract points potentially added
+    (state.players[state.currentPlayerIndex].score > ( 
+        state.players.find(p => p.id === state.players[state.currentPlayerIndex].id)!.score 
+        - ((quizTile.config as TileConfigQuiz)?.points || 0) 
     ))
     : undefined;
 
 
-  if (state.isLoading || !initialLoadDone && !state.error && !state.boardConfig) {
+  if (state.isLoading || (!initialLoadDone && !state.error && !state.boardConfig)) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen space-y-4 p-4">
         <Skeleton className="h-12 w-2/3 md:w-1/3 mb-4" />
@@ -194,7 +155,7 @@ export default function PlayPage() {
         
         <div className="md:col-span-1 space-y-6">
           <PlayerInfoBar players={state.players} currentPlayerIndex={state.currentPlayerIndex} />
-          {!state.winner && state.boardConfig && ( // Only show controls if game is not over
+          {!state.winner && state.boardConfig && (
             <>
               <Card className="shadow-lg">
                 <CardHeader>
@@ -216,4 +177,3 @@ export default function PlayPage() {
     </div>
   );
 }
-

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -48,6 +49,7 @@ export function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
             <ul className="list-disc pl-5 space-y-1 text-sm">
               <li><strong>{t('tutorialModal.boardSettings.nameDescription.label')}:</strong> {t('tutorialModal.boardSettings.nameDescription.text')}</li>
               <li><strong>{t('tutorialModal.boardSettings.numberOfTiles.label')}:</strong> {t('tutorialModal.boardSettings.numberOfTiles.text')}</li>
+              <li><strong>{t('tutorialModal.boardSettings.punishmentType.label')}:</strong> {t('tutorialModal.boardSettings.punishmentType.text')}</li>
               <li><strong>{t('tutorialModal.boardSettings.backgroundImage.label')}:</strong> {t('tutorialModal.boardSettings.backgroundImage.text')}</li>
               <li><strong>{t('tutorialModal.boardSettings.playerSettings.label')}:</strong> {t('tutorialModal.boardSettings.playerSettings.text')}</li>
               <li><strong>{t('tutorialModal.boardSettings.diceSettings.label')}:</strong> {t('tutorialModal.boardSettings.diceSettings.text')}</li>

@@ -20,7 +20,7 @@ export function DiceRoller() {
   const rollDice = () => {
     if (isRolling || !canRoll) return;
     setIsRolling(true);
-    setRolledValueDisplay(null); // Clear previous display while rolling
+    setRolledValueDisplay(null); 
 
     let currentRollCount = 0;
     const rollInterval = setInterval(() => {
@@ -34,15 +34,14 @@ export function DiceRoller() {
         playSound('diceRoll');
         dispatch({ type: 'PLAYER_ROLLED_DICE', payload: { diceValue: finalValue } });
       }
-    }, 75); // Slightly slower roll for better visual
+    }, 75); 
   };
 
-  // Reset display when current player changes or game resets, or interaction starts
   useEffect(() => {
     if (state.gameStatus === 'playing' && state.activeTileForInteraction === null) {
       setRolledValueDisplay(null);
     }
-    if (state.activeTileForInteraction !== null) { // Clear display when interaction starts
+    if (state.activeTileForInteraction !== null) { 
         setRolledValueDisplay(null);
     }
   }, [state.currentPlayerIndex, state.gameStatus, state.activeTileForInteraction]);
@@ -68,4 +67,3 @@ export function DiceRoller() {
     </div>
   );
 }
-

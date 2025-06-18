@@ -144,6 +144,8 @@ export const id = {
   'tutorialModal.boardSettings.nameDescription.text': 'Berikan identitas unik pada permainan Anda.',
   'tutorialModal.boardSettings.numberOfTiles.label': 'Jumlah Petak',
   'tutorialModal.boardSettings.numberOfTiles.text': 'Sesuaikan panjang papan (10-100 petak). Petak Mulai dan Selesai otomatis.',
+  'tutorialModal.boardSettings.punishmentType.label': 'Jenis Hukuman',
+  'tutorialModal.boardSettings.punishmentType.text': 'Tentukan apa yang terjadi jika pemain salah menjawab kuis.',
   'tutorialModal.boardSettings.backgroundImage.label': 'Gambar Latar Papan',
   'tutorialModal.boardSettings.backgroundImage.text': 'Personalisasi papan Anda dengan gambar latar.',
   'tutorialModal.boardSettings.playerSettings.label': 'Pemain & Kemenangan',

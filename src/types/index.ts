@@ -5,20 +5,20 @@ export interface QuizOption {
   id: string;
   text: string;
   isCorrect: boolean;
-  image?: string; // Data URI for the option image
+  image?: string; 
 }
 
 export interface TileConfigQuiz {
   question: string;
-  questionImage?: string; // Data URI for the question image
+  questionImage?: string; 
   options: QuizOption[];
-  difficulty: 1 | 2 | 3; // Level 1, 2, 3
-  points: number; // 5, 10, 15
+  difficulty: 1 | 2 | 3; 
+  points: number; 
 }
 
 export interface TileConfigInfo {
   message: string;
-  image?: string; // Data URI for the info image
+  image?: string; 
 }
 
 export interface TileConfigReward {
@@ -29,11 +29,11 @@ export interface TileConfigReward {
 export interface Tile {
   id:string;
   type: TileType;
-  position: number; // 0-indexed
-  config?: TileConfigQuiz | TileConfigInfo | TileConfigReward; // Specific config based on type
+  position: number; 
+  config?: TileConfigQuiz | TileConfigInfo | TileConfigReward; 
   ui: {
-    color?: string; // Hex color
-    icon?: string; // Icon name (e.g., from lucide-react or emoji)
+    color?: string; 
+    icon?: string; 
   };
 }
 
@@ -43,18 +43,18 @@ export type PunishmentType = 'none' | 'revertMove' | 'moveBackFixed' | 'moveBack
 export interface BoardSettings {
   name: string;
   description?: string;
-  numberOfTiles: number; // Max 100
+  numberOfTiles: number; 
   punishmentType: PunishmentType; 
-  punishmentValue: number; // Used for 'moveBackFixed'
-  randomizeTiles: boolean; // On load or new game, tile types/content could be randomized
-  diceSides: number; // 1-12
-  numberOfPlayers: number; // 1-10
+  punishmentValue: number; 
+  randomizeTiles: boolean; 
+  diceSides: number; 
+  numberOfPlayers: number; 
   winningCondition: WinningCondition;
-  boardBackgroundImage?: string; // Data URI for the board background
+  boardBackgroundImage?: string; 
 }
 
 export interface BoardConfig {
-  id: string; // Unique ID for the board, could be generated
+  id: string; 
   settings: BoardSettings;
   tiles: Tile[];
 }
@@ -62,8 +62,8 @@ export interface BoardConfig {
 export interface Player {
   id: string;
   name: string;
-  color: string; // Player pawn color
-  position: number; // Tile index
+  color: string; 
+  position: number; 
   score: number;
 }
 
@@ -73,15 +73,14 @@ export interface GameState {
   boardConfig: BoardConfig | null;
   players: Player[];
   currentPlayerIndex: number;
-  diceRoll: number | null; // Stores the value of the last dice roll
+  diceRoll: number | null; 
   gameStatus: GameStatus;
   isLoading: boolean;
   error: string | null;
-  activeTileForInteraction: Tile | null; // Tile current player landed on and needs to interact with
-  winner: Player | null; // Stores the winner when game is finished
+  activeTileForInteraction: Tile | null; 
+  winner: Player | null; 
 }
 
-// Default values for a new board
 export const DEFAULT_BOARD_SETTINGS: BoardSettings = {
   name: 'My Awesome Board Game',
   numberOfTiles: 20,
@@ -94,7 +93,6 @@ export const DEFAULT_BOARD_SETTINGS: BoardSettings = {
   boardBackgroundImage: undefined,
 };
 
-// For persisting play state in localStorage
 export interface PersistedPlayState {
   players: Player[];
   currentPlayerIndex: number;
