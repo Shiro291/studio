@@ -27,13 +27,13 @@ export function DiceRoller({ isDesignerMode = false }: DiceRollerProps) {
   const rollDice = () => {
     if (isRolling || !canRoll) return;
     setIsRolling(true);
-    setRolledValueDisplay(null); 
+    setRolledValueDisplay(null); // Clear display initially to show "..." or start animation clean
 
     let currentRollCount = 0;
     const rollInterval = setInterval(() => {
       setRolledValueDisplay(Math.floor(Math.random() * diceSides) + 1);
       currentRollCount++;
-      if (currentRollCount > 10) {
+      if (currentRollCount > 10) { // Animate for 10 * 75ms = 750ms
         clearInterval(rollInterval);
         const finalValue = Math.floor(Math.random() * diceSides) + 1;
         setRolledValueDisplay(finalValue);
@@ -47,15 +47,21 @@ export function DiceRoller({ isDesignerMode = false }: DiceRollerProps) {
   };
 
   useEffect(() => {
+    // This effect manages clearing the dice display based on game state changes,
+    // primarily for play mode. In designer mode, the dice display is ephemeral
+    // and resets with each roll animation.
     if (!isDesignerMode) {
-      if (state.gameStatus === 'playing' && state.activeTileForInteraction === null) {
+      if (state.activeTileForInteraction || state.winner) {
+        // If an interaction starts (activeTileForInteraction is set) OR the game has a winner,
+        // clear the displayed dice value.
+        setRolledValueDisplay(null);
+      } else if (state.gameStatus === 'playing' && !state.activeTileForInteraction && !state.winner && state.diceRoll === null) {
+        // This condition ensures that on a new turn (after PROCEED_TO_NEXT_TURN which nulls state.diceRoll)
+        // or on "Play Again" (which also nulls state.diceRoll), the local display is cleared.
         setRolledValueDisplay(null);
       }
-      if (state.activeTileForInteraction !== null) { 
-          setRolledValueDisplay(null);
-      }
     }
-  }, [state.currentPlayerIndex, state.gameStatus, state.activeTileForInteraction, isDesignerMode]);
+  }, [isDesignerMode, state.gameStatus, state.activeTileForInteraction, state.winner, state.diceRoll]);
 
 
   return (
@@ -65,7 +71,9 @@ export function DiceRoller({ isDesignerMode = false }: DiceRollerProps) {
         aria-live="polite"
         title={rolledValueDisplay !== null ? t('diceRoller.diceRolled', {value: rolledValueDisplay}) : t('diceRoller.diceNotRolled')}
       >
-        {isRolling ? "..." : (rolledValueDisplay !== null ? rolledValueDisplay : <Dices size={48} className="text-muted-foreground" />)}
+        {isRolling && rolledValueDisplay === null ? "..." : 
+         (rolledValueDisplay !== null ? rolledValueDisplay : <Dices size={48} className="text-muted-foreground" />)
+        }
       </div>
       <Button 
         onClick={rollDice} 
