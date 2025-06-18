@@ -12,6 +12,10 @@ export const en = {
   'sidebar.generatePlayLink': 'Generate Play Link',
   'sidebar.exportBoardFile': 'Export Board File',
   'sidebar.importBoardFile': 'Import Board File',
+  'sidebar.copyBoardJson': 'Copy Board JSON',
+  'sidebar.pasteBoardJsonPlaceholder': 'Paste Board JSON here...',
+  'sidebar.loadFromJsonPaste': 'Load from Pasted JSON',
+
   'sidebar.boardSettings': 'Board Settings',
   'sidebar.boardName': 'Board Name',
   'sidebar.numberOfTiles': 'Number of Tiles: {count}',
@@ -53,7 +57,7 @@ export const en = {
   'sidebar.linkCopiedTitle': 'Link Copied & Opened!',
   'sidebar.linkCopiedDescriptionPlay': 'Playable game link copied! Paste it into a new browser tab or window to play. A new tab has also been opened.',
   'sidebar.copyFailedTitle': 'Copy Failed',
-  'sidebar.copyFailedDescription': 'Could not copy the link. Please try again.',
+  'sidebar.copyFailedDescription': 'Could not copy the link or JSON. Please try again.',
   'sidebar.linkErrorTitle': 'Link Creation Error',
   'sidebar.linkErrorDescription': 'Could not create the shareable link.',
 
@@ -73,11 +77,24 @@ export const en = {
   'sidebar.visualsRandomizedTitle': 'Visuals Randomized!',
   'sidebar.visualsRandomizedDescription': 'Tile icons and colors have been updated.',
 
+  'sidebar.jsonCopiedTitle': 'JSON Copied!',
+  'sidebar.jsonCopiedDescription': 'Board JSON copied to clipboard.',
+  'sidebar.copyErrorTitle': 'Copy Error',
+  'sidebar.noBoardToCopy': 'There is no board configuration to copy.',
+  'sidebar.copyErrorDescription': 'Could not stringify or copy the board JSON.',
+  'sidebar.pasteErrorTitle': 'Paste Error',
+  'sidebar.pasteEmptyError': 'Paste area is empty. Please paste JSON content.',
+  'sidebar.pasteInvalidJsonError': 'Invalid JSON format. Please check the pasted content.',
+
+
   // Tooltips
   'tooltip.newBoard': 'Start a completely new board design from scratch. This will clear any current unsaved work.',
   'tooltip.generatePlayLink': 'Creates a unique shareable link for others to play your current board design. The link opens in a new tab and is copied to your clipboard.',
   'tooltip.exportBoardFile': 'Downloads your current board design as a JSON file. Useful for backups or sharing the editable design with others.',
   'tooltip.importBoardFile': 'Load a previously saved BoardWise JSON design file to continue editing or playing.',
+  'tooltip.copyBoardJson': "Copies the current board's configuration as JSON text directly to your clipboard. You can then paste it elsewhere.",
+  'tooltip.pasteBoardJsonArea': "Paste a valid BoardWise JSON configuration string here.",
+  'tooltip.loadFromJsonPaste': "Loads the board configuration from the JSON text pasted in the area above.",
   'tooltip.boardName.description': 'The title of your game board. This will be visible to players.',
   'tooltip.numberOfTiles.description': 'Set the total number of playable tiles on the board (10-100). Start and Finish tiles are automatically managed.',
   'tooltip.punishmentType.description': 'Define what happens if a player answers a quiz question incorrectly. This applies to all quiz tiles.',
@@ -257,3 +274,4 @@ export const en = {
   'capitalize.info': 'Info',
   'capitalize.reward': 'Reward',
 };
+

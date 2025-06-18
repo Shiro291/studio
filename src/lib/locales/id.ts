@@ -12,6 +12,10 @@ export const id = {
   'sidebar.generatePlayLink': 'Buat Tautan Main',
   'sidebar.exportBoardFile': 'Ekspor Berkas Papan',
   'sidebar.importBoardFile': 'Impor Berkas Papan',
+  'sidebar.copyBoardJson': 'Salin JSON Papan',
+  'sidebar.pasteBoardJsonPlaceholder': 'Tempel JSON Papan di sini...',
+  'sidebar.loadFromJsonPaste': 'Muat dari JSON Tertempel',
+
   'sidebar.boardSettings': 'Pengaturan Papan',
   'sidebar.boardName': 'Nama Papan',
   'sidebar.numberOfTiles': 'Jumlah Petak: {count}',
@@ -51,7 +55,7 @@ export const id = {
   'sidebar.linkCopiedTitle': 'Tautan Disalin & Dibuka!',
   'sidebar.linkCopiedDescriptionPlay': 'Tautan permainan disalin! Tempel di tab browser baru untuk bermain. Tab baru juga telah dibuka.',
   'sidebar.copyFailedTitle': 'Penyalinan Gagal',
-  'sidebar.copyFailedDescription': 'Tidak dapat menyalin tautan. Silakan coba lagi.',
+  'sidebar.copyFailedDescription': 'Tidak dapat menyalin tautan atau JSON. Silakan coba lagi.',
   'sidebar.linkErrorTitle': 'Kesalahan Pembuatan Tautan',
   'sidebar.linkErrorDescription': 'Tidak dapat membuat tautan yang dapat dibagikan.',
 
@@ -71,11 +75,23 @@ export const id = {
   'sidebar.visualsRandomizedTitle': 'Tampilan Diacak!',
   'sidebar.visualsRandomizedDescription': 'Ikon dan warna petak telah diperbarui.',
 
+  'sidebar.jsonCopiedTitle': 'JSON Disalin!',
+  'sidebar.jsonCopiedDescription': 'JSON Papan disalin ke papan klip.',
+  'sidebar.copyErrorTitle': 'Kesalahan Salin',
+  'sidebar.noBoardToCopy': 'Tidak ada konfigurasi papan untuk disalin.',
+  'sidebar.copyErrorDescription': 'Tidak dapat mengubah atau menyalin JSON papan.',
+  'sidebar.pasteErrorTitle': 'Kesalahan Tempel',
+  'sidebar.pasteEmptyError': 'Area tempel kosong. Silakan tempel konten JSON.',
+  'sidebar.pasteInvalidJsonError': 'Format JSON tidak valid. Silakan periksa konten yang ditempel.',
+
   // Tooltips
   'tooltip.newBoard': 'Mulai desain papan baru dari awal. Ini akan menghapus semua pekerjaan saat ini yang belum disimpan.',
   'tooltip.generatePlayLink': 'Membuat tautan unik yang dapat dibagikan agar orang lain dapat memainkan desain papan Anda saat ini. Tautan terbuka di tab baru dan disalin ke clipboard Anda.',
   'tooltip.exportBoardFile': 'Mengunduh desain papan Anda saat ini sebagai file JSON. Berguna untuk cadangan atau berbagi desain yang dapat diedit dengan orang lain.',
   'tooltip.importBoardFile': 'Muat file desain JSON BoardWise yang disimpan sebelumnya untuk melanjutkan pengeditan atau bermain.',
+  'tooltip.copyBoardJson': "Menyalin konfigurasi papan saat ini sebagai teks JSON langsung ke papan klip Anda. Anda kemudian dapat menempelkannya di tempat lain.",
+  'tooltip.pasteBoardJsonArea': "Tempel string konfigurasi JSON BoardWise yang valid di sini.",
+  'tooltip.loadFromJsonPaste': "Memuat konfigurasi papan dari teks JSON yang ditempel di area di atas.",
   'tooltip.boardName.description': 'Judul papan permainan Anda. Ini akan terlihat oleh pemain.',
   'tooltip.numberOfTiles.description': 'Atur jumlah total petak yang dapat dimainkan di papan (10-100). Petak Mulai dan Selesai dikelola secara otomatis.',
   'tooltip.punishmentType.description': 'Tentukan apa yang terjadi jika pemain menjawab pertanyaan kuis dengan salah. Ini berlaku untuk semua petak kuis.',
@@ -253,3 +269,4 @@ export const id = {
   'capitalize.info': 'Info',
   'capitalize.reward': 'Hadiah',
 };
+

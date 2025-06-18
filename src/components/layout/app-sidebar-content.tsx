@@ -16,9 +16,9 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGame } from '@/components/game/game-provider';
 import { MAX_TILES, MIN_TILES, MIN_PLAYERS, MAX_PLAYERS } from '@/lib/constants';
-import { Settings, Palette, Info, Wand2, RefreshCwIcon, Users, Image as ImageIcon, XCircle, Link as LinkIcon, Download, Upload, Dices, ShieldAlert } from 'lucide-react';
+import { Settings, Palette, Info, Wand2, RefreshCwIcon, Users, Image as ImageIcon, XCircle, Link as LinkIcon, Download, Upload, Dices, ShieldAlert, ClipboardCopy, ClipboardPaste } from 'lucide-react';
 import type { BoardConfig, BoardSettings, WinningCondition, PunishmentType } from '@/types';
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useLanguage } from '@/context/language-context';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -31,6 +31,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { nanoid } from 'nanoid';
+import { Textarea } from '@/components/ui/textarea';
 
 
 export function AppSidebarContent() {
@@ -40,6 +41,8 @@ export function AppSidebarContent() {
   const boardSettings = state.boardConfig?.settings;
   const boardBgInputRef = useRef<HTMLInputElement>(null);
   const importFileInputRef = useRef<HTMLInputElement>(null);
+  const [jsonPasteContent, setJsonPasteContent] = useState('');
+
 
   const handleSettingChange = <K extends keyof BoardSettings>(key: K, value: BoardSettings[K]) => {
     dispatch({ type: 'UPDATE_BOARD_SETTINGS', payload: { [key]: value } });
@@ -79,8 +82,6 @@ export function AppSidebarContent() {
       try {
         if (state.pawnAnimation?.timerId) {
             clearTimeout(state.pawnAnimation.timerId);
-            // Potentially dispatch an action to immediately finalize pawn position if mid-animation
-            // For simplicity, current state.players (with actual positions) is used.
         }
         
         const boardConfigForLink: BoardConfig = {
@@ -170,6 +171,51 @@ export function AppSidebarContent() {
     }
   };
 
+  const handleCopyBoardJson = () => {
+    if (state.boardConfig) {
+      try {
+        const jsonString = JSON.stringify(state.boardConfig, null, 2);
+        navigator.clipboard.writeText(jsonString)
+          .then(() => {
+            toast({
+              title: t('sidebar.jsonCopiedTitle'),
+              description: t('sidebar.jsonCopiedDescription'),
+            });
+          })
+          .catch(err => {
+            console.error('Failed to copy JSON: ', err);
+            toast({
+              variant: "destructive",
+              title: t('sidebar.copyFailedTitle'),
+              description: t('sidebar.copyFailedDescription'), // Re-use general copy failed
+            });
+          });
+      } catch (error) {
+        console.error("Error stringifying board JSON:", error);
+        toast({
+          variant: "destructive",
+          title: t('sidebar.copyErrorTitle'),
+          description: t('sidebar.copyErrorDescription'),
+        });
+      }
+    } else {
+      toast({ variant: "destructive", title: t('sidebar.copyErrorTitle'), description: t('sidebar.noBoardToCopy') });
+    }
+  };
+
+  const handleLoadFromJsonPaste = () => {
+    if (jsonPasteContent.trim() === '') {
+      toast({ variant: "destructive", title: t('sidebar.pasteErrorTitle'), description: t('sidebar.pasteEmptyError') });
+      return;
+    }
+    // loadBoardFromJson will handle its own success/error toasts for parsing and validation.
+    if (loadBoardFromJson(jsonPasteContent)) {
+        setJsonPasteContent(''); // Clear textarea on successful load by loadBoardFromJson
+    }
+    // If loadBoardFromJson returns false, it means it encountered an error and showed a toast.
+  };
+
+
   const handleRandomizeVisuals = () => {
     randomizeTileVisuals();
     toast({
@@ -228,6 +274,27 @@ export function AppSidebarContent() {
                     onChange={handleImportBoardFile} 
                     className="hidden" 
                 />
+                 {renderTooltip("tooltip.copyBoardJson",
+                  <Button onClick={handleCopyBoardJson} className="w-full" variant="outline">
+                    <ClipboardCopy className="mr-2 h-4 w-4" /> {t('sidebar.copyBoardJson')}
+                  </Button>
+                )}
+                <div className="space-y-1 pt-1">
+                   {renderTooltip("tooltip.pasteBoardJsonArea",
+                    <Textarea
+                      placeholder={t('sidebar.pasteBoardJsonPlaceholder')}
+                      value={jsonPasteContent}
+                      onChange={(e) => setJsonPasteContent(e.target.value)}
+                      className="text-xs min-h-[80px] max-h-[120px]"
+                      aria-label={t('sidebar.pasteBoardJsonPlaceholder')}
+                    />
+                  )}
+                  {renderTooltip("tooltip.loadFromJsonPaste",
+                    <Button onClick={handleLoadFromJsonPaste} className="w-full" variant="outline" disabled={!jsonPasteContent.trim()}>
+                      <ClipboardPaste className="mr-2 h-4 w-4" /> {t('sidebar.loadFromJsonPaste')}
+                    </Button>
+                  )}
+                </div>
               </>
             )}
           </SidebarGroupContent>
