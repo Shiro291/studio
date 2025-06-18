@@ -22,7 +22,7 @@ import { nanoid } from 'nanoid';
 import { HexColorPicker } from "react-colorful";
 import { Checkbox } from '../ui/checkbox';
 import { ScrollArea } from '../ui/scroll-area';
-import { Trash2, UploadCloud, XCircle } from 'lucide-react';
+import { Trash2, XCircle } from 'lucide-react'; // Removed UploadCloud
 import { useLanguage } from '@/context/language-context';
 import Image from 'next/image'; // For Next.js optimized images
 
@@ -387,3 +387,5 @@ export function TileEditorModal({ tile, onSave, onClose }: TileEditorModalProps)
     </Dialog>
   );
 }
+
+    
