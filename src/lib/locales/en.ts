@@ -39,6 +39,8 @@ export const en = {
   'sidebar.selectWinningCondition': 'Select how to win',
   'sidebar.firstToFinish': 'First to Finish Tile',
   'sidebar.highestScore': 'Highest Score (after all finish)',
+  'sidebar.combinedOrderScore': 'Combined (Finish Order & Score)',
+
 
   'sidebar.diceConfiguration': 'Dice Configuration',
   'sidebar.diceSides': 'Dice Sides: {count}',
@@ -173,7 +175,6 @@ export const en = {
   'playPage.noBoardConfigTitle': 'Board Not Found',
   'playPage.noBoardConfig': 'No game board found. The link might be invalid or the game data is missing.',
   'playPage.noBoardDataError': 'No board data found in the link.',
-  'playPage.backToEditor': 'Back to Editor',
   'playPage.gameBoardTitle': 'Game Board',
   'playPage.controlsTitle': 'Game Controls',
   'playPage.playerInfoTitle': "Player Info",
@@ -219,12 +220,15 @@ export const en = {
   'log.punishmentDetails.moveBackLevelBased': 'Moved back {count} tile(s) (Level {level} quiz).',
   'log.rewardCollected': '{name} collected a reward! +{points} points.',
   'log.infoAcknowledged': '{name} read an info message.',
-  'log.playerFinished': '{name} reached the finish line!',
+  'log.playerFinished': '{name} reached the finish line! (Finished #{finishOrder})',
   'log.highestScoreWinner': '{name} wins with the highest score: {score} points!',
+  'log.combinedScoreWinner': '{name} wins with a combined score of {score} (Score: {rawScore}, Finish Order: {finishOrder})!',
   'log.event.gameStarted': 'Game "{name}" has started.',
   'log.event.gameReset': 'Game has been reset.',
   'log.event.playerMismatch': 'Player data mismatch with board settings. Players reset.',
   'log.event.errorOccurred': 'An error occurred: {error}',
+  'log.streakIncreased': "{name}'s correct answer streak is now {streak}!",
+  'log.streakBroken': "{name}'s correct answer streak was broken.",
 
 
   // Misc

@@ -90,7 +90,6 @@ export function AppSidebarContent() {
               title: t('sidebar.linkCopiedTitle'),
               description: t('sidebar.linkCopiedDescriptionPlay'),
             });
-            // Attempt to open in new tab
             if (typeof window !== "undefined") {
               window.open(shareUrl, '_blank')?.focus();
             }
@@ -369,6 +368,7 @@ export function AppSidebarContent() {
                     <SelectContent>
                       <SelectItem value="firstToFinish" className="text-xs">{t('sidebar.firstToFinish')}</SelectItem>
                       <SelectItem value="highestScore" className="text-xs">{t('sidebar.highestScore')}</SelectItem>
+                      <SelectItem value="combinedOrderScore" className="text-xs">{t('sidebar.combinedOrderScore')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

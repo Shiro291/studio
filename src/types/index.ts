@@ -37,7 +37,7 @@ export interface Tile {
   };
 }
 
-export type WinningCondition = 'firstToFinish' | 'highestScore';
+export type WinningCondition = 'firstToFinish' | 'highestScore' | 'combinedOrderScore';
 export type PunishmentType = 'none' | 'revertMove' | 'moveBackFixed' | 'moveBackLevelBased';
 
 export interface BoardSettings {
@@ -65,6 +65,9 @@ export interface Player {
   color: string;
   position: number;
   score: number;
+  currentStreak: number;
+  hasFinished: boolean;
+  finishOrder: number | null;
 }
 
 export type GameStatus = 'setup' | 'playing' | 'interaction_pending' | 'finished';
@@ -74,7 +77,7 @@ export interface LogEntry {
   messageKey: string;
   messageParams?: Record<string, string | number | undefined>;
   timestamp: number;
-  type: 'roll' | 'move' | 'quiz_correct' | 'quiz_incorrect' | 'punishment' | 'reward' | 'info' | 'game_event' | 'winner';
+  type: 'roll' | 'move' | 'quiz_correct' | 'quiz_incorrect' | 'punishment' | 'reward' | 'info' | 'game_event' | 'winner' | 'streak';
 }
 
 export interface GameState {
@@ -88,6 +91,7 @@ export interface GameState {
   activeTileForInteraction: Tile | null;
   winner: Player | null;
   logs: LogEntry[];
+  playersFinishedCount: number;
 }
 
 export const DEFAULT_BOARD_SETTINGS: BoardSettings = {
@@ -110,4 +114,6 @@ export interface PersistedPlayState {
   activeTileForInteraction: Tile | null;
   winner: Player | null;
   logs: LogEntry[];
+  playersFinishedCount: number;
 }
+

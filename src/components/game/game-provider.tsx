@@ -35,6 +35,7 @@ const initialState: GameState = {
   activeTileForInteraction: null,
   winner: null,
   logs: [],
+  playersFinishedCount: 0,
 };
 
 const GameContext = createContext<{
@@ -61,6 +62,9 @@ function generatePlayers(numberOfPlayers: number): Player[] {
     color: PLAYER_COLORS[i % PLAYER_COLORS.length],
     position: 0,
     score: 0,
+    currentStreak: 0,
+    hasFinished: false,
+    finishOrder: null,
   }));
 }
 
@@ -153,6 +157,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let winner: Player | null = persistedPlayState?.winner ?? null;
       let diceRoll: number | null = persistedPlayState?.diceRoll ?? null;
       let logs: LogEntry[] = persistedPlayState?.logs ?? [];
+      let playersFinishedCount = persistedPlayState?.playersFinishedCount ?? 0;
 
 
       if (persistedPlayState?.players) {
@@ -165,7 +170,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         currentPlayerIndex = persistedPlayState.currentPlayerIndex ?? 0;
       }
       
-      if (logs.length === 0 && !persistedPlayState) { // Add initial game start log if no logs exist
+      if (logs.length === 0 && !persistedPlayState) { 
         logs = addLogEntry(logs, 'log.event.gameStarted', 'game_event', { name: processedBoardConfig.settings.name });
       }
 
@@ -184,6 +189,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         winner,
         diceRoll,
         logs,
+        playersFinishedCount,
         isLoading: false,
         error: null
       };
@@ -206,7 +212,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
     case 'UPDATE_TILES': {
       if (!state.boardConfig) return state;
-      // Removed quiz option shuffling here, as it's handled by applyBoardRandomizationSettings on load/reset
       return {
         ...state,
         boardConfig: { ...state.boardConfig, tiles: action.payload },
@@ -215,16 +220,17 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SET_PLAYERS':
       return { ...state, players: action.payload };
     case 'START_LOADING':
-      return { ...state, isLoading: true, error: null, logs: state.logs }; // Preserve logs on loading
+      return { ...state, isLoading: true, error: null, logs: state.logs }; 
     case 'SET_ERROR':
       return { ...state, isLoading: false, error: action.payload, logs: addLogEntry(state.logs, 'log.event.errorOccurred', 'game_event', { error: action.payload }) };
      case 'PLAYER_ROLLED_DICE': {
-      if (!state.boardConfig || state.gameStatus !== 'playing' || state.winner) return state;
+      if (!state.boardConfig || state.gameStatus !== 'playing' || state.winner || state.players[state.currentPlayerIndex].hasFinished) return state;
 
       const { diceValue } = action.payload;
       const currentPlayer = state.players[state.currentPlayerIndex];
       const newPlayers = [...state.players];
       const maxPosition = state.boardConfig.tiles.length - 1;
+      let newPlayersFinishedCount = state.playersFinishedCount;
 
       let newPosition = currentPlayer.position + diceValue;
       if (newPosition > maxPosition) newPosition = maxPosition;
@@ -237,24 +243,38 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       currentLogs = addLogEntry(currentLogs, 'log.playerMovedTo', 'move', { name: currentPlayer.name, position: newPosition + 1, tileType: landedTile.type });
 
 
-      if (landedTile.type === 'finish' && state.gameStatus !== 'finished') {
+      if (landedTile.type === 'finish' && state.gameStatus !== 'finished' && !currentPlayer.hasFinished) {
         playSound('finishSound');
-        const finishedPlayer = newPlayers[state.currentPlayerIndex];
-        let gameWinner = state.winner;
-        currentLogs = addLogEntry(currentLogs, 'log.playerFinished', 'game_event', { name: finishedPlayer.name });
+        newPlayersFinishedCount++;
+        const finishedPlayerIndex = state.currentPlayerIndex;
+        newPlayers[finishedPlayerIndex] = { 
+            ...newPlayers[finishedPlayerIndex], 
+            hasFinished: true, 
+            finishOrder: newPlayersFinishedCount 
+        };
         
-        if (!gameWinner && state.boardConfig.settings.winningCondition === 'firstToFinish') {
-            gameWinner = finishedPlayer; // Winner declared immediately for 'firstToFinish'
+        currentLogs = addLogEntry(currentLogs, 'log.playerFinished', 'game_event', { name: newPlayers[finishedPlayerIndex].name, finishOrder: newPlayers[finishedPlayerIndex].finishOrder || undefined });
+        
+        let gameWinner: Player | null = null;
+        let newGameStatus: GameStatus = 'interaction_pending';
+
+        if (state.boardConfig.settings.winningCondition === 'firstToFinish') {
+            gameWinner = newPlayers[finishedPlayerIndex]; 
+            newGameStatus = 'finished';
+        } else if (newPlayersFinishedCount === newPlayers.length) { // All players finished
+             // Winner determination for 'highestScore' or 'combinedOrderScore' will happen in PROCEED_TO_NEXT_TURN
+            newGameStatus = 'interaction_pending'; // Allow final tile interaction
         }
-        // For 'highestScore', winner is determined in PROCEED_TO_NEXT_TURN after all players finish.
+        
         return {
             ...state,
             players: newPlayers,
             diceRoll: diceValue,
-            activeTileForInteraction: landedTile, // Still allow interaction if any (though finish usually doesn't have one)
-            gameStatus: gameWinner ? 'finished' : 'interaction_pending', // Game only finishes if 'firstToFinish' and winner declared
+            activeTileForInteraction: landedTile, 
+            gameStatus: newGameStatus,
             winner: gameWinner,
             logs: currentLogs,
+            playersFinishedCount: newPlayersFinishedCount,
          };
       }
       
@@ -277,13 +297,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
         let newScore = currentPlayer.score;
         let newPosition = currentPlayer.position;
+        let newStreak = currentPlayer.currentStreak;
         let soundToPlay = 'wrongAnswer';
 
         if (selectedOption?.isCorrect) {
             newScore += quizConfig.points;
+            newStreak++;
             soundToPlay = 'correctAnswer';
             currentLogs = addLogEntry(currentLogs, 'log.quizCorrect', 'quiz_correct', { name: currentPlayer.name, points: quizConfig.points });
+            currentLogs = addLogEntry(currentLogs, 'log.streakIncreased', 'streak', { name: currentPlayer.name, streak: newStreak });
         } else {
+            if (newStreak > 0) {
+                currentLogs = addLogEntry(currentLogs, 'log.streakBroken', 'streak', { name: currentPlayer.name });
+            }
+            newStreak = 0;
             currentLogs = addLogEntry(currentLogs, 'log.quizIncorrect', 'quiz_incorrect', { name: currentPlayer.name });
             const punishmentDetails = getPunishmentLogDetails(boardSettings.punishmentType, boardSettings.punishmentValue, quizConfig.difficulty, state.diceRoll);
 
@@ -311,7 +338,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             }
         }
         playSound(soundToPlay);
-        newPlayers[state.currentPlayerIndex] = { ...currentPlayer, score: newScore, position: newPosition };
+        newPlayers[state.currentPlayerIndex] = { ...currentPlayer, score: newScore, position: newPosition, currentStreak: newStreak };
 
         return { ...state, players: newPlayers, logs: currentLogs };
     }
@@ -332,33 +359,71 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         } else if (state.activeTileForInteraction.type === 'info') {
              currentLogs = addLogEntry(currentLogs, 'log.infoAcknowledged', 'info', { name: currentPlayer.name });
         }
-        // No log for empty/start/finish from here, as they are auto-acknowledged. Player move log is enough.
         return { ...state, players: newPlayers, logs: currentLogs };
     }
 
     case 'PROCEED_TO_NEXT_TURN': {
         if (!state.boardConfig || state.gameStatus === 'finished') return state;
 
-        let nextPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
-        let currentWinner = state.winner; // Might be set if 'firstToFinish'
-        let gameIsFinished = !!currentWinner;
         let currentLogs = state.logs;
-        const maxPosition = state.boardConfig.tiles.length - 1;
+        let currentWinner = state.winner;
+        let gameIsFinished = !!currentWinner;
+        const winningCondition = state.boardConfig.settings.winningCondition;
+        const allPlayersHaveFinished = state.playersFinishedCount === state.players.length;
 
-        // Check for 'highestScore' win condition
-        if (!currentWinner && state.boardConfig.settings.winningCondition === 'highestScore') {
-            const allPlayersFinished = state.players.every(p => p.position === maxPosition);
-            if (allPlayersFinished) {
-                gameIsFinished = true;
+        if (!currentWinner && allPlayersHaveFinished) {
+            if (winningCondition === 'highestScore') {
                 currentWinner = state.players.reduce((prev, current) => (prev.score > current.score) ? prev : current, state.players[0]);
                 if (currentWinner) {
                     playSound('finishSound');
                     currentLogs = addLogEntry(currentLogs, 'log.highestScoreWinner', 'winner', { name: currentWinner.name, score: currentWinner.score });
                 }
+            } else if (winningCondition === 'combinedOrderScore') {
+                const playersWithCombinedScore = state.players.map(p => {
+                    const finishOrderPoints = p.finishOrder ? (state.players.length - p.finishOrder + 1) * 10 : 0;
+                    return { ...p, combinedScore: finishOrderPoints + p.score };
+                });
+                currentWinner = playersWithCombinedScore.reduce((prev, current) => {
+                    if (prev.combinedScore === current.combinedScore) {
+                        if (prev.finishOrder === current.finishOrder) {
+                           return prev.score > current.score ? prev : current; // Tie break by raw score
+                        }
+                        return (prev.finishOrder || Infinity) < (current.finishOrder || Infinity) ? prev : current; // Tie break by finish order
+                    }
+                    return prev.combinedScore > current.combinedScore ? prev : current;
+                });
+
+                if (currentWinner) {
+                    playSound('finishSound');
+                    const winnerData = playersWithCombinedScore.find(p => p.id === currentWinner!.id);
+                    currentLogs = addLogEntry(currentLogs, 'log.combinedScoreWinner', 'winner', { 
+                        name: winnerData!.name, 
+                        score: winnerData!.combinedScore,
+                        rawScore: winnerData!.score,
+                        finishOrder: winnerData!.finishOrder || undefined
+                    });
+                }
+            }
+             if (currentWinner) gameIsFinished = true;
+        }
+        
+        let nextPlayerIndex = state.currentPlayerIndex;
+        if (!gameIsFinished) {
+            // Find next player who hasn't finished
+            let attempts = 0;
+            do {
+                nextPlayerIndex = (nextPlayerIndex + 1) % state.players.length;
+                attempts++;
+            } while (state.players[nextPlayerIndex].hasFinished && attempts <= state.players.length);
+            
+            // If all remaining players have finished, but game isn't over (e.g. highest score mode waiting for all)
+            // this loop might not find anyone. The winner check above should handle game end.
+            if (attempts > state.players.length && !allPlayersHaveFinished) {
+                // This case should ideally not be hit if winner logic is correct
+                console.warn("Could not find next active player, but game not determined to be over.");
             }
         }
-        // For 'firstToFinish', winner is already handled in PLAYER_ROLLED_DICE.
-        // If gameIsFinished is true here, it means a winner was declared (either by firstToFinish or all finished for highestScore).
+
 
         return {
             ...state,
@@ -393,6 +458,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         diceRoll: null,
         currentPlayerIndex: 0,
         logs: initialLogs,
+        playersFinishedCount: 0,
       };
     }
     default:
@@ -413,6 +479,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         activeTileForInteraction: state.activeTileForInteraction,
         winner: state.winner,
         logs: state.logs,
+        playersFinishedCount: state.playersFinishedCount,
       };
       try {
         localStorage.setItem(`boardwise-play-state-${state.boardConfig.id}`, JSON.stringify(persistState));
@@ -420,7 +487,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         console.warn("Failed to save play state to localStorage", e);
       }
     }
-  }, [state.players, state.currentPlayerIndex, state.diceRoll, state.gameStatus, state.activeTileForInteraction, state.winner, state.logs, state.boardConfig, state.isLoading]);
+  }, [state.players, state.currentPlayerIndex, state.diceRoll, state.gameStatus, state.activeTileForInteraction, state.winner, state.logs, state.playersFinishedCount, state.boardConfig, state.isLoading]);
 
 
   const initializeNewBoard = useCallback(() => {
@@ -462,7 +529,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     let persistedPlayState: PersistedPlayState | null = null;
     try {
       const jsonString = decodeURIComponent(atob(base64Data).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
-      const rawBoardData = JSON.parse(jsonString) as Partial<BoardConfig> & { settings: Partial<BoardConfig['settings']> & { punishmentMode?: boolean } };
+      const rawBoardData = JSON.parse(jsonString) as Partial<BoardConfig> & { settings: Partial<BoardSettings> & { punishmentMode?: boolean } };
 
       if (rawBoardData && rawBoardData.id && rawBoardData.settings && rawBoardData.tiles) {
         boardConfig = {
@@ -474,6 +541,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
                 numberOfPlayers: Math.max(MIN_PLAYERS, Math.min(MAX_PLAYERS, rawBoardData.settings.numberOfPlayers || DEFAULT_BOARD_SETTINGS.numberOfPlayers)),
                 punishmentType: rawBoardData.settings.punishmentType || (rawBoardData.settings.punishmentMode === true ? 'revertMove' : rawBoardData.settings.punishmentMode === false ? 'none' : DEFAULT_BOARD_SETTINGS.punishmentType),
                 punishmentValue: rawBoardData.settings.punishmentValue || DEFAULT_BOARD_SETTINGS.punishmentValue,
+                winningCondition: rawBoardData.settings.winningCondition || DEFAULT_BOARD_SETTINGS.winningCondition,
             },
             tiles: rawBoardData.tiles as Tile[],
         };
@@ -504,7 +572,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     let boardConfig: BoardConfig | null = null;
     let persistedPlayState: PersistedPlayState | null = null;
     try {
-      const rawBoardData = JSON.parse(jsonString) as Partial<BoardConfig> & { settings: Partial<BoardConfig['settings']> & { punishmentMode?: boolean } };
+      const rawBoardData = JSON.parse(jsonString) as Partial<BoardConfig> & { settings: Partial<BoardSettings> & { punishmentMode?: boolean } };
       if (rawBoardData && rawBoardData.id && rawBoardData.settings && rawBoardData.tiles) {
          boardConfig = {
             id: rawBoardData.id,
@@ -515,6 +583,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
                 numberOfPlayers: Math.max(MIN_PLAYERS, Math.min(MAX_PLAYERS, rawBoardData.settings.numberOfPlayers || DEFAULT_BOARD_SETTINGS.numberOfPlayers)),
                 punishmentType: rawBoardData.settings.punishmentType || (rawBoardData.settings.punishmentMode === true ? 'revertMove' : rawBoardData.settings.punishmentMode === false ? 'none' : DEFAULT_BOARD_SETTINGS.punishmentType),
                 punishmentValue: rawBoardData.settings.punishmentValue || DEFAULT_BOARD_SETTINGS.punishmentValue,
+                winningCondition: rawBoardData.settings.winningCondition || DEFAULT_BOARD_SETTINGS.winningCondition,
             },
             tiles: rawBoardData.tiles as Tile[],
         };

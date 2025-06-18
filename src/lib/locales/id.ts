@@ -39,6 +39,7 @@ export const id = {
   'sidebar.selectWinningCondition': 'Pilih cara menang',
   'sidebar.firstToFinish': 'Pertama Sampai Petak Selesai',
   'sidebar.highestScore': 'Skor Tertinggi (setelah semua selesai)',
+  'sidebar.combinedOrderScore': 'Kombinasi (Urutan Selesai & Skor)',
 
   'sidebar.diceConfiguration': 'Konfigurasi Dadu',
   'sidebar.diceSides': 'Sisi Dadu: {count}',
@@ -172,7 +173,6 @@ export const id = {
   'playPage.noBoardConfigTitle': 'Papan Tidak Ditemukan',
   'playPage.noBoardConfig': 'Papan permainan tidak ditemukan. Tautan mungkin tidak valid atau data permainan hilang.',
   'playPage.noBoardDataError': 'Tidak ada data papan yang ditemukan di tautan.',
-  'playPage.backToEditor': 'Kembali ke Editor',
   'playPage.gameBoardTitle': 'Papan Permainan',
   'playPage.controlsTitle': 'Kontrol Permainan',
   'playPage.playerInfoTitle': "Info Pemain",
@@ -218,12 +218,16 @@ export const id = {
   'log.punishmentDetails.moveBackLevelBased': 'Mundur {count} petak (kuis Level {level}).',
   'log.rewardCollected': '{name} mengambil hadiah! +{points} poin.',
   'log.infoAcknowledged': '{name} membaca pesan info.',
-  'log.playerFinished': '{name} mencapai garis finish!',
+  'log.playerFinished': '{name} mencapai garis finish! (Selesai ke-{finishOrder})',
   'log.highestScoreWinner': '{name} menang dengan skor tertinggi: {score} poin!',
+  'log.combinedScoreWinner': '{name} menang dengan skor kombinasi {score} (Skor: {rawScore}, Urutan Selesai: {finishOrder})!',
   'log.event.gameStarted': 'Permainan "{name}" telah dimulai.',
   'log.event.gameReset': 'Permainan telah direset.',
   'log.event.playerMismatch': 'Data pemain tidak cocok dengan pengaturan papan. Pemain direset.',
   'log.event.errorOccurred': 'Terjadi kesalahan: {error}',
+  'log.streakIncreased': "Rentetan jawaban benar {name} sekarang {streak}!",
+  'log.streakBroken': "Rentetan jawaban benar {name} terputus.",
+
 
   // Misc
   'capitalize.empty': 'Kosong',
