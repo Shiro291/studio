@@ -1,3 +1,4 @@
+
 export const en = {
   // AppHeader
   'appHeader.toggleTheme': 'Toggle theme',
@@ -8,20 +9,30 @@ export const en = {
   // AppSidebarContent
   'sidebar.title': 'BoardWise Designer',
   'sidebar.newBoard': 'New Board',
-  'sidebar.shareBoard': 'Share Board',
+  'sidebar.exportShareBoard': 'Export/Share Board Link',
   'sidebar.boardSettings': 'Board Settings',
   'sidebar.boardName': 'Board Name',
   'sidebar.description': 'Description',
   'sidebar.numberOfTiles': 'Number of Tiles: {count}',
   'sidebar.punishmentMode': 'Punishment Mode',
-  'sidebar.randomizeTiles': 'Randomize Tiles',
+  'sidebar.randomizeTilesOnLoad': 'Randomize Tiles (on Load)',
   'sidebar.diceConfiguration': 'Dice Configuration',
   'sidebar.diceSides': 'Dice Sides: {count}',
-  'sidebar.tileEditor': 'Tile Editor (Selected Tile)',
-  'sidebar.selectTileToEdit': 'Select a tile on the board to edit its properties here.',
+  'sidebar.tileCustomization': 'Tile Customization',
+  'sidebar.selectTileToEdit': 'Select a tile on the board to edit its properties. Or use options below.',
+  'sidebar.randomizeVisuals': 'Randomize Tile Visuals',
   'sidebar.aiGeneration': 'AI Generation',
   'sidebar.tutorialAndInfo': 'Tutorial & Info',
   'sidebar.comingSoon': 'Coming Soon!',
+  'sidebar.linkCopiedTitle': 'Link Copied!',
+  'sidebar.linkCopiedDescription': 'Shareable board link copied to clipboard.',
+  'sidebar.copyFailedTitle': 'Copy Failed',
+  'sidebar.copyFailedDescription': 'Could not copy the link. Please try again.',
+  'sidebar.linkErrorTitle': 'Link Creation Error',
+  'sidebar.linkErrorDescription': 'Could not create the shareable link.',
+  'sidebar.visualsRandomizedTitle': 'Visuals Randomized!',
+  'sidebar.visualsRandomizedDescription': 'Tile icons and colors have been updated.',
+
 
   // BoardDesignerPage
   'boardDesignerPage.gameBoard': 'Game Board',

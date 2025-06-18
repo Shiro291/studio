@@ -19,14 +19,16 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGame } from '@/components/game/game-provider';
 import { MAX_TILES, MIN_TILES } from '@/lib/constants';
-import { Gem, Settings, Share2, Zap, Rows3, Palette, Info, Wand2 } from 'lucide-react';
+import { Gem, Settings, Share2, Zap, Rows3, Palette, Info, Wand2, RefreshCwIcon } from 'lucide-react';
 import type { BoardSettings } from '@/types';
 import React from 'react';
 import { useLanguage } from '@/context/language-context';
+import { useToast } from '@/hooks/use-toast';
 
 export function AppSidebarContent() {
-  const { state, dispatch, initializeNewBoard } = useGame();
+  const { state, dispatch, initializeNewBoard, randomizeTileVisuals } = useGame();
   const { t } = useLanguage();
+  const { toast } = useToast();
   const boardSettings = state.boardConfig?.settings;
 
   const handleSettingChange = <K extends keyof BoardSettings>(key: K, value: BoardSettings[K]) => {
@@ -47,13 +49,37 @@ export function AppSidebarContent() {
         const base64Data = btoa(jsonString);
         const shareUrl = `${window.location.origin}/?board=${encodeURIComponent(base64Data)}`;
         navigator.clipboard.writeText(shareUrl)
-          .then(() => alert('Shareable link copied to clipboard!')) // TODO: Use toast for notifications
-          .catch(err => console.error('Failed to copy URL: ', err));
+          .then(() => {
+            toast({
+              title: t('sidebar.linkCopiedTitle'),
+              description: t('sidebar.linkCopiedDescription'),
+            });
+          })
+          .catch(err => {
+            console.error('Failed to copy URL: ', err);
+            toast({
+              variant: "destructive",
+              title: t('sidebar.copyFailedTitle'),
+              description: t('sidebar.copyFailedDescription'),
+            });
+          });
       } catch (error) {
         console.error("Error creating share link:", error);
-        alert("Error creating share link."); // TODO: Use toast
+        toast({
+          variant: "destructive",
+          title: t('sidebar.linkErrorTitle'),
+          description: t('sidebar.linkErrorDescription'),
+        });
       }
     }
+  };
+
+  const handleRandomizeVisuals = () => {
+    randomizeTileVisuals();
+    toast({
+      title: t('sidebar.visualsRandomizedTitle'),
+      description: t('sidebar.visualsRandomizedDescription'),
+    });
   };
 
 
@@ -68,7 +94,7 @@ export function AppSidebarContent() {
             </Button>
              {boardSettings && (
               <Button onClick={handleShare} className="w-full">
-                <Share2 className="mr-2 h-4 w-4" /> {t('sidebar.shareBoard')}
+                <Share2 className="mr-2 h-4 w-4" /> {t('sidebar.exportShareBoard')}
               </Button>
             )}
           </SidebarGroupContent>
@@ -124,10 +150,10 @@ export function AppSidebarContent() {
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="randomizeTiles" className="text-sm font-medium">{t('sidebar.randomizeTiles')}</Label>
+                  <Label htmlFor="randomizeTilesOnLoad" className="text-sm font-medium">{t('sidebar.randomizeTilesOnLoad')}</Label>
                   <Switch
-                    id="randomizeTiles"
-                    checked={boardSettings.randomizeTiles}
+                    id="randomizeTilesOnLoad"
+                    checked={boardSettings.randomizeTiles} // Assuming this maps to randomizeTilesOnLoad
                     onCheckedChange={(checked) => handleSettingChange('randomizeTiles', checked)}
                   />
                 </div>
@@ -158,10 +184,13 @@ export function AppSidebarContent() {
             <SidebarSeparator />
              <SidebarGroup>
                 <SidebarGroupLabel className="flex items-center gap-2 font-headline">
-                    <Palette size={16} /> {t('sidebar.tileEditor')}
+                    <Palette size={16} /> {t('sidebar.tileCustomization')}
                 </SidebarGroupLabel>
-                <SidebarGroupContent>
+                <SidebarGroupContent className="space-y-2">
                     <p className="text-sm text-muted-foreground">{t('sidebar.selectTileToEdit')}</p>
+                    <Button onClick={handleRandomizeVisuals} className="w-full" variant="outline">
+                        <RefreshCwIcon className="mr-2 h-4 w-4" /> {t('sidebar.randomizeVisuals')}
+                    </Button>
                 </SidebarGroupContent>
             </SidebarGroup>
           </>

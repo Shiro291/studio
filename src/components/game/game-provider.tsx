@@ -6,7 +6,7 @@ import React, { createContext, useContext, useReducer, useCallback } from 'react
 import type { BoardConfig, GameState, Player, Tile } from '@/types';
 import { DEFAULT_BOARD_SETTINGS } from '@/types';
 import { nanoid } from 'nanoid';
-import { MAX_TILES, MIN_TILES, TILE_TYPE_EMOJIS, START_TILE_COLOR, FINISH_TILE_COLOR, DEFAULT_TILE_COLOR } from '@/lib/constants';
+import { MAX_TILES, MIN_TILES, TILE_TYPE_EMOJIS, START_TILE_COLOR, FINISH_TILE_COLOR, DEFAULT_TILE_COLOR, RANDOM_COLORS, RANDOM_EMOJIS } from '@/lib/constants';
 
 type GameAction =
   | { type: 'SET_BOARD_CONFIG'; payload: BoardConfig }
@@ -14,7 +14,8 @@ type GameAction =
   | { type: 'UPDATE_TILES'; payload: Tile[] }
   | { type: 'SET_PLAYERS'; payload: Player[] }
   | { type: 'START_LOADING' }
-  | { type: 'SET_ERROR'; payload: string | null };
+  | { type: 'SET_ERROR'; payload: string | null }
+  | { type: 'RANDOMIZE_TILE_VISUALS' };
 
 const initialState: GameState = {
   boardConfig: null,
@@ -31,11 +32,13 @@ const GameContext = createContext<{
   dispatch: React.Dispatch<GameAction>;
   initializeNewBoard: () => void;
   loadBoardFromBase64: (base64Data: string) => void;
+  randomizeTileVisuals: () => void;
 }>({
   state: initialState,
   dispatch: () => null,
   initializeNewBoard: () => {},
   loadBoardFromBase64: () => {},
+  randomizeTileVisuals: () => {},
 });
 
 function gameReducer(state: GameState, action: GameAction): GameState {
@@ -63,6 +66,27 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, isLoading: true, error: null };
     case 'SET_ERROR':
       return { ...state, isLoading: false, error: action.payload };
+    case 'RANDOMIZE_TILE_VISUALS':
+      if (!state.boardConfig) return state;
+      const newTiles = state.boardConfig.tiles.map(tile => {
+        if (tile.type === 'start' || tile.type === 'finish') {
+          return tile; // Keep start and finish tiles as they are
+        }
+        const randomColor = RANDOM_COLORS[Math.floor(Math.random() * RANDOM_COLORS.length)];
+        const randomEmoji = tile.type === 'empty' ? TILE_TYPE_EMOJIS.empty : RANDOM_EMOJIS[Math.floor(Math.random() * RANDOM_EMOJIS.length)];
+        return {
+          ...tile,
+          ui: {
+            ...tile.ui,
+            color: randomColor,
+            icon: randomEmoji,
+          },
+        };
+      });
+      return {
+        ...state,
+        boardConfig: { ...state.boardConfig, tiles: newTiles },
+      };
     default:
       return state;
   }
@@ -94,7 +118,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
           ui: { icon: TILE_TYPE_EMOJIS.finish, color: FINISH_TILE_COLOR }
         };
       }
-      // If only one tile, it remains 'start' as set above.
     }
 
     const newBoardConfig: BoardConfig = {
@@ -112,7 +135,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const boardConfig = JSON.parse(jsonString) as BoardConfig;
       if (boardConfig && boardConfig.id && boardConfig.settings && boardConfig.tiles) {
         boardConfig.settings.numberOfTiles = Math.max(MIN_TILES, Math.min(MAX_TILES, boardConfig.settings.numberOfTiles || DEFAULT_BOARD_SETTINGS.numberOfTiles));
-        // Tiles will be further processed by BoardDesigner's useEffect to ensure start/finish integrity
         dispatch({ type: 'SET_BOARD_CONFIG', payload: boardConfig });
       } else {
         throw new Error("Invalid board data structure.");
@@ -124,8 +146,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
   }, [initializeNewBoard]);
 
+  const randomizeTileVisuals = useCallback(() => {
+    dispatch({ type: 'RANDOMIZE_TILE_VISUALS' });
+  }, []);
+
   return (
-    <GameContext.Provider value={{ state, dispatch, initializeNewBoard, loadBoardFromBase64 }}>
+    <GameContext.Provider value={{ state, dispatch, initializeNewBoard, loadBoardFromBase64, randomizeTileVisuals }}>
       {children}
     </GameContext.Provider>
   );

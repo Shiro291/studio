@@ -1,3 +1,4 @@
+
 export const MAX_TILES = 100;
 export const MIN_TILES = 10;
 export const DEFAULT_TILE_COLOR = '#FFFFFF'; // White
@@ -21,3 +22,26 @@ export const DIFFICULTY_POINTS: Record<number, number> = {
   2: 10,
   3: 15,
 };
+
+export const RANDOM_EMOJIS: string[] = [
+  '🎉', '🎈', '🎁', '✨', '🚀', '🌟', '💡', '🧩', '💎', '🎯', 
+  '🌍', '🏝️', '⛰️', '🏕️', '🎨', '🎭', '🎵', '📚', '🔬', '🔭',
+  '🍎', '🍌', '🍇', '🍓', '🍕', '🍔', '🍦', '🍩', '☕', '🍹',
+];
+
+export const RANDOM_COLORS: string[] = [
+  '#FFADAD', // Light Red
+  '#FFD6A5', // Light Orange
+  '#FDFFB6', // Light Yellow
+  '#CAFFBF', // Light Green
+  '#9BF6FF', // Light Cyan
+  '#A0C4FF', // Light Blue
+  '#BDB2FF', // Light Purple
+  '#FFC6FF', // Light Magenta
+  '#FFB3BA', // Pastel Pink
+  '#FFDFBA', // Pastel Peach
+  '#FFFFBA', // Pastel Yellow
+  '#BAFFC9', // Pastel Mint
+  '#BAE1FF', // Pastel Blue
+  '#E0BBE4', // Pastel Lavender
+];

@@ -1,3 +1,4 @@
+
 export const id = {
   // AppHeader
   'appHeader.toggleTheme': 'Ganti tema',
@@ -8,20 +9,29 @@ export const id = {
   // AppSidebarContent
   'sidebar.title': 'Perancang BoardWise',
   'sidebar.newBoard': 'Papan Baru',
-  'sidebar.shareBoard': 'Bagikan Papan',
+  'sidebar.exportShareBoard': 'Ekspor/Bagikan Tautan Papan',
   'sidebar.boardSettings': 'Pengaturan Papan',
   'sidebar.boardName': 'Nama Papan',
   'sidebar.description': 'Deskripsi',
   'sidebar.numberOfTiles': 'Jumlah Petak: {count}',
   'sidebar.punishmentMode': 'Mode Hukuman',
-  'sidebar.randomizeTiles': 'Acak Petak',
+  'sidebar.randomizeTilesOnLoad': 'Acak Petak (saat Muat)',
   'sidebar.diceConfiguration': 'Konfigurasi Dadu',
   'sidebar.diceSides': 'Sisi Dadu: {count}',
-  'sidebar.tileEditor': 'Editor Petak (Petak Terpilih)',
-  'sidebar.selectTileToEdit': 'Pilih petak di papan untuk mengedit propertinya di sini.',
+  'sidebar.tileCustomization': 'Kustomisasi Petak',
+  'sidebar.selectTileToEdit': 'Pilih petak di papan untuk mengedit propertinya. Atau gunakan opsi di bawah.',
+  'sidebar.randomizeVisuals': 'Acak Tampilan Petak',
   'sidebar.aiGeneration': 'Generasi AI',
   'sidebar.tutorialAndInfo': 'Tutorial & Info',
   'sidebar.comingSoon': 'Segera Hadir!',
+  'sidebar.linkCopiedTitle': 'Tautan Disalin!',
+  'sidebar.linkCopiedDescription': 'Tautan papan yang dapat dibagikan telah disalin ke clipboard.',
+  'sidebar.copyFailedTitle': 'Penyalinan Gagal',
+  'sidebar.copyFailedDescription': 'Tidak dapat menyalin tautan. Silakan coba lagi.',
+  'sidebar.linkErrorTitle': 'Kesalahan Pembuatan Tautan',
+  'sidebar.linkErrorDescription': 'Tidak dapat membuat tautan yang dapat dibagikan.',
+  'sidebar.visualsRandomizedTitle': 'Tampilan Diacak!',
+  'sidebar.visualsRandomizedDescription': 'Ikon dan warna petak telah diperbarui.',
 
   // BoardDesignerPage
   'boardDesignerPage.gameBoard': 'Papan Permainan',
