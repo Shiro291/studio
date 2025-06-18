@@ -14,7 +14,6 @@ export const id = {
   'sidebar.importBoardFile': 'Impor Berkas Papan',
   'sidebar.boardSettings': 'Pengaturan Papan',
   'sidebar.boardName': 'Nama Papan',
-  'sidebar.description': 'Deskripsi',
   'sidebar.numberOfTiles': 'Jumlah Petak: {count}',
 
   'sidebar.punishmentType.label': 'Jenis Hukuman (jika salah jawab kuis)',
@@ -78,7 +77,6 @@ export const id = {
   'tooltip.exportBoardFile': 'Mengunduh desain papan Anda saat ini sebagai file JSON. Berguna untuk cadangan atau berbagi desain yang dapat diedit dengan orang lain.',
   'tooltip.importBoardFile': 'Muat file desain JSON BoardWise yang disimpan sebelumnya untuk melanjutkan pengeditan atau bermain.',
   'tooltip.boardName.description': 'Judul papan permainan Anda. Ini akan terlihat oleh pemain.',
-  'tooltip.description.description': 'Deskripsi singkat opsional untuk papan permainan Anda.',
   'tooltip.numberOfTiles.description': 'Atur jumlah total petak yang dapat dimainkan di papan (10-100). Petak Mulai dan Selesai dikelola secara otomatis.',
   'tooltip.punishmentType.description': 'Tentukan apa yang terjadi jika pemain menjawab pertanyaan kuis dengan salah. Ini berlaku untuk semua petak kuis.',
   'tooltip.punishmentValue.description': 'Jika "Mundur X Petak" dipilih untuk hukuman, ini mengatur berapa banyak petak pemain bergerak mundur.',
@@ -180,8 +178,11 @@ export const id = {
   'playPage.gameOver': 'Permainan Selesai!',
   'playPage.winnerIs': '🎉 Pemenang: {name} dengan {score} poin! 🎉',
   'playPage.playAgain': 'Main Lagi',
-  'playPage.gameLogTitle': 'Log Permainan',
+  'playPage.gameLogTitle': 'Log & Pengaturan Permainan',
   'playPage.noLogsYet': 'Belum ada kejadian permainan.',
+  'playPage.editPlayerName': 'Edit Nama Pemain',
+  'playPage.savePlayerName': 'Simpan Nama',
+  'playPage.cancelEditPlayerName': 'Batalkan Edit',
 
   // Game Log Messages
   'log.playerRolled': '{name} mengocok dadu dan mendapat {value}.',
@@ -205,6 +206,26 @@ export const id = {
   'log.streakBroken': "Rentetan jawaban benar {name} terputus.",
   'log.landedOnSimpleTile': '{name} mendarat di petak {tileType}.',
   'log.noMove': "{name} tidak bergerak (hasil dadu 0 atau target di luar batas).",
+  'log.playerNameChanged': '{oldName} sekarang dikenal sebagai {newName}.',
+
+  // Settings Display in Log
+  'log.settings.title': 'Pengaturan Papan Saat Ini',
+  'log.settings.boardName': 'Nama Papan',
+  'log.settings.randomizeTiles': 'Acak Petak',
+  'log.settings.punishmentMode': 'Mode Hukuman',
+  'log.settings.punishment.none': 'Tidak Ada',
+  'log.settings.punishment.revertMove': 'Batalkan Lemparan Dadu',
+  'log.settings.punishment.moveBackFixed': 'Mundur Beberapa Petak',
+  'log.settings.punishment.moveBackLevelBased': 'Mundur (Level Kuis)',
+  'log.settings.punishmentValue': '{count} petak',
+  'log.settings.diceSides': 'Sisi Dadu',
+  'log.settings.winningCondition.label': 'Kondisi Menang',
+  'log.settings.winningCondition.firstToFinish': 'Pertama Selesai',
+  'log.settings.winningCondition.highestScore': 'Skor Tertinggi',
+  'log.settings.winningCondition.combinedOrderScore': 'Kombinasi (Urutan & Skor)',
+  'log.settings.epilepsySafeMode': 'Mode Aman Epilepsi',
+  'log.settings.on': 'Nyala',
+  'log.settings.off': 'Mati',
 
 
   // Misc
@@ -215,3 +236,5 @@ export const id = {
   'capitalize.info': 'Info',
   'capitalize.reward': 'Hadiah',
 };
+
+    

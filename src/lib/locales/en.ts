@@ -14,7 +14,6 @@ export const en = {
   'sidebar.importBoardFile': 'Import Board File',
   'sidebar.boardSettings': 'Board Settings',
   'sidebar.boardName': 'Board Name',
-  'sidebar.description': 'Description',
   'sidebar.numberOfTiles': 'Number of Tiles: {count}',
 
   'sidebar.punishmentType.label': 'Punishment Type (on wrong quiz answer)',
@@ -80,7 +79,6 @@ export const en = {
   'tooltip.exportBoardFile': 'Downloads your current board design as a JSON file. Useful for backups or sharing the editable design with others.',
   'tooltip.importBoardFile': 'Load a previously saved BoardWise JSON design file to continue editing or playing.',
   'tooltip.boardName.description': 'The title of your game board. This will be visible to players.',
-  'tooltip.description.description': 'An optional short description for your game board.',
   'tooltip.numberOfTiles.description': 'Set the total number of playable tiles on the board (10-100). Start and Finish tiles are automatically managed.',
   'tooltip.punishmentType.description': 'Define what happens if a player answers a quiz question incorrectly. This applies to all quiz tiles.',
   'tooltip.punishmentValue.description': 'If "Move Back X Tiles" is selected for punishment, this sets how many tiles the player moves back.',
@@ -183,8 +181,12 @@ export const en = {
   'playPage.gameOver': 'Game Over!',
   'playPage.winnerIs': '🎉 Winner: {name} with {score} points! 🎉',
   'playPage.playAgain': 'Play Again',
-  'playPage.gameLogTitle': 'Game Log',
+  'playPage.gameLogTitle': 'Game Log & Settings',
   'playPage.noLogsYet': 'No game events yet.',
+  'playPage.editPlayerName': 'Edit Player Name',
+  'playPage.savePlayerName': 'Save Name',
+  'playPage.cancelEditPlayerName': 'Cancel Edit',
+
 
   // Game Log Messages
   'log.playerRolled': '{name} rolled a {value}.',
@@ -208,6 +210,26 @@ export const en = {
   'log.streakBroken': "{name}'s correct answer streak was broken.",
   'log.landedOnSimpleTile': '{name} landed on {tileType} tile.',
   'log.noMove': "{name} didn't move (rolled 0 or target out of bounds).",
+  'log.playerNameChanged': '{oldName} is now known as {newName}.',
+
+  // Settings Display in Log
+  'log.settings.title': 'Current Board Settings',
+  'log.settings.boardName': 'Board Name',
+  'log.settings.randomizeTiles': 'Randomize Tiles',
+  'log.settings.punishmentMode': 'Punishment Mode',
+  'log.settings.punishment.none': 'None',
+  'log.settings.punishment.revertMove': 'Revert Dice Roll',
+  'log.settings.punishment.moveBackFixed': 'Move Back Fixed Tiles',
+  'log.settings.punishment.moveBackLevelBased': 'Move Back (Quiz Level)',
+  'log.settings.punishmentValue': '{count} tile(s)',
+  'log.settings.diceSides': 'Dice Sides',
+  'log.settings.winningCondition.label': 'Winning Condition',
+  'log.settings.winningCondition.firstToFinish': 'First to Finish',
+  'log.settings.winningCondition.highestScore': 'Highest Score',
+  'log.settings.winningCondition.combinedOrderScore': 'Combined (Order & Score)',
+  'log.settings.epilepsySafeMode': 'Epilepsy Safe Mode',
+  'log.settings.on': 'On',
+  'log.settings.off': 'Off',
 
 
   // Misc
@@ -218,3 +240,5 @@ export const en = {
   'capitalize.info': 'Info',
   'capitalize.reward': 'Reward',
 };
+
+    

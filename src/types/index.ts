@@ -42,7 +42,7 @@ export type PunishmentType = 'none' | 'revertMove' | 'moveBackFixed' | 'moveBack
 
 export interface BoardSettings {
   name: string;
-  description?: string;
+  // description?: string; // Removed
   numberOfTiles: number;
   punishmentType: PunishmentType;
   punishmentValue: number;
@@ -79,7 +79,7 @@ export interface LogEntry {
   messageKey: string;
   messageParams?: Record<string, string | number | undefined>;
   timestamp: number;
-  type: 'roll' | 'move' | 'quiz_correct' | 'quiz_incorrect' | 'punishment' | 'reward' | 'info' | 'game_event' | 'winner' | 'streak';
+  type: 'roll' | 'move' | 'quiz_correct' | 'quiz_incorrect' | 'punishment' | 'reward' | 'info' | 'game_event' | 'winner' | 'streak' | 'player_update';
 }
 
 export interface PawnAnimation {
@@ -127,3 +127,5 @@ export interface PersistedPlayState {
   logs: LogEntry[];
   playersFinishedCount: number;
 }
+
+    

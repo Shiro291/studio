@@ -2,10 +2,14 @@
 "use client";
 
 import type { Player } from '@/types';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/context/language-context';
 import { cn } from '@/lib/utils';
-import { Flame } from 'lucide-react';
+import { Flame, Edit3, Check, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useGame } from '@/components/game/game-provider';
 
 interface PlayerInfoBarProps {
   players: Player[];
@@ -14,6 +18,29 @@ interface PlayerInfoBarProps {
 
 export function PlayerInfoBar({ players, currentPlayerIndex }: PlayerInfoBarProps) {
   const { t } = useLanguage();
+  const { dispatch } = useGame();
+  const [editingPlayerId, setEditingPlayerId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState<string>('');
+
+  const handleEditClick = (player: Player) => {
+    setEditingPlayerId(player.id);
+    setEditingName(player.name);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingPlayerId(null);
+    setEditingName('');
+  };
+
+  const handleSaveName = (playerId: string) => {
+    if (editingName.trim() === '') {
+      // Optionally add a toast here for empty name
+      return;
+    }
+    dispatch({ type: 'UPDATE_PLAYER_NAME', payload: { playerId, newName: editingName.trim() } });
+    setEditingPlayerId(null);
+    setEditingName('');
+  };
 
   if (!players || players.length === 0) {
     return (
@@ -51,9 +78,33 @@ export function PlayerInfoBar({ players, currentPlayerIndex }: PlayerInfoBarProp
                   style={{ backgroundColor: player.color, borderColor: `color-mix(in srgb, ${player.color} 70%, black)` }}
                   title={player.name}
                 />
-                <span className={cn("font-semibold", index === currentPlayerIndex ? 'text-primary' : 'text-foreground')}>
-                  {player.name}
-                </span>
+                {editingPlayerId === player.id ? (
+                  <div className="flex items-center gap-1 flex-grow">
+                    <Input 
+                      type="text" 
+                      value={editingName} 
+                      onChange={(e) => setEditingName(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleSaveName(player.id)}
+                      className="h-7 text-sm flex-grow"
+                      autoFocus
+                    />
+                    <Button variant="ghost" size="icon" onClick={() => handleSaveName(player.id)} className="h-7 w-7">
+                      <Check className="h-4 w-4 text-green-500" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={handleCancelEdit} className="h-7 w-7">
+                      <X className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                ) : (
+                  <span className={cn("font-semibold", index === currentPlayerIndex ? 'text-primary' : 'text-foreground')}>
+                    {player.name}
+                  </span>
+                )}
+                 {editingPlayerId !== player.id && (
+                   <Button variant="ghost" size="icon" onClick={() => handleEditClick(player)} className="h-6 w-6 ml-1">
+                      <Edit3 className="h-3 w-3 text-muted-foreground hover:text-primary" />
+                    </Button>
+                 )}
               </div>
               <div className="flex items-center gap-2">
                 {player.currentStreak > 0 && (
@@ -77,7 +128,7 @@ export function PlayerInfoBar({ players, currentPlayerIndex }: PlayerInfoBarProp
                     {t('log.playerFinished', {name: '', finishOrder: player.finishOrder || 0}).split('! (')[1].replace(')','')}
                 </p>
             )}
-            {index === currentPlayerIndex && !player.hasFinished && (
+            {index === currentPlayerIndex && !player.hasFinished && editingPlayerId !== player.id && (
               <p className="text-xs text-primary font-semibold mt-1 animate-pulse">{t('playPage.currentTurn')}</p>
             )}
           </div>
@@ -86,3 +137,5 @@ export function PlayerInfoBar({ players, currentPlayerIndex }: PlayerInfoBarProp
     </Card>
   );
 }
+
+    

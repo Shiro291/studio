@@ -47,7 +47,6 @@ export default function PlayPage() {
             setIsInteractionModalOpen(true);
         }
       } else if (tile.type === 'empty' || tile.type === 'start' || tile.type === 'finish') {
-        // Auto-proceed for non-interactive tiles after a short delay
         const timer = setTimeout(() => {
           dispatch({ type: 'ACKNOWLEDGE_INTERACTION' }); 
           dispatch({ type: 'PROCEED_TO_NEXT_TURN' });
@@ -55,8 +54,6 @@ export default function PlayPage() {
         return () => clearTimeout(timer);
       }
     } else if (!state.activeTileForInteraction && isInteractionModalOpen) {
-      // If active tile is cleared by game logic (e.g. player moved due to punishment)
-      // ensure modal closes if it was open for that tile.
       setIsInteractionModalOpen(false);
       setCurrentTileForModal(null);
     }
@@ -65,23 +62,20 @@ export default function PlayPage() {
 
   const handleModalClose = (proceedToNextTurn: boolean) => {
     setIsInteractionModalOpen(false);
-    // currentTileForModal is not cleared here immediately if interaction might not be fully complete.
-    // It will be cleared when state.activeTileForInteraction is cleared by PROCEED_TO_NEXT_TURN,
-    // or the useEffect hook above handles changes to activeTileForInteraction.
-
+    setCurrentTileForModal(null); 
+    
     if (proceedToNextTurn) {
-      // This is typically called after a quiz is answered, or info/reward is acknowledged.
       dispatch({ type: 'PROCEED_TO_NEXT_TURN' });
     } else {
-      // This branch is reached if the modal is closed via 'X' or overlay click (for allowed cases).
-      // For Info/Reward tiles, or an *attempted* Quiz tile, closing via 'X' should still proceed the turn.
-      // Unattempted Quiz modals prevent 'X'/'overlay' close from TileInteractionModal's Dialog logic.
-      
-      // Clear the local tile state for the modal.
-      setCurrentTileForModal(null); 
-      
-      // If an interaction was genuinely pending (e.g., an Info modal closed with 'X'), ensure the game moves on.
-      if (state.activeTileForInteraction && state.gameStatus === 'interaction_pending') {
+      // This branch is primarily for when a non-blocking modal is closed (e.g., info/reward via 'X')
+      // or if a quiz modal was somehow closed externally before an answer (which is prevented by modal's own logic).
+      // If an interaction was genuinely pending, and this close wasn't meant to end the turn,
+      // the main useEffect will re-evaluate and potentially re-open the modal if needed.
+      // If the interaction was completed (e.g. quiz answered) and `proceedToNextTurn` is false (should not happen for quiz),
+      // then `PROCEED_TO_NEXT_TURN` needs to be called from the modal's internal logic.
+      // For an unattempted Quiz modal, this `onModalClose(false)` should not be reachable via 'X' due to modal's internal checks.
+      if (state.activeTileForInteraction && state.gameStatus === 'interaction_pending' && 
+          (state.activeTileForInteraction.type === 'info' || state.activeTileForInteraction.type === 'reward')) {
           dispatch({ type: 'PROCEED_TO_NEXT_TURN' });
       }
     }
@@ -167,7 +161,7 @@ export default function PlayPage() {
               />
             </CardContent>
           </Card>
-          <GameLogDisplay logs={state.logs} />
+          <GameLogDisplay logs={state.logs} boardSettings={state.boardConfig.settings} />
         </div>
 
         <div className="md:col-span-1 space-y-6">
@@ -198,3 +192,4 @@ export default function PlayPage() {
   );
 }
 
+    

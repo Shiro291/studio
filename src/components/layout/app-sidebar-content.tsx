@@ -77,20 +77,15 @@ export function AppSidebarContent() {
   const handleGeneratePlayLink = () => {
     if (state.boardConfig) {
       try {
-        // Ensure any ongoing pawn animation is finalized before generating link
         if (state.pawnAnimation?.timerId) {
             clearTimeout(state.pawnAnimation.timerId);
-            // Dispatching ADVANCE_PAWN_ANIMATION might be tricky here if it relies on timers
-            // A simpler approach might be to just use the current actual player positions
-            // For now, we assume the animation state is less critical for the shared link
-            // or that the user won't click this mid-complex-animation.
-            // A robust solution would involve a state to "finalize animation immediately".
+            // Potentially dispatch an action to immediately finalize pawn position if mid-animation
+            // For simplicity, current state.players (with actual positions) is used.
         }
         
-        // Create a deep copy of the boardConfig and assign a new unique ID for this link
         const boardConfigForLink: BoardConfig = {
-          ...JSON.parse(JSON.stringify(state.boardConfig)), // Deep clone
-          id: nanoid(), // Assign a new unique ID for this specific link
+          ...JSON.parse(JSON.stringify(state.boardConfig)), 
+          id: nanoid(), 
         };
 
         const jsonString = JSON.stringify(boardConfigForLink);
@@ -159,8 +154,6 @@ export function AppSidebarContent() {
           const jsonString = e.target?.result as string;
           if (loadBoardFromJson(jsonString)) {
             toast({ title: t('sidebar.boardImportedTitle'), description: t('sidebar.boardImportedDescription') });
-          } else {
-            // Error toast is handled by loadBoardFromJson if it fails
           }
         } catch (error) {
           console.error("Error importing board file:", error);
@@ -260,18 +253,6 @@ export function AppSidebarContent() {
                     id="boardName" 
                     value={boardSettings.name} 
                     onChange={(e) => handleSettingChange('name', e.target.value)}
-                    className="h-8 text-xs"
-                  />
-                </div>
-                 <div>
-                  <div className="flex items-center gap-1 mb-1">
-                    <Label htmlFor="boardDescription" className="text-xs font-medium">{t('sidebar.description')}</Label>
-                    {renderTooltip("tooltip.description.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
-                  </div>
-                  <Input 
-                    id="boardDescription" 
-                    value={boardSettings.description || ''} 
-                    onChange={(e) => handleSettingChange('description', e.target.value)}
                     className="h-8 text-xs"
                   />
                 </div>
@@ -494,3 +475,5 @@ export function AppSidebarContent() {
     </>
   );
 }
+
+    
