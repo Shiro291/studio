@@ -2,13 +2,15 @@
 "use client";
 
 import type { ReactNode } from 'react';
-import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
-import type { BoardConfig, GameState, Player, Tile, TileConfigQuiz, TileConfigReward, QuizOption, GameStatus, PersistedPlayState, PunishmentType, LogEntry, BoardSettings } from '@/types';
+import React, { createContext, useContext, useReducer, useCallback, useEffect, useRef } from 'react';
+import type { BoardConfig, GameState, Player, Tile, TileConfigQuiz, TileConfigReward, QuizOption, GameStatus, PersistedPlayState, PunishmentType, LogEntry, BoardSettings, PawnAnimation } from '@/types';
 import { DEFAULT_BOARD_SETTINGS } from '@/types';
 import { DEFAULT_TILE_COLOR, FINISH_TILE_COLOR, MAX_PLAYERS, MAX_TILES, MIN_PLAYERS, MIN_TILES, PLAYER_COLORS, RANDOM_COLORS, RANDOM_EMOJIS, START_TILE_COLOR, TILE_TYPE_EMOJIS, DIFFICULTY_POINTS } from '@/lib/constants';
 import { nanoid } from 'nanoid';
 import { playSound } from '@/lib/sound-service';
 import { shuffleArray } from '@/lib/utils';
+
+const PAWN_ANIMATION_STEP_DELAY = 250; // milliseconds
 
 type GameAction =
   | { type: 'SET_BOARD_CONFIG'; payload: { boardConfig: BoardConfig; persistedPlayState?: PersistedPlayState | null } }
@@ -18,6 +20,7 @@ type GameAction =
   | { type: 'START_LOADING' }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'PLAYER_ROLLED_DICE'; payload: { diceValue: number } }
+  | { type: 'ADVANCE_PAWN_ANIMATION' }
   | { type: 'ANSWER_QUIZ'; payload: { selectedOptionId: string } }
   | { type: 'ACKNOWLEDGE_INTERACTION' }
   | { type: 'PROCEED_TO_NEXT_TURN' }
@@ -36,6 +39,7 @@ const initialState: GameState = {
   winner: null,
   logs: [],
   playersFinishedCount: 0,
+  pawnAnimation: null,
 };
 
 const GameContext = createContext<{
@@ -61,6 +65,7 @@ function generatePlayers(numberOfPlayers: number): Player[] {
     name: `Player ${i + 1}`,
     color: PLAYER_COLORS[i % PLAYER_COLORS.length],
     position: 0,
+    visualPosition: 0,
     score: 0,
     currentStreak: 0,
     hasFinished: false,
@@ -74,7 +79,6 @@ function applyBoardRandomizationSettings(boardConfig: BoardConfig, persistedActi
   if (boardConfig.settings.randomizeTiles) {
     newTiles = newTiles.map(tile => {
       if (tile.type === 'start' || tile.type === 'finish') return tile;
-      // Only randomize visuals if not explicitly set by user for this tile (e.g. color is default)
       const shouldRandomizeVisual = tile.ui.color === DEFAULT_TILE_COLOR || !tile.ui.color;
       const randomColor = shouldRandomizeVisual ? RANDOM_COLORS[Math.floor(Math.random() * RANDOM_COLORS.length)] : tile.ui.color;
       const randomEmoji = shouldRandomizeVisual && tile.type !== 'empty' ? RANDOM_EMOJIS[Math.floor(Math.random() * RANDOM_EMOJIS.length)] : tile.ui.icon || TILE_TYPE_EMOJIS[tile.type];
@@ -83,17 +87,12 @@ function applyBoardRandomizationSettings(boardConfig: BoardConfig, persistedActi
     });
   }
   
-  // Always shuffle quiz options for an active persisted quiz tile to maintain its state from persistence,
-  // unless board-wide randomization is off. If board-wide randomization is on, the initial shuffle will happen here.
-  // Per-landing shuffling for quizzes is handled in PLAYER_ROLLED_DICE.
   newTiles = newTiles.map(tile => {
     if (tile.type === 'quiz' && tile.config) {
       let quizConfig = { ...(tile.config as TileConfigQuiz) };
       if (persistedActiveTile && persistedActiveTile.id === tile.id && persistedActiveTile.type === 'quiz' && !boardConfig.settings.randomizeTiles) {
-        // If loading a persisted quiz and general randomization is OFF, use persisted options.
         quizConfig.options = (persistedActiveTile.config as TileConfigQuiz).options;
       } else if (quizConfig.options && quizConfig.options.length > 0 && boardConfig.settings.randomizeTiles) {
-        // If general randomization is ON, shuffle options on load.
         quizConfig.options = shuffleArray([...quizConfig.options]);
       }
       return { ...tile, config: quizConfig };
@@ -113,7 +112,7 @@ function addLogEntry(currentLogs: LogEntry[], messageKey: string, type: LogEntry
     timestamp: Date.now(),
     type,
   };
-  return [newLog, ...currentLogs].slice(0, 50); // Keep last 50 logs
+  return [newLog, ...currentLogs].slice(0, 50); 
 }
 
 function getPunishmentLogDetails(
@@ -144,7 +143,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'SET_BOARD_CONFIG': {
       const { boardConfig: rawBoardConfig, persistedPlayState } = action.payload;
-
       let processedBoardConfig = applyBoardRandomizationSettings(rawBoardConfig, persistedPlayState?.activeTileForInteraction);
 
       let players = generatePlayers(processedBoardConfig.settings.numberOfPlayers);
@@ -155,13 +153,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let diceRoll: number | null = persistedPlayState?.diceRoll ?? null;
       let logs: LogEntry[] = persistedPlayState?.logs ?? [];
       let playersFinishedCount = persistedPlayState?.playersFinishedCount ?? 0;
+      let pawnAnimation: PawnAnimation | null = null; // Animations don't persist
+
+      if (persistedPlayState?.gameStatus === 'animating_pawn') {
+         gameStatus = 'playing'; // Reset animation if loaded during one
+      }
 
 
       if (persistedPlayState?.players) {
         if (persistedPlayState.players.length === processedBoardConfig.settings.numberOfPlayers) {
-          players = persistedPlayState.players.map(p => ({ // ensure all fields are present
-            ...generatePlayers(1)[0], // get defaults
-            ...p // override with persisted
+          players = persistedPlayState.players.map(p => ({
+            ...generatePlayers(1)[0], 
+            ...p,
+            visualPosition: p.position, // visualPosition resets to actual position
           }));
         } else {
           logs = addLogEntry(logs, 'log.event.playerMismatch', 'game_event');
@@ -172,7 +176,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (logs.length === 0 && !persistedPlayState) { 
         logs = addLogEntry(logs, 'log.event.gameStarted', 'game_event', { name: processedBoardConfig.settings.name });
       }
-
 
       if (gameStatus === 'finished' && !winner && persistedPlayState?.winner) {
           winner = persistedPlayState.winner;
@@ -189,6 +192,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         diceRoll,
         logs,
         playersFinishedCount,
+        pawnAnimation,
         isLoading: false,
         error: null
       };
@@ -206,7 +210,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.boardConfig,
           settings: updatedSettings,
         },
-        players: updatedPlayers,
+        players: updatedPlayers.map(p => ({...p, visualPosition: p.position})), // Reset visual position on player count change
       };
     }
     case 'UPDATE_TILES': {
@@ -217,7 +221,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
     case 'SET_PLAYERS':
-      return { ...state, players: action.payload };
+      return { ...state, players: action.payload.map(p => ({...p, visualPosition: p.position})) };
     case 'START_LOADING':
       return { ...state, isLoading: true, error: null, logs: state.logs }; 
     case 'SET_ERROR':
@@ -227,64 +231,111 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const { diceValue } = action.payload;
       const currentPlayer = state.players[state.currentPlayerIndex];
-      const newPlayers = [...state.players];
       const maxPosition = state.boardConfig.tiles.length - 1;
-      let newPlayersFinishedCount = state.playersFinishedCount;
-
-      let newPosition = currentPlayer.position + diceValue;
-      if (newPosition > maxPosition) newPosition = maxPosition;
-
-      newPlayers[state.currentPlayerIndex] = { ...currentPlayer, position: newPosition };
-
-      let landedTile = { ...state.boardConfig.tiles[newPosition] }; // Clone the tile
-      
-      // Always shuffle options for quiz tiles upon landing
-      if (landedTile.type === 'quiz' && landedTile.config) {
-        const quizConfig = { ...(landedTile.config as TileConfigQuiz) };
-        if (quizConfig.options && quizConfig.options.length > 0) {
-          quizConfig.options = shuffleArray([...quizConfig.options]);
-          landedTile.config = quizConfig;
-        }
-      }
-
       let currentLogs = state.logs;
+
+      let targetPosition = currentPlayer.position + diceValue;
+      if (targetPosition > maxPosition) targetPosition = maxPosition;
+      
       currentLogs = addLogEntry(currentLogs, 'log.playerRolled', 'roll', { name: currentPlayer.name, value: diceValue });
-      currentLogs = addLogEntry(currentLogs, 'log.playerMovedTo', 'move', { name: currentPlayer.name, position: newPosition + 1, tileType: landedTile.type });
 
-
-      if (landedTile.type === 'finish' && state.gameStatus !== 'finished' && !currentPlayer.hasFinished) {
-        playSound('finishSound');
-        newPlayersFinishedCount++;
-        const finishedPlayerIndex = state.currentPlayerIndex;
-        newPlayers[finishedPlayerIndex] = { 
-            ...newPlayers[finishedPlayerIndex], 
-            hasFinished: true, 
-            finishOrder: newPlayersFinishedCount 
-        };
-        
-        currentLogs = addLogEntry(currentLogs, 'log.playerFinished', 'game_event', { name: newPlayers[finishedPlayerIndex].name, finishOrder: newPlayers[finishedPlayerIndex].finishOrder || undefined });
-        
-        let gameWinner: Player | null = null;
-        let newGameStatus: GameStatus = 'interaction_pending'; // Go to interaction pending even for finish, to show modal or auto-proceed
-
-        if (state.boardConfig.settings.winningCondition === 'firstToFinish') {
-            gameWinner = newPlayers[finishedPlayerIndex]; 
-            // Status will become 'finished' in PROCEED_TO_NEXT_TURN if winner is set
-        }
-        
+      if (targetPosition === currentPlayer.position) { // No move
+        currentLogs = addLogEntry(currentLogs, 'log.noMove', 'move', { name: currentPlayer.name, position: currentPlayer.position + 1 });
+        // Directly proceed to next turn, no interaction if no move (unless it's a re-roll tile or something later)
         return {
             ...state,
-            players: newPlayers,
             diceRoll: diceValue,
-            activeTileForInteraction: landedTile, 
-            gameStatus: newGameStatus,
-            winner: gameWinner, // winner might be set here for firstToFinish
+            activeTileForInteraction: null, // No interaction if no move
+            gameStatus: 'playing', // Stays in playing, effectively skipping to next turn
             logs: currentLogs,
-            playersFinishedCount: newPlayersFinishedCount,
-         };
+            currentPlayerIndex: (state.currentPlayerIndex + 1) % state.players.length, // Manually advance turn
+        };
+      }
+
+      const path: number[] = [];
+      for (let i = currentPlayer.position + 1; i <= targetPosition; i++) {
+        path.push(i);
       }
       
-      return { ...state, players: newPlayers, diceRoll: diceValue, activeTileForInteraction: landedTile, gameStatus: 'interaction_pending', logs: currentLogs };
+      if (state.pawnAnimation?.timerId) {
+        clearTimeout(state.pawnAnimation.timerId);
+      }
+
+      return {
+        ...state,
+        diceRoll: diceValue,
+        gameStatus: 'animating_pawn',
+        pawnAnimation: {
+          playerId: currentPlayer.id,
+          path,
+          currentStepIndex: -1,
+          timerId: null,
+        },
+        logs: currentLogs,
+      };
+    }
+    case 'ADVANCE_PAWN_ANIMATION': {
+      if (!state.pawnAnimation || state.gameStatus !== 'animating_pawn' || !state.boardConfig) return state;
+
+      const newPlayers = [...state.players];
+      const playerIndex = newPlayers.findIndex(p => p.id === state.pawnAnimation!.playerId);
+      if (playerIndex === -1) return state; // Should not happen
+
+      const newStepIndex = state.pawnAnimation.currentStepIndex + 1;
+      const currentPathStep = state.pawnAnimation.path[newStepIndex];
+      
+      newPlayers[playerIndex] = { ...newPlayers[playerIndex], visualPosition: currentPathStep };
+      playSound('pawnHop');
+
+      if (newStepIndex === state.pawnAnimation.path.length - 1) { // Animation finished
+        newPlayers[playerIndex] = { ...newPlayers[playerIndex], position: currentPathStep };
+        
+        let landedTile = { ...state.boardConfig.tiles[currentPathStep] };
+        if (landedTile.type === 'quiz' && landedTile.config) {
+          const quizConfig = { ...(landedTile.config as TileConfigQuiz) };
+          if (quizConfig.options && quizConfig.options.length > 0) {
+            quizConfig.options = shuffleArray([...quizConfig.options]);
+            landedTile.config = quizConfig;
+          }
+        }
+        
+        let currentLogs = addLogEntry(state.logs, 'log.playerMovedTo', 'move', { name: newPlayers[playerIndex].name, position: currentPathStep + 1, tileType: landedTile.type });
+        let newPlayersFinishedCount = state.playersFinishedCount;
+        let gameWinner: Player | null = state.winner;
+        let newGameStatus: GameStatus = 'interaction_pending';
+
+        if (landedTile.type === 'finish' && !newPlayers[playerIndex].hasFinished) {
+          playSound('finishSound');
+          newPlayersFinishedCount++;
+          newPlayers[playerIndex] = { ...newPlayers[playerIndex], hasFinished: true, finishOrder: newPlayersFinishedCount };
+          currentLogs = addLogEntry(currentLogs, 'log.playerFinished', 'game_event', { name: newPlayers[playerIndex].name, finishOrder: newPlayers[playerIndex].finishOrder || undefined });
+          if (state.boardConfig.settings.winningCondition === 'firstToFinish') {
+            gameWinner = newPlayers[playerIndex];
+          }
+        }
+
+        return {
+          ...state,
+          players: newPlayers,
+          pawnAnimation: null,
+          activeTileForInteraction: landedTile,
+          gameStatus: newGameStatus,
+          logs: currentLogs,
+          playersFinishedCount: newPlayersFinishedCount,
+          winner: gameWinner,
+        };
+      } else { // Animation ongoing
+        const timerId = setTimeout(() => {
+          if (gameReducerInstanceRef.current) { // Check if context is still mounted
+            gameReducerInstanceRef.current.dispatch({ type: 'ADVANCE_PAWN_ANIMATION' });
+          }
+        }, state.boardConfig.settings.epilepsySafeMode ? PAWN_ANIMATION_STEP_DELAY * 2 : PAWN_ANIMATION_STEP_DELAY);
+        return {
+          ...state,
+          players: newPlayers,
+          pawnAnimation: { ...state.pawnAnimation, currentStepIndex: newStepIndex, timerId },
+        };
+      }
     }
     case 'ANSWER_QUIZ': {
         if (!state.boardConfig || !state.activeTileForInteraction || state.activeTileForInteraction.type !== 'quiz' || state.gameStatus !== 'interaction_pending' || state.diceRoll === null) return state;
@@ -298,7 +349,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         let currentLogs = state.logs;
 
         let newScore = currentPlayer.score;
-        let newPosition = currentPlayer.position;
+        let newPosition = currentPlayer.position; // This is the actual position
+        let newVisualPosition = currentPlayer.visualPosition; // This should match position here
         let newStreak = currentPlayer.currentStreak;
         let soundToPlay = 'wrongAnswer';
 
@@ -322,27 +374,30 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 currentLogs = addLogEntry(currentLogs, 'log.punishmentApplied', 'punishment', { name: currentPlayer.name, detailsKey: punishmentDetails.key, ...punishmentDetails.params });
             }
 
+            let tempNewPosition = newPosition; // Calculate punished position based on actual position
             switch (boardSettings.punishmentType) {
                 case 'revertMove':
-                    newPosition = Math.max(0, newPosition - state.diceRoll);
+                    tempNewPosition = Math.max(0, newPosition - state.diceRoll);
                     break;
                 case 'moveBackFixed':
-                    newPosition = Math.max(0, newPosition - boardSettings.punishmentValue);
+                    tempNewPosition = Math.max(0, newPosition - boardSettings.punishmentValue);
                     break;
                 case 'moveBackLevelBased':
                     let moveBackAmount = 0;
                     if (quizConfig.difficulty === 1) moveBackAmount = 1;
                     else if (quizConfig.difficulty === 2) moveBackAmount = 2;
                     else if (quizConfig.difficulty === 3) moveBackAmount = 3;
-                    newPosition = Math.max(0, newPosition - moveBackAmount);
+                    tempNewPosition = Math.max(0, newPosition - moveBackAmount);
                     break;
                 case 'none':
                 default:
                     break;
             }
+            newPosition = tempNewPosition;
+            newVisualPosition = tempNewPosition; // visual and actual position sync after punishment
         }
         playSound(soundToPlay);
-        newPlayers[state.currentPlayerIndex] = { ...currentPlayer, score: newScore, position: newPosition, currentStreak: newStreak };
+        newPlayers[state.currentPlayerIndex] = { ...currentPlayer, score: newScore, position: newPosition, visualPosition: newVisualPosition, currentStreak: newStreak };
 
         return { ...state, players: newPlayers, logs: currentLogs };
     }
@@ -362,25 +417,22 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             currentLogs = addLogEntry(currentLogs, 'log.rewardCollected', 'reward', { name: currentPlayer.name, points: rewardConfig.points || 0 });
         } else if (state.activeTileForInteraction.type === 'info') {
              currentLogs = addLogEntry(currentLogs, 'log.infoAcknowledged', 'info', { name: currentPlayer.name });
-        } else if (['empty', 'start', 'finish'].includes(state.activeTileForInteraction.type)) {
-             // Landing on finish is logged in PLAYER_ROLLED_DICE for clarity on when finish occurs
-             if (state.activeTileForInteraction.type !== 'finish') {
-                currentLogs = addLogEntry(currentLogs, 'log.landedOnSimpleTile', 'move', { name: currentPlayer.name, tileType: state.activeTileForInteraction.type});
-             }
+        } else if (['empty', 'start'].includes(state.activeTileForInteraction.type)) { // Finish handled in ADVANCE_PAWN_ANIMATION
+            currentLogs = addLogEntry(currentLogs, 'log.landedOnSimpleTile', 'move', { name: currentPlayer.name, tileType: state.activeTileForInteraction.type});
         }
         return { ...state, players: newPlayers, logs: currentLogs };
     }
 
     case 'PROCEED_TO_NEXT_TURN': {
-        if (!state.boardConfig || state.gameStatus === 'finished') return state;
+        if (!state.boardConfig || state.gameStatus === 'finished' || state.gameStatus === 'animating_pawn') return state;
 
         let currentLogs = state.logs;
-        let currentWinner = state.winner; // Might have been set by 'firstToFinish' in PLAYER_ROLLED_DICE
+        let currentWinner = state.winner; 
         let gameIsFinished = !!currentWinner;
         const winningCondition = state.boardConfig.settings.winningCondition;
         const allPlayersHaveFinished = state.playersFinishedCount === state.players.length && state.players.length > 0;
 
-        if (!currentWinner && allPlayersHaveFinished) { // Check for winner if not 'firstToFinish' and all done
+        if (!currentWinner && allPlayersHaveFinished) { 
             if (winningCondition === 'highestScore') {
                 currentWinner = state.players.reduce((prev, current) => (prev.score > current.score) ? prev : current, state.players[0]);
                 if (currentWinner) {
@@ -389,23 +441,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 }
             } else if (winningCondition === 'combinedOrderScore') {
                 const playersWithCombinedScore = state.players.map(p => {
-                    // Points for finishing order: (TotalPlayers - FinishOrder + 1) * Multiplier
-                    // Example: 3 players. 1st = (3-1+1)*10 = 30. 2nd = (3-2+1)*10=20. 3rd = (3-3+1)*10=10.
-                    const finishOrderPoints = p.finishOrder ? (state.players.length - p.finishOrder + 1) * 10 : 0; // Adjust multiplier as needed
+                    const finishOrderPoints = p.finishOrder ? (state.players.length - p.finishOrder + 1) * 10 : 0;
                     return { ...p, combinedScore: finishOrderPoints + p.score };
                 });
                 currentWinner = playersWithCombinedScore.reduce((prev, current) => {
-                    if (!current.combinedScore) return prev; // Should not happen if all finished
-                    if (!prev.combinedScore) return current;
-
-                    if (prev.combinedScore === current.combinedScore) { // Tie in combined score
-                        if (prev.finishOrder === current.finishOrder) { // Tie in finish order
-                           return prev.score > current.score ? prev : current; // Higher raw score wins
+                    if (!current.combinedScore && current.combinedScore !==0) return prev; 
+                    if (!prev.combinedScore && prev.combinedScore !==0) return current;
+                    if (prev.combinedScore === current.combinedScore) { 
+                        if (prev.finishOrder === current.finishOrder) { 
+                           return prev.score > current.score ? prev : current; 
                         }
-                        return (prev.finishOrder || Infinity) < (current.finishOrder || Infinity) ? prev : current; // Earlier finish order wins
+                        return (prev.finishOrder || Infinity) < (current.finishOrder || Infinity) ? prev : current; 
                     }
-                    return prev.combinedScore > current.combinedScore ? prev : current; // Higher combined score wins
-                });
+                    return prev.combinedScore > current.combinedScore ? prev : current; 
+                }, playersWithCombinedScore[0]);
 
                 if (currentWinner) {
                     playSound('finishSound');
@@ -428,19 +477,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 nextPlayerIndex = (nextPlayerIndex + 1) % state.players.length;
                 attempts++;
             } while (state.players[nextPlayerIndex].hasFinished && attempts <= state.players.length);
-            
-            // If all remaining players have finished, but the game isn't over yet (e.g. waiting for highest score)
-            // this loop might select a finished player. Game end condition handles this.
-            if (attempts > state.players.length && !allPlayersHaveFinished && state.boardConfig.settings.winningCondition !== 'firstToFinish') {
-                 // This case should ideally be caught by allPlayersHaveFinished for highestScore/combined.
-                 // If firstToFinish, game would be over.
-            }
         }
-
 
         return {
             ...state,
-            currentPlayerIndex: gameIsFinished ? state.currentPlayerIndex : nextPlayerIndex, // Don't change player if game just ended
+            currentPlayerIndex: gameIsFinished ? state.currentPlayerIndex : nextPlayerIndex,
             activeTileForInteraction: null,
             diceRoll: null,
             gameStatus: gameIsFinished ? 'finished' : 'playing',
@@ -455,8 +496,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       } catch (e) {
         console.warn("Failed to remove play state from localStorage on reset", e);
       }
-      // Re-apply randomization on reset, respecting the current setting.
-      // Pass null for persistedActiveTile as it's a fresh game.
+      
+      if (state.pawnAnimation?.timerId) {
+        clearTimeout(state.pawnAnimation.timerId);
+      }
+
       const reRandomizedBoardConfig = applyBoardRandomizationSettings(state.boardConfig, null);
       const players = generatePlayers(reRandomizedBoardConfig.settings.numberOfPlayers);
       let initialLogs = addLogEntry([], 'log.event.gameReset', 'game_event');
@@ -468,12 +512,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         players,
         isLoading: false,
         gameStatus: 'playing',
-        winner: null,
-        activeTileForInteraction: null,
-        diceRoll: null,
-        currentPlayerIndex: 0,
         logs: initialLogs,
-        playersFinishedCount: 0,
       };
     }
     default:
@@ -481,17 +520,55 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   }
 }
 
+// To allow dispatch from setTimeout within the reducer
+let gameReducerInstanceRef: React.MutableRefObject<{ dispatch: React.Dispatch<GameAction> } | null> = { current: null };
+
+
 export function GameProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
+  
+  const localDispatchRef = useRef<{ dispatch: React.Dispatch<GameAction> }>({ dispatch });
+  useEffect(() => {
+    localDispatchRef.current.dispatch = dispatch;
+    gameReducerInstanceRef = localDispatchRef; // Assign to the module-level ref
+  }, [dispatch]);
+
 
   useEffect(() => {
-    if (state.boardConfig && state.gameStatus !== 'setup' && !state.isLoading) {
+    if (state.gameStatus === 'animating_pawn' && state.pawnAnimation && state.pawnAnimation.currentStepIndex === -1) {
+       // Start the animation if it's set up but not yet started steps
+       // Check if a timer isn't already set from a previous, uncleared state
+       if (!state.pawnAnimation.timerId) {
+           const timerId = setTimeout(() => {
+             if (gameReducerInstanceRef.current) {
+                gameReducerInstanceRef.current.dispatch({ type: 'ADVANCE_PAWN_ANIMATION' });
+             }
+           }, state.boardConfig?.settings.epilepsySafeMode ? PAWN_ANIMATION_STEP_DELAY * 2 : PAWN_ANIMATION_STEP_DELAY / 2); // Start a bit quicker for first step
+            // This direct state mutation is generally bad, but reducer might not have updated timerId yet.
+            // A better approach might be to dispatch an action to set the timerId.
+            // For now, we rely on the next ADVANCE_PAWN_ANIMATION to set its own timer.
+            // This specific setTimeout is primarily to kick off the *first* step.
+       }
+    }
+    // Cleanup animation timer if component unmounts or game status changes from animating
+    return () => {
+      if (state.pawnAnimation?.timerId) {
+        clearTimeout(state.pawnAnimation.timerId);
+         // Potentially dispatch an action to nullify timerId in state if necessary,
+         // but usually, the animation completion or reset logic handles nullifying pawnAnimation object.
+      }
+    };
+  }, [state.gameStatus, state.pawnAnimation, state.boardConfig?.settings.epilepsySafeMode]);
+
+
+  useEffect(() => {
+    if (state.boardConfig && state.gameStatus !== 'setup' && !state.isLoading && state.gameStatus !== 'animating_pawn') {
       const persistState: PersistedPlayState = {
-        players: state.players,
+        players: state.players.map(({ visualPosition, ...rest }) => rest), // Don't persist visualPosition
         currentPlayerIndex: state.currentPlayerIndex,
         diceRoll: state.diceRoll,
-        gameStatus: state.gameStatus,
-        activeTileForInteraction: state.activeTileForInteraction, // This will store the quiz tile with its current options
+        gameStatus: state.gameStatus, 
+        activeTileForInteraction: state.activeTileForInteraction,
         winner: state.winner,
         logs: state.logs,
         playersFinishedCount: state.playersFinishedCount,
@@ -507,6 +584,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const initializeNewBoard = useCallback(() => {
     dispatch({ type: 'START_LOADING' });
+    if (state.pawnAnimation?.timerId) clearTimeout(state.pawnAnimation.timerId);
     const newBoardId = nanoid();
     const initialTiles: Tile[] = Array.from({ length: DEFAULT_BOARD_SETTINGS.numberOfTiles }, (_, i) => ({
       id: nanoid(),
@@ -535,13 +613,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
       settings: { ...DEFAULT_BOARD_SETTINGS },
       tiles: initialTiles,
     };
-    // Apply initial randomization based on default settings if any.
     newBoardConfig = applyBoardRandomizationSettings(newBoardConfig, null);
     dispatch({ type: 'SET_BOARD_CONFIG', payload: { boardConfig: newBoardConfig } });
-  }, []);
+  }, [state.pawnAnimation?.timerId]);
 
   const loadBoardFromBase64 = useCallback((base64Data: string) => {
     dispatch({ type: 'START_LOADING' });
+    if (state.pawnAnimation?.timerId) clearTimeout(state.pawnAnimation.timerId);
     let boardConfig: BoardConfig | null = null;
     let persistedPlayState: PersistedPlayState | null = null;
     try {
@@ -559,6 +637,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
                 punishmentType: rawBoardData.settings.punishmentType || (rawBoardData.settings.punishmentMode === true ? 'revertMove' : rawBoardData.settings.punishmentMode === false ? 'none' : DEFAULT_BOARD_SETTINGS.punishmentType),
                 punishmentValue: rawBoardData.settings.punishmentValue || DEFAULT_BOARD_SETTINGS.punishmentValue,
                 winningCondition: rawBoardData.settings.winningCondition || DEFAULT_BOARD_SETTINGS.winningCondition,
+                epilepsySafeMode: rawBoardData.settings.epilepsySafeMode || DEFAULT_BOARD_SETTINGS.epilepsySafeMode,
             },
             tiles: rawBoardData.tiles as Tile[],
         };
@@ -573,7 +652,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
           console.warn("Failed to load persisted play state from localStorage", e);
           persistedPlayState = null;
         }
-        // Apply randomization settings, potentially using persisted quiz options if randomization is off
         boardConfig = applyBoardRandomizationSettings(boardConfig, persistedPlayState?.activeTileForInteraction);
         dispatch({ type: 'SET_BOARD_CONFIG', payload: { boardConfig, persistedPlayState } });
       } else {
@@ -583,10 +661,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
       console.error("Failed to load board from Base64:", error);
       dispatch({ type: 'SET_ERROR', payload: 'Failed to load board data from link. The link might be corrupted or invalid.' });
     }
-  }, [dispatch]);
+  }, [dispatch, state.pawnAnimation?.timerId]);
 
   const loadBoardFromJson = useCallback((jsonString: string): boolean => {
     dispatch({ type: 'START_LOADING' });
+    if (state.pawnAnimation?.timerId) clearTimeout(state.pawnAnimation.timerId);
     let boardConfig: BoardConfig | null = null;
     let persistedPlayState: PersistedPlayState | null = null;
     try {
@@ -602,6 +681,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
                 punishmentType: rawBoardData.settings.punishmentType || (rawBoardData.settings.punishmentMode === true ? 'revertMove' : rawBoardData.settings.punishmentMode === false ? 'none' : DEFAULT_BOARD_SETTINGS.punishmentType),
                 punishmentValue: rawBoardData.settings.punishmentValue || DEFAULT_BOARD_SETTINGS.punishmentValue,
                 winningCondition: rawBoardData.settings.winningCondition || DEFAULT_BOARD_SETTINGS.winningCondition,
+                epilepsySafeMode: rawBoardData.settings.epilepsySafeMode || DEFAULT_BOARD_SETTINGS.epilepsySafeMode,
             },
             tiles: rawBoardData.tiles as Tile[],
         };
@@ -627,12 +707,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'SET_ERROR', payload: 'Failed to load board from file. The file might be corrupted or not a valid BoardWise configuration.' });
       return false;
     }
-  }, [dispatch]);
+  }, [dispatch, state.pawnAnimation?.timerId]);
 
   const randomizeTileVisuals = useCallback(() => {
     if (state.boardConfig) {
         const currentSettings = state.boardConfig.settings;
-        // Temporarily set randomizeTiles to true for this operation, then restore original
         const tempRandomizedBoardConfig = applyBoardRandomizationSettings({
             ...state.boardConfig,
             settings: {...currentSettings, randomizeTiles: true }

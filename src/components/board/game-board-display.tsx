@@ -1,31 +1,31 @@
 
 "use client";
 
-import type { BoardConfig, Tile } from '@/types';
+import type { BoardConfig, Tile, Player } from '@/types';
 import { TileComponent } from './tile-component';
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { useGame } from '@/components/game/game-provider'; // Added for pawn animation check
 
 interface GameBoardDisplayProps {
   boardConfig: BoardConfig;
   onTileClick?: (tile: Tile) => void; 
-  activePlayerId?: string;
-  players?: { id: string; position: number; color: string; name?: string }[];
+  players?: Player[]; // Make players optional as GameProvider will supply them in play mode
 }
 
-export function GameBoardDisplay({ boardConfig, onTileClick, activePlayerId, players = [] }: GameBoardDisplayProps) {
+export function GameBoardDisplay({ boardConfig, onTileClick }: GameBoardDisplayProps) {
+  const { state: gameState } = useGame(); // Get full game state
+  const actualPlayers = gameState.players; // Use players from game state for accurate visualPosition
   const { tiles, settings } = boardConfig;
   const numTiles = settings.numberOfTiles;
 
   let displayCols: number;
 
   if (numTiles <= 0) {
-    displayCols = 1; // Should not happen, defensive
+    displayCols = 1; 
   } else if (numTiles <= 5) {
-    displayCols = numTiles; // Single row for very few tiles
+    displayCols = numTiles; 
   } else {
-    // Aim for a layout that's as close to square as possible
     const sqrtN = Math.sqrt(numTiles);
-    // Candidate column counts
     const c1 = Math.floor(sqrtN); 
     const c2 = Math.ceil(sqrtN);
 
@@ -39,20 +39,19 @@ export function GameBoardDisplay({ boardConfig, onTileClick, activePlayerId, pla
         isPerfect1 = (c1 * r1 === numTiles);
     }
     
-    if (c2 > 0) { // c2 will always be >0 if numTiles > 0
+    if (c2 > 0) { 
         r2 = Math.ceil(numTiles / c2);
         badness2 = Math.abs(c2 - r2) + ((c2 * r2) - numTiles);
         isPerfect2 = (c2 * r2 === numTiles);
     }
     
-    if (c1 > 0 && isPerfect1 && isPerfect2) { // Both make perfect rectangles
-        // Prefer wider or square. If c1 is 4x5 (c1=4,r1=5), c2 is 5x4 (c2=5,r2=4). (c1 >= r1) is false. So, displayCols = c2 (5).
+    if (c1 > 0 && isPerfect1 && isPerfect2) { 
         displayCols = (c1 >= r1) ? c1 : c2;
     } else if (isPerfect1 && c1 > 0) {
         displayCols = c1;
     } else if (isPerfect2) {
         displayCols = c2;
-    } else { // Neither is perfect, pick based on "badness" score
+    } else { 
         if (c1 > 0 && badness1 <= badness2) {
             displayCols = c1;
         } else {
@@ -60,19 +59,18 @@ export function GameBoardDisplay({ boardConfig, onTileClick, activePlayerId, pla
         }
     }
 
-    // Apply general constraints to prevent overly stretched layouts
     if (numTiles > 12) {
-        if (numTiles <= 25 && displayCols > 6) displayCols = Math.min(displayCols, 6); // e.g., 25 tiles, 5x5 better than 6x5
+        if (numTiles <= 25 && displayCols > 6) displayCols = Math.min(displayCols, 6); 
         else if (numTiles <= 30 && displayCols > 7) displayCols = Math.min(displayCols, 7);
         else if (numTiles <= 50 && displayCols > 8) displayCols = Math.min(displayCols, 8);
         else if (numTiles > 50 && displayCols > 10) displayCols = Math.min(displayCols, 10);
-    } else if (numTiles > 5) { // For 6-12 tiles
-        if (displayCols > 5) displayCols = Math.min(displayCols, 5); // Max 5 columns for smaller boards like 9 (3x3) or 12 (4x3)
+    } else if (numTiles > 5) { 
+        if (displayCols > 5) displayCols = Math.min(displayCols, 5); 
     }
   }
   
-  displayCols = Math.min(displayCols, numTiles); // Cannot have more columns than tiles
-  if (displayCols <= 0) displayCols = 1; // Failsafe if numTiles was 0 or negative
+  displayCols = Math.min(displayCols, numTiles); 
+  if (displayCols <= 0) displayCols = 1; 
 
   const displayRows = Math.ceil(numTiles / displayCols);
   
@@ -104,15 +102,21 @@ export function GameBoardDisplay({ boardConfig, onTileClick, activePlayerId, pla
             role="grid"
             aria-label="Game Board"
         >
-            {tiles.map((tile) => (
-            <TileComponent
-                key={tile.id}
-                tile={tile}
-                onClick={onTileClick ? () => onTileClick(tile) : undefined}
-                isInteractive={!!onTileClick}
-                playersOnTile={players.filter(p => p.position === tile.position)}
-            />
-            ))}
+            {tiles.map((tile) => {
+              const playersOnThisTile = actualPlayers.filter(p => p.visualPosition === tile.position);
+              const isAnimatingPlayerOnThisTile = gameState.pawnAnimation && 
+                                                playersOnThisTile.some(p => p.id === gameState.pawnAnimation?.playerId);
+              return (
+                <TileComponent
+                    key={tile.id}
+                    tile={tile}
+                    onClick={onTileClick ? () => onTileClick(tile) : undefined}
+                    isInteractive={!!onTileClick}
+                    playersOnTile={playersOnThisTile}
+                    isAnimatingPlayerStep={isAnimatingPlayerOnThisTile && gameState.pawnAnimation?.path[gameState.pawnAnimation.currentStepIndex] === tile.position}
+                />
+              );
+            })}
         </div>
         <ScrollBar orientation="horizontal" />
         <ScrollBar orientation="vertical" />

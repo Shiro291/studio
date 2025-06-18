@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -92,4 +93,30 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+}
+
+.epilepsy-safe-mode-active {
+  filter: grayscale(100%) contrast(1.1);
+}
+/* Reduce animation speeds for epilepsy safe mode - best effort */
+.epilepsy-safe-mode-active * {
+  /* These might be too aggressive and break some intended UI feedback if not careful */
+  /* transition-duration: 0.5s !important; */
+  /* animation-duration: 0.5s !important; */
+}
+
+@keyframes diceRollShake {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  10%, 90% { transform: translateX(-1px) rotate(-2deg); }
+  20%, 80% { transform: translateX(2px) rotate(2deg); }
+  30%, 50%, 70% { transform: translateX(-3px) rotate(-3deg); }
+  40%, 60% { transform: translateX(3px) rotate(3deg); }
+}
+.dice-is-rolling-animation {
+  animation: diceRollShake 0.1s linear infinite; /* Loop quickly for rolling effect */
+}
+
+/* Pawn hop animation */
+.pawn-is-moving {
+  transition: transform 0.2s ease-in-out; /* For scaling or other effects if added */
 }

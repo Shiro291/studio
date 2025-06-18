@@ -11,6 +11,7 @@ interface TileComponentProps {
   onClick?: () => void;
   isInteractive?: boolean;
   playersOnTile?: Player[];
+  isAnimatingPlayerStep?: boolean; // To highlight the current step of an animating pawn
 }
 
 const tileTypeIcons: Record<Tile['type'], React.ElementType | null> = {
@@ -22,19 +23,17 @@ const tileTypeIcons: Record<Tile['type'], React.ElementType | null> = {
   empty: null,
 };
 
-// Basic luminance calculation to determine if a color is dark or light
 function isColorDark(hexColor?: string): boolean {
   if (!hexColor) return false;
   const color = hexColor.startsWith('#') ? hexColor.substring(1) : hexColor;
   const r = parseInt(color.substring(0, 2), 16);
   const g = parseInt(color.substring(2, 4), 16);
   const b = parseInt(color.substring(4, 6), 16);
-  // Standard luminance formula
   const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return luminance < 140; // Threshold can be adjusted
+  return luminance < 140; 
 }
 
-export function TileComponent({ tile, onClick, isInteractive, playersOnTile = [] }: TileComponentProps) {
+export function TileComponent({ tile, onClick, isInteractive, playersOnTile = [], isAnimatingPlayerStep = false }: TileComponentProps) {
   const IconComponent = tileTypeIcons[tile.type];
   const tileEmoji = tile.ui.icon || TILE_TYPE_EMOJIS[tile.type] || '';
 
@@ -45,7 +44,6 @@ export function TileComponent({ tile, onClick, isInteractive, playersOnTile = []
   if (tile.ui.color && tile.ui.color !== DEFAULT_TILE_COLOR) {
     determinedTextColor = isColorDark(tile.ui.color) ? darkBgTextColor : defaultTextColor;
   }
-
 
   const textShadowStyle: React.CSSProperties = {
      textShadow: `
@@ -68,6 +66,7 @@ export function TileComponent({ tile, onClick, isInteractive, playersOnTile = []
         isInteractive ? "cursor-pointer hover:scale-105 hover:shadow-md active:scale-95" : "cursor-default",
         tile.type === 'start' && 'border-green-500',
         tile.type === 'finish' && 'border-red-500',
+        isAnimatingPlayerStep && 'ring-2 ring-offset-1 ring-yellow-400 scale-105 shadow-xl' // Highlight for animating pawn
       )}
       style={{
         backgroundColor: tile.ui.color || DEFAULT_TILE_COLOR,
@@ -87,25 +86,21 @@ export function TileComponent({ tile, onClick, isInteractive, playersOnTile = []
         {tileEmoji || (IconComponent ? <IconComponent size={20} style={{ color: determinedTextColor }} /> : null)}
       </div>
 
-      {/* Removed tile type text:
-      <span className="truncate text-[0.65rem] capitalize" style={{ color: determinedTextColor }}>
-        {tile.type !== 'empty' ? tile.type : ''}
-      </span>
-      */}
-
-
       {playersOnTile.length > 0 && (
         <div className="absolute bottom-0.5 right-0.5 left-0.5 flex flex-wrap justify-end items-end p-px gap-px max-w-full">
           {playersOnTile.slice(0, 4).map(player => (
             <div
               key={player.id}
-              className="w-3 h-3 rounded-full border border-background shadow-md"
+              className={cn(
+                "w-4 h-4 rounded-full border border-background shadow-md", // Increased pawn size
+                player.id === playersOnTile.find(p => isAnimatingPlayerStep && p.id === playersOnTile[0].id)?.id && "ring-1 ring-yellow-300 scale-110" // Highlight if this player is the one animating to this step
+              )}
               style={{ backgroundColor: player.color }}
               title={player.name}
             />
           ))}
           {playersOnTile.length > 4 && (
-             <div className="w-3 h-3 rounded-full bg-muted-foreground/50 text-white flex items-center justify-center text-[0.6rem] leading-none">
+             <div className="w-4 h-4 rounded-full bg-muted-foreground/50 text-white flex items-center justify-center text-[0.6rem] leading-none">
                 +{playersOnTile.length - 4}
              </div>
           )}

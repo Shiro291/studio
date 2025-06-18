@@ -51,6 +51,7 @@ export interface BoardSettings {
   numberOfPlayers: number;
   winningCondition: WinningCondition;
   boardBackgroundImage?: string;
+  epilepsySafeMode: boolean;
 }
 
 export interface BoardConfig {
@@ -64,13 +65,14 @@ export interface Player {
   name: string;
   color: string;
   position: number;
+  visualPosition: number; // For animation
   score: number;
   currentStreak: number;
   hasFinished: boolean;
   finishOrder: number | null;
 }
 
-export type GameStatus = 'setup' | 'playing' | 'interaction_pending' | 'finished';
+export type GameStatus = 'setup' | 'playing' | 'animating_pawn' | 'interaction_pending' | 'finished';
 
 export interface LogEntry {
   id: string;
@@ -78,6 +80,13 @@ export interface LogEntry {
   messageParams?: Record<string, string | number | undefined>;
   timestamp: number;
   type: 'roll' | 'move' | 'quiz_correct' | 'quiz_incorrect' | 'punishment' | 'reward' | 'info' | 'game_event' | 'winner' | 'streak';
+}
+
+export interface PawnAnimation {
+  playerId: string;
+  path: number[]; // Array of tile positions to animate through
+  currentStepIndex: number;
+  timerId: NodeJS.Timeout | null;
 }
 
 export interface GameState {
@@ -92,6 +101,7 @@ export interface GameState {
   winner: Player | null;
   logs: LogEntry[];
   playersFinishedCount: number;
+  pawnAnimation: PawnAnimation | null;
 }
 
 export const DEFAULT_BOARD_SETTINGS: BoardSettings = {
@@ -104,16 +114,16 @@ export const DEFAULT_BOARD_SETTINGS: BoardSettings = {
   numberOfPlayers: 2,
   winningCondition: 'firstToFinish',
   boardBackgroundImage: undefined,
+  epilepsySafeMode: false,
 };
 
 export interface PersistedPlayState {
-  players: Player[];
+  players: Player[]; // visualPosition and animation state are not persisted
   currentPlayerIndex: number;
   diceRoll: number | null;
-  gameStatus: GameStatus;
+  gameStatus: GameStatus; // if 'animating_pawn' on save, might reset to 'playing' or 'interaction_pending' on load
   activeTileForInteraction: Tile | null;
   winner: Player | null;
   logs: LogEntry[];
   playersFinishedCount: number;
 }
-

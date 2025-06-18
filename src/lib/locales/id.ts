@@ -26,6 +26,7 @@ export const id = {
   'sidebar.punishmentValue': 'Mundur Petak: {count}',
 
   'sidebar.randomizeTilesOnLoad': 'Acak Petak (saat Muat)',
+  'sidebar.epilepsySafeMode': 'Mode Aman Epilepsi (Mode Main)',
 
   'sidebar.boardAppearance': 'Tampilan Papan',
   'sidebar.boardBackgroundImage': 'Gambar Latar Papan',
@@ -82,6 +83,7 @@ export const id = {
   'tooltip.punishmentType.description': 'Tentukan apa yang terjadi jika pemain menjawab pertanyaan kuis dengan salah. Ini berlaku untuk semua petak kuis.',
   'tooltip.punishmentValue.description': 'Jika "Mundur X Petak" dipilih untuk hukuman, ini mengatur berapa banyak petak pemain bergerak mundur.',
   'tooltip.randomizeTiles.description': 'Jika diaktifkan, ikon dan warna petak (untuk petak yang tidak disesuaikan secara manual) akan diacak setiap kali papan dimuat. Pilihan kuis selalu diacak pada setiap pendaratan.',
+  'tooltip.epilepsySafeMode.description': 'Mengurangi stimulasi visual dalam mode main dengan merender dalam grayscale dan memperlambat beberapa animasi. Tidak memengaruhi perancang papan.',
   'tooltip.boardBackground.description': 'Unggah gambar untuk dijadikan latar belakang area papan permainan. Membantu mempersonalisasi permainan Anda.',
   'tooltip.numberOfPlayers.description': 'Atur berapa banyak pemain yang dapat bergabung dalam sesi permainan (1-10 pemain).',
   'tooltip.winningCondition.description': 'Pilih bagaimana pemenang ditentukan:\n- Pertama Selesai: Pemain pertama yang mencapai petak selesai menang.\n- Skor Tertinggi: Permainan berakhir setelah semua pemain selesai. Pemain dengan poin terbanyak menang.\n- Kombinasi: Poin diberikan untuk urutan selesai dan ditambahkan ke skor dalam game. Total tertinggi menang.',
@@ -202,6 +204,8 @@ export const id = {
   'log.streakIncreased': "Rentetan jawaban benar {name} sekarang {streak}!",
   'log.streakBroken': "Rentetan jawaban benar {name} terputus.",
   'log.landedOnSimpleTile': '{name} mendarat di petak {tileType}.',
+  'log.noMove': "{name} tidak bergerak (hasil dadu 0 atau target di luar batas).",
+
 
   // Misc
   'capitalize.empty': 'Kosong',
@@ -211,5 +215,3 @@ export const id = {
   'capitalize.info': 'Info',
   'capitalize.reward': 'Hadiah',
 };
-
-    

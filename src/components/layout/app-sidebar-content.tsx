@@ -16,14 +16,14 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGame } from '@/components/game/game-provider';
 import { MAX_TILES, MIN_TILES, MIN_PLAYERS, MAX_PLAYERS } from '@/lib/constants';
-import { Settings, Palette, Info, Wand2, RefreshCwIcon, Users, Image as ImageIcon, XCircle, Link as LinkIcon, Download, Upload, Dices } from 'lucide-react';
+import { Settings, Palette, Info, Wand2, RefreshCwIcon, Users, Image as ImageIcon, XCircle, Link as LinkIcon, Download, Upload, Dices, ShieldAlert } from 'lucide-react';
 import type { BoardSettings, WinningCondition, PunishmentType } from '@/types';
 import React, { useRef } from 'react';
 import { useLanguage } from '@/context/language-context';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import NextImage from 'next/image';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip'; // TooltipProvider added
 import {
   Accordion,
   AccordionContent,
@@ -76,7 +76,17 @@ export function AppSidebarContent() {
   const handleGeneratePlayLink = () => {
     if (state.boardConfig) {
       try {
-        const jsonString = JSON.stringify(state.boardConfig);
+        // Clear any ongoing animation before generating link to avoid persisting animation state
+        if (state.pawnAnimation?.timerId) {
+            clearTimeout(state.pawnAnimation.timerId);
+            dispatch({ type: 'ADVANCE_PAWN_ANIMATION' }); // This will finalize the pawn position if it was mid-animation
+        }
+        
+        const boardConfigToShare = { ...state.boardConfig };
+        // We don't want to persist transient animation state in the shared link
+        // The players visualPosition will be reset to their actual position on load anyway
+
+        const jsonString = JSON.stringify(boardConfigToShare);
         const utf8Encoded = unescape(encodeURIComponent(jsonString));
         const base64Data = btoa(utf8Encoded);
         const shareUrl = `${window.location.origin}/play?board=${encodeURIComponent(base64Data)}`;
@@ -143,7 +153,7 @@ export function AppSidebarContent() {
           if (loadBoardFromJson(jsonString)) {
             toast({ title: t('sidebar.boardImportedTitle'), description: t('sidebar.boardImportedDescription') });
           } else {
-            toast({ variant: "destructive", title: t('sidebar.importErrorTitle'), description: t('sidebar.importErrorInvalidFile') });
+            // Error toast is handled by loadBoardFromJson if it fails
           }
         } catch (error) {
           console.error("Error importing board file:", error);
@@ -169,12 +179,14 @@ export function AppSidebarContent() {
   };
 
   const renderTooltip = (contentKey: string, children: React.ReactNode) => (
-    <Tooltip>
-      <TooltipTrigger asChild>{children}</TooltipTrigger>
-      <TooltipContent side="right" className="max-w-xs">
-        <p className="text-xs">{t(contentKey)}</p>
-      </TooltipContent>
-    </Tooltip>
+    <TooltipProvider delayDuration={300}>
+      <Tooltip>
+        <TooltipTrigger asChild>{children}</TooltipTrigger>
+        <TooltipContent side="right" className="max-w-xs z-50">
+          <p className="text-xs">{t(contentKey)}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 
   return (
@@ -335,7 +347,7 @@ export function AppSidebarContent() {
                     <ImageIcon size={16} /> {t('sidebar.boardAppearance')}
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="space-y-2 pt-2 pb-4">
+              <AccordionContent className="space-y-4 pt-2 pb-4">
                  <div>
                     <div className="flex items-center gap-1 mb-1">
                       <Label htmlFor="boardBgImage" className="text-xs font-medium">{t('sidebar.boardBackgroundImage')}</Label>
@@ -364,6 +376,17 @@ export function AppSidebarContent() {
                       ref={boardBgInputRef}
                     />
                     <p className="text-xs text-muted-foreground mt-1">{t('sidebar.boardBackgroundImageHelp')}</p>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1">
+                      <Label htmlFor="epilepsySafeMode" className="text-xs font-medium">{t('sidebar.epilepsySafeMode')}</Label>
+                       {renderTooltip("tooltip.epilepsySafeMode.description", <ShieldAlert size={12} className="text-muted-foreground cursor-help" />)}
+                    </div>
+                    <Switch
+                      id="epilepsySafeMode"
+                      checked={boardSettings.epilepsySafeMode} 
+                      onCheckedChange={(checked) => handleSettingChange('epilepsySafeMode', checked)}
+                    />
                   </div>
               </AccordionContent>
             </AccordionItem>
@@ -464,5 +487,3 @@ export function AppSidebarContent() {
     </>
   );
 }
-
-    

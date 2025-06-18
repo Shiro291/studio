@@ -26,6 +26,8 @@ export const en = {
   'sidebar.punishmentValue': 'Move Back Tiles: {count}',
 
   'sidebar.randomizeTilesOnLoad': 'Randomize Tiles (on Load)',
+  'sidebar.epilepsySafeMode': 'Epilepsy Safe Mode (Play Mode)',
+
 
   'sidebar.boardAppearance': 'Board Appearance',
   'sidebar.boardBackgroundImage': 'Board Background Image',
@@ -83,6 +85,7 @@ export const en = {
   'tooltip.punishmentType.description': 'Define what happens if a player answers a quiz question incorrectly. This applies to all quiz tiles.',
   'tooltip.punishmentValue.description': 'If "Move Back X Tiles" is selected for punishment, this sets how many tiles the player moves back.',
   'tooltip.randomizeTiles.description': 'If enabled, tile icons and colors (for tiles not manually customized) will be randomized each time the board is loaded. Quiz options are always shuffled on each landing.',
+  'tooltip.epilepsySafeMode.description': 'Reduces visual stimulation in play mode by rendering in grayscale and slowing some animations. Does not affect the board designer.',
   'tooltip.boardBackground.description': 'Upload an image to serve as the background for the game board area. Helps personalize your game.',
   'tooltip.numberOfPlayers.description': 'Set how many players can join a game session (1-10 players).',
   'tooltip.winningCondition.description': 'Choose how the winner is determined:\n- First to Finish: The first player to reach the finish tile wins.\n- Highest Score: The game ends after all players finish. The player with the most points wins.\n- Combined: Points are awarded for finishing order and added to in-game scores. Highest total wins.',
@@ -204,6 +207,7 @@ export const en = {
   'log.streakIncreased': "{name}'s correct answer streak is now {streak}!",
   'log.streakBroken': "{name}'s correct answer streak was broken.",
   'log.landedOnSimpleTile': '{name} landed on {tileType} tile.',
+  'log.noMove': "{name} didn't move (rolled 0 or target out of bounds).",
 
 
   // Misc
@@ -214,5 +218,3 @@ export const en = {
   'capitalize.info': 'Info',
   'capitalize.reward': 'Reward',
 };
-
-    

@@ -14,18 +14,26 @@ import {
 import { AppHeader } from './app-header';
 import { AppSidebarContent } from './app-sidebar-content';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useGame } from '@/components/game/game-provider'; // Import useGame
+import { cn } from '@/lib/utils'; // Import cn
 
 export function AppShell({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile();
   const pathname = usePathname();
   const isPlayMode = pathname === '/play';
+  const { state: gameState } = useGame(); // Get game state
+
+  const applyEpilepsySafeMode = isPlayMode && gameState.boardConfig?.settings.epilepsySafeMode;
 
   if (isPlayMode) {
     return (
-      <SidebarProvider defaultOpen={false}> {/* Provider still needed for useSidebar hook in AppHeader, but sidebar itself is not shown */}
+      <SidebarProvider defaultOpen={false}>
         <div className="flex min-h-svh w-full flex-col">
           <AppHeader isPlayMode={isPlayMode} />
-          <main className="flex-1 p-4 md:p-6 lg:p-8 bg-background text-foreground">
+          <main className={cn(
+            "flex-1 p-4 md:p-6 lg:p-8 bg-background text-foreground",
+            { 'epilepsy-safe-mode-active': applyEpilepsySafeMode }
+          )}>
             {children}
           </main>
         </div>
