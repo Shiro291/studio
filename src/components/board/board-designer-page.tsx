@@ -86,7 +86,7 @@ export default function BoardDesignerPage() {
                 <CardTitle className="font-headline">{t('boardDesignerPage.gameControls')}</CardTitle>
             </CardHeader>
             <CardContent>
-                <DiceRoller />
+                <DiceRoller isDesignerMode={true} />
             </CardContent>
           </Card>
         </div>

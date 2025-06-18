@@ -67,6 +67,7 @@ function applyBoardRandomizationSettings(boardConfig: BoardConfig): BoardConfig 
   let newTiles = [...boardConfig.tiles];
 
   if (boardConfig.settings.randomizeTiles) {
+    // Visual randomization
     newTiles = newTiles.map(tile => {
       if (tile.type === 'start' || tile.type === 'finish') return tile;
       const randomColor = RANDOM_COLORS[Math.floor(Math.random() * RANDOM_COLORS.length)];
@@ -74,6 +75,7 @@ function applyBoardRandomizationSettings(boardConfig: BoardConfig): BoardConfig 
       return { ...tile, ui: { ...tile.ui, color: randomColor, icon: randomEmoji } };
     });
 
+    // Quiz option shuffling
     newTiles = newTiles.map(tile => {
       if (tile.type === 'quiz' && tile.config) {
         const quizConfig = tile.config as TileConfigQuiz;
@@ -101,16 +103,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const { boardConfig: rawBoardConfig, persistedPlayState } = action.payload;
 
       let processedBoardConfig = rawBoardConfig;
-      if (rawBoardConfig.settings.randomizeTiles && !persistedPlayState) { 
-          processedBoardConfig = applyBoardRandomizationSettings(rawBoardConfig);
-      } else if (persistedPlayState && persistedPlayState.activeTileForInteraction?.type === 'quiz') {
-          // If loading from persisted state, ensure quiz options are as they were
-          const activeQuiz = processedBoardConfig.tiles.find(t => t.id === persistedPlayState.activeTileForInteraction!.id);
-          if (activeQuiz && activeQuiz.type === 'quiz' && activeQuiz.config) {
-              (activeQuiz.config as TileConfigQuiz).options = (persistedPlayState.activeTileForInteraction.config as TileConfigQuiz).options;
+      // Apply randomization based on the board's configuration.
+      // This function internally checks boardConfig.settings.randomizeTiles.
+      processedBoardConfig = applyBoardRandomizationSettings(processedBoardConfig);
+
+      // If loading from a persisted state, and randomization is OFF,
+      // and the player was interacting with a quiz, restore the exact options they were seeing.
+      if (persistedPlayState && !rawBoardConfig.settings.randomizeTiles && persistedPlayState.activeTileForInteraction?.type === 'quiz') {
+          const activeQuizTileId = persistedPlayState.activeTileForInteraction.id;
+          const tileToRestore = processedBoardConfig.tiles.find(t => t.id === activeQuizTileId);
+          if (tileToRestore && tileToRestore.type === 'quiz' && tileToRestore.config) {
+              const originalQuizOptions = (persistedPlayState.activeTileForInteraction.config as TileConfigQuiz).options;
+              (tileToRestore.config as TileConfigQuiz).options = originalQuizOptions;
           }
       }
-
 
       let players = generatePlayers(processedBoardConfig.settings.numberOfPlayers);
       let currentPlayerIndex = 0;
@@ -163,6 +169,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
     case 'UPDATE_TILES': {
       if (!state.boardConfig) return state;
+      // The immediate shuffling of quiz options here was removed.
+      // Randomization is handled by applyBoardRandomizationSettings on board load/reset.
       return {
         ...state,
         boardConfig: { ...state.boardConfig, tiles: action.payload },
@@ -202,12 +210,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 players: newPlayers,
                 diceRoll: diceValue,
                 activeTileForInteraction: landedTile,
-                gameStatus: gameWinner ? 'finished' : 'interaction_pending',
+                gameStatus: gameWinner ? 'finished' : 'interaction_pending', 
                 winner: gameWinner,
              };
         }
+        // For empty, start, or non-game-ending finish, proceed to next turn automatically after setting interaction_pending
         return { ...state, players: newPlayers, diceRoll: diceValue, activeTileForInteraction: landedTile, gameStatus: 'interaction_pending' };
       }
+      // For quiz, info, reward tiles
       return { ...state, players: newPlayers, diceRoll: diceValue, activeTileForInteraction: landedTile, gameStatus: 'interaction_pending' };
     }
     case 'ANSWER_QUIZ': {
@@ -244,12 +254,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                     break;
                 case 'none':
                 default:
+                    // Player stays on the tile, newPosition remains currentPlayer.position
                     break;
             }
         }
         playSound(soundToPlay);
         newPlayers[state.currentPlayerIndex] = { ...currentPlayer, score: newScore, position: newPosition };
-
+        
+        // The game status remains 'interaction_pending' here.
+        // The TileInteractionArea will show feedback and then the user clicks "Next Turn"
+        // which dispatches PROCEED_TO_NEXT_TURN.
         return { ...state, players: newPlayers };
     }
     case 'ACKNOWLEDGE_INTERACTION': {
@@ -263,8 +277,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             const rewardConfig = state.activeTileForInteraction.config as TileConfigReward;
             newScore += rewardConfig.points || 0;
             newPlayers[state.currentPlayerIndex] = { ...currentPlayer, score: newScore };
-            playSound('correctAnswer');
+            playSound('correctAnswer'); // Or a specific reward sound
         }
+        // Game status remains 'interaction_pending'.
+        // TileInteractionArea will have a button to dispatch PROCEED_TO_NEXT_TURN.
         return { ...state, players: newPlayers };
     }
 
@@ -276,9 +292,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         let gameIsFinished = !!currentWinner;
 
         if (!currentWinner && state.boardConfig.settings.winningCondition === 'highestScore') {
+            // Check if the game should end for 'highestScore'
+            // This happens if the player who just moved (state.currentPlayerIndex before incrementing)
+            // landed on the finish tile, AND it's the last player in the turn order.
             const playerWhoJustMoved = state.players[state.currentPlayerIndex];
-            if(state.activeTileForInteraction?.type === 'finish' || playerWhoJustMoved.position === state.boardConfig.tiles.length -1) {
-                if (state.currentPlayerIndex === state.players.length - 1) {
+            if(playerWhoJustMoved.position === state.boardConfig.tiles.length -1) { // On finish tile
+                if (state.currentPlayerIndex === state.players.length - 1) { // Last player's turn
                     gameIsFinished = true;
                 }
             }
@@ -286,7 +305,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 currentWinner = state.players.reduce((prev, current) => (prev.score > current.score) ? prev : current, state.players[0]);
                 if (currentWinner) playSound('finishSound');
             }
+        } else if (!currentWinner && state.boardConfig.settings.winningCondition === 'firstToFinish') {
+            // 'firstToFinish' winner is determined in PLAYER_ROLLED_DICE if they land on finish.
+            // Here we just confirm if the gameStatus became 'finished' due to that.
+            if (state.players[state.currentPlayerIndex].position === state.boardConfig.tiles.length -1 && state.winner) {
+                 gameIsFinished = true; // Game already marked as finished by PLAYER_ROLLED_DICE setting the winner.
+                 currentWinner = state.winner; // Ensure currentWinner is set from state.winner
+            }
         }
+
 
         return {
             ...state,
@@ -304,14 +331,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       } catch (e) {
         console.warn("Failed to remove play state from localStorage on reset", e);
       }
+      // Re-apply randomization settings to the original board config for a fresh play
       const reRandomizedBoardConfig = applyBoardRandomizationSettings(state.boardConfig);
       const players = generatePlayers(reRandomizedBoardConfig.settings.numberOfPlayers);
       return {
-        ...initialState,
-        boardConfig: reRandomizedBoardConfig,
+        ...initialState, // Reset to initial game state values
+        boardConfig: reRandomizedBoardConfig, // Use the potentially re-randomized board
         players,
         isLoading: false,
-        gameStatus: 'playing',
+        gameStatus: 'playing', // Start in 'playing' state
         winner: null,
         activeTileForInteraction: null,
         diceRoll: null,
@@ -383,8 +411,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     let boardConfig: BoardConfig | null = null;
     let persistedPlayState: PersistedPlayState | null = null;
     try {
-      const decodedChars = atob(base64Data).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2));
-      const jsonString = decodeURIComponent(decodedChars.join(''));
+      const jsonString = decodeURIComponent(atob(base64Data).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
       const rawBoardData = JSON.parse(jsonString) as Partial<BoardConfig> & { settings: Partial<BoardConfig['settings']> & { punishmentMode?: boolean } };
 
       if (rawBoardData && rawBoardData.id && rawBoardData.settings && rawBoardData.tiles) {
@@ -475,7 +502,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         });
         dispatch({ type: 'UPDATE_TILES', payload: newTiles });
     }
-  }, [state.boardConfig]);
+  }, [state.boardConfig, dispatch]);
 
 
   return (

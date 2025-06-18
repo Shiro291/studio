@@ -8,14 +8,21 @@ import { Dices } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
 import { playSound } from '@/lib/sound-service';
 
-export function DiceRoller() {
+interface DiceRollerProps {
+  isDesignerMode?: boolean;
+}
+
+export function DiceRoller({ isDesignerMode = false }: DiceRollerProps) {
   const { state, dispatch } = useGame();
   const { t } = useLanguage();
   const [rolledValueDisplay, setRolledValueDisplay] = useState<number | null>(null);
   const [isRolling, setIsRolling] = useState(false);
 
   const diceSides = state.boardConfig?.settings.diceSides || 6;
-  const canRoll = state.gameStatus === 'playing' && state.activeTileForInteraction === null && !state.winner;
+  
+  const canRoll = isDesignerMode
+    ? !isRolling 
+    : state.gameStatus === 'playing' && state.activeTileForInteraction === null && !state.winner;
 
   const rollDice = () => {
     if (isRolling || !canRoll) return;
@@ -32,19 +39,23 @@ export function DiceRoller() {
         setRolledValueDisplay(finalValue);
         setIsRolling(false);
         playSound('diceRoll');
-        dispatch({ type: 'PLAYER_ROLLED_DICE', payload: { diceValue: finalValue } });
+        if (!isDesignerMode) {
+          dispatch({ type: 'PLAYER_ROLLED_DICE', payload: { diceValue: finalValue } });
+        }
       }
     }, 75); 
   };
 
   useEffect(() => {
-    if (state.gameStatus === 'playing' && state.activeTileForInteraction === null) {
-      setRolledValueDisplay(null);
-    }
-    if (state.activeTileForInteraction !== null) { 
+    if (!isDesignerMode) {
+      if (state.gameStatus === 'playing' && state.activeTileForInteraction === null) {
         setRolledValueDisplay(null);
+      }
+      if (state.activeTileForInteraction !== null) { 
+          setRolledValueDisplay(null);
+      }
     }
-  }, [state.currentPlayerIndex, state.gameStatus, state.activeTileForInteraction]);
+  }, [state.currentPlayerIndex, state.gameStatus, state.activeTileForInteraction, isDesignerMode]);
 
 
   return (
@@ -58,11 +69,11 @@ export function DiceRoller() {
       </div>
       <Button 
         onClick={rollDice} 
-        disabled={isRolling || !canRoll || !!state.winner} 
+        disabled={isRolling || !canRoll || (!isDesignerMode && !!state.winner)} 
         className="w-full max-w-xs"
       >
         <Dices className="mr-2 h-5 w-5" />
-        {isRolling ? t('diceRoller.rolling') : (state.winner ? t('playPage.gameOver') : t('diceRoller.roll', {sides: diceSides}))}
+        {isRolling ? t('diceRoller.rolling') : ((!isDesignerMode && state.winner) ? t('playPage.gameOver') : t('diceRoller.roll', {sides: diceSides}))}
       </Button>
     </div>
   );
