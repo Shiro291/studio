@@ -9,7 +9,9 @@ export const id = {
   // AppSidebarContent
   'sidebar.title': 'Perancang BoardWise',
   'sidebar.newBoard': 'Papan Baru',
-  'sidebar.exportShareBoard': 'Ekspor/Bagikan Tautan Papan',
+  'sidebar.generatePlayLink': 'Buat Tautan Main',
+  'sidebar.exportBoardFile': 'Ekspor Berkas Papan',
+  'sidebar.importBoardFile': 'Impor Berkas Papan',
   'sidebar.boardSettings': 'Pengaturan Papan',
   'sidebar.boardName': 'Nama Papan',
   'sidebar.description': 'Deskripsi',
@@ -37,13 +39,27 @@ export const id = {
   'sidebar.randomizeVisuals': 'Acak Tampilan Petak',
   'sidebar.tutorialAndInfo': 'Tutorial & Info',
   'sidebar.tutorialAndInfoTooltip': 'Pelajari cara menggunakan BoardWise',
+
   'sidebar.linkCopiedTitle': 'Tautan Disalin!',
-  'sidebar.linkCopiedDescription': 'Tautan papan yang dapat dibagikan telah disalin ke clipboard.',
-  'sidebar.linkCopiedDescriptionPlay': 'Tautan permainan yang dapat dibagikan telah disalin! Buka untuk bermain.',
+  'sidebar.linkCopiedDescriptionPlay': 'Tautan permainan yang dapat dimainkan telah disalin! Buka untuk bermain.',
   'sidebar.copyFailedTitle': 'Penyalinan Gagal',
   'sidebar.copyFailedDescription': 'Tidak dapat menyalin tautan. Silakan coba lagi.',
   'sidebar.linkErrorTitle': 'Kesalahan Pembuatan Tautan',
   'sidebar.linkErrorDescription': 'Tidak dapat membuat tautan yang dapat dibagikan.',
+
+  'sidebar.boardExportedTitle': 'Papan Diekspor!',
+  'sidebar.boardExportedDescription': 'Berkas konfigurasi papan telah diunduh.',
+  'sidebar.exportErrorTitle': 'Kesalahan Ekspor',
+  'sidebar.noBoardToExport': 'Tidak ada konfigurasi papan untuk diekspor.',
+  'sidebar.exportErrorDescription': 'Tidak dapat mengekspor berkas papan.',
+
+  'sidebar.boardImportedTitle': 'Papan Diimpor!',
+  'sidebar.boardImportedDescription': 'Konfigurasi papan telah dimuat.',
+  'sidebar.importErrorTitle': 'Kesalahan Impor',
+  'sidebar.importErrorInvalidFile': 'Berkas yang dipilih bukan konfigurasi BoardWise yang valid.',
+  'sidebar.importErrorDescription': 'Tidak dapat mengimpor berkas papan.',
+  'sidebar.fileReadError': 'Kesalahan membaca berkas.',
+  
   'sidebar.visualsRandomizedTitle': 'Tampilan Diacak!',
   'sidebar.visualsRandomizedDescription': 'Ikon dan warna petak telah diperbarui.',
 
@@ -61,7 +77,7 @@ export const id = {
   'boardDesigner.editTile': 'Edit Petak {position}',
   'boardDesigner.clearTileConfig': 'Hapus Konfigurasi Petak {position}',
   'boardDesigner.tile': 'Petak',
-  'boardDesigner.questionShort': 'P', // Pertanyaan
+  'boardDesigner.questionShort': 'P', 
   'boardDesigner.infoShort': 'Info',
 
   // TileEditorModal
@@ -110,10 +126,10 @@ export const id = {
   'tutorialModal.welcome.title': 'Selamat Datang!',
   'tutorialModal.welcome.p1': 'BoardWise membantu Anda membuat dan berbagi permainan papan interaktif kustom Anda sendiri. Rancang papan Anda, tambahkan kuis, info, dan hadiah, lalu bagikan dengan tautan!',
   'tutorialModal.gettingStarted.title': 'Memulai',
-  'tutorialModal.gettingStarted.step1': 'Klik "Papan Baru" untuk memulai dari awal atau gunakan tautan yang dibagikan untuk memuat yang sudah ada.',
+  'tutorialModal.gettingStarted.step1': 'Klik "Papan Baru" untuk memulai dari awal. Gunakan "Impor Berkas Papan" untuk memuat desain permainan yang telah disimpan.',
   'tutorialModal.gettingStarted.step2': 'Gunakan bilah sisi untuk mengkonfigurasi pengaturan papan secara keseluruhan seperti nama, jumlah petak, dan jenis dadu.',
   'tutorialModal.gettingStarted.step3': 'Klik petak dalam daftar "Konfigurasi Petak" (sisi kanan layar) untuk mengedit jenisnya (Kuis, Info, Hadiah), konten, warna, dan ikon.',
-  'tutorialModal.gettingStarted.step4': 'Setelah papan Anda siap, gunakan "Ekspor/Bagikan Tautan Papan" untuk mendapatkan URL unik untuk menyimpan atau membagikan permainan Anda.',
+  'tutorialModal.gettingStarted.step4': 'Setelah papan Anda siap, gunakan "Buat Tautan Main" untuk mendapatkan URL unik untuk bermain. Gunakan "Ekspor Berkas Papan" untuk menyimpan desain Anda ke berkas.',
   'tutorialModal.boardSettings.title': 'Pengaturan Papan (Bilah Sisi)',
   'tutorialModal.boardSettings.intro': 'Sesuaikan aspek inti permainan Anda:',
   'tutorialModal.boardSettings.nameDescription.label': 'Nama & Deskripsi',
@@ -134,8 +150,8 @@ export const id = {
   'tutorialModal.tileConfiguration.types.info': 'Berikan informasi bermanfaat atau elemen cerita, dengan gambar opsional.',
   'tutorialModal.tileConfiguration.types.reward': 'Berikan pemain pesan atau poin.',
   'tutorialModal.tileConfiguration.customization': 'Sesuaikan warna dan ikon (emoji) untuk setiap petak.',
-  'tutorialModal.sharing.title': 'Membagikan Permainan Anda',
-  'tutorialModal.sharing.text': 'Tombol "Ekspor/Bagikan Tautan Papan" menghasilkan URL unik. Simpan URL ini atau kirimkan ke orang lain. Saat mereka membuka tautan tersebut, papan Anda akan dimuat secara otomatis dalam mode bermain!',
+  'tutorialModal.sharing.title': 'Menyimpan & Membagikan Permainan Anda',
+  'tutorialModal.sharing.text': '"Buat Tautan Main" membuat URL agar orang lain dapat memainkan permainan Anda secara langsung. "Ekspor Berkas Papan" menyimpan desain Anda sebagai berkas untuk cadangan atau berbagi versi yang dapat diedit. Orang lain dapat menggunakan "Impor Berkas Papan" untuk memuat desain Anda.',
   'tutorialModal.haveFun': 'Selamat berkreasi!',
 
   // PlayPage

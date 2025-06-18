@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGame } from '@/components/game/game-provider';
 import { MAX_TILES, MIN_TILES, MIN_PLAYERS, MAX_PLAYERS } from '@/lib/constants';
-import { Settings, Share2, Palette, Info, Wand2, RefreshCwIcon, Users, Image as ImageIcon, XCircle } from 'lucide-react';
+import { Settings, Palette, Info, Wand2, RefreshCwIcon, Users, Image as ImageIcon, XCircle, Link as LinkIcon, Download, Upload } from 'lucide-react';
 import type { BoardSettings, WinningCondition } from '@/types';
 import React, { useRef, useState } from 'react';
 import { useLanguage } from '@/context/language-context';
@@ -29,11 +29,12 @@ import { TutorialModal } from './tutorial-modal';
 
 
 export function AppSidebarContent() {
-  const { state, dispatch, initializeNewBoard, randomizeTileVisuals } = useGame();
+  const { state, dispatch, initializeNewBoard, randomizeTileVisuals, loadBoardFromJson } = useGame();
   const { t } = useLanguage();
   const { toast } = useToast();
   const boardSettings = state.boardConfig?.settings;
   const boardBgInputRef = useRef<HTMLInputElement>(null);
+  const importFileInputRef = useRef<HTMLInputElement>(null);
   const [isTutorialModalOpen, setIsTutorialModalOpen] = useState(false);
 
   const handleSettingChange = <K extends keyof BoardSettings>(key: K, value: BoardSettings[K]) => {
@@ -57,7 +58,7 @@ export function AppSidebarContent() {
       reader.readAsDataURL(file);
     }
     if (event.target) {
-      event.target.value = ''; // Reset file input
+      event.target.value = ''; 
     }
   };
 
@@ -69,11 +70,10 @@ export function AppSidebarContent() {
   };
 
 
-  const handleShare = () => {
+  const handleGeneratePlayLink = () => {
     if (state.boardConfig) {
       try {
         const jsonString = JSON.stringify(state.boardConfig);
-        // Encode Unicode string to Base64: btoa(unescape(encodeURIComponent(str)))
         const base64Data = btoa(unescape(encodeURIComponent(jsonString)));
         const shareUrl = `${window.location.origin}/play?board=${encodeURIComponent(base64Data)}`;
         navigator.clipboard.writeText(shareUrl)
@@ -92,7 +92,7 @@ export function AppSidebarContent() {
             });
           });
       } catch (error) {
-        console.error("Error creating share link:", error);
+        console.error("Error creating play link:", error);
         toast({
           variant: "destructive",
           title: t('sidebar.linkErrorTitle'),
@@ -101,6 +101,58 @@ export function AppSidebarContent() {
       }
     }
   };
+
+  const handleExportBoardFile = () => {
+    if (!state.boardConfig) {
+      toast({ variant: "destructive", title: t('sidebar.exportErrorTitle'), description: t('sidebar.noBoardToExport') });
+      return;
+    }
+    try {
+      const jsonString = JSON.stringify(state.boardConfig, null, 2); // Pretty print JSON
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${state.boardConfig.settings.name.replace(/\s+/g, '-').toLowerCase() || 'boardwise-config'}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast({ title: t('sidebar.boardExportedTitle'), description: t('sidebar.boardExportedDescription') });
+    } catch (error) {
+      console.error("Error exporting board file:", error);
+      toast({ variant: "destructive", title: t('sidebar.exportErrorTitle'), description: t('sidebar.exportErrorDescription') });
+    }
+  };
+
+  const handleImportBoardFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const jsonString = e.target?.result as string;
+          if (loadBoardFromJson(jsonString)) {
+            toast({ title: t('sidebar.boardImportedTitle'), description: t('sidebar.boardImportedDescription') });
+          } else {
+            toast({ variant: "destructive", title: t('sidebar.importErrorTitle'), description: t('sidebar.importErrorInvalidFile') });
+          }
+        } catch (error) {
+          console.error("Error importing board file:", error);
+          toast({ variant: "destructive", title: t('sidebar.importErrorTitle'), description: t('sidebar.importErrorDescription') });
+        }
+      };
+      reader.onerror = () => {
+        toast({ variant: "destructive", title: t('sidebar.importErrorTitle'), description: t('sidebar.fileReadError') });
+      };
+      reader.readAsText(file);
+    }
+    // Reset file input to allow re-importing the same file
+    if (event.target) {
+        event.target.value = '';
+    }
+  };
+
 
   const handleRandomizeVisuals = () => {
     randomizeTileVisuals();
@@ -117,14 +169,32 @@ export function AppSidebarContent() {
       <SidebarMenu>
         <SidebarGroup>
           <SidebarGroupLabel className="font-headline">{t('sidebar.title')}</SidebarGroupLabel>
-          <SidebarGroupContent className="space-y-4">
+          <SidebarGroupContent className="space-y-2">
             <Button onClick={initializeNewBoard} className="w-full" variant="outline">
               <Wand2 className="mr-2 h-4 w-4" /> {t('sidebar.newBoard')}
             </Button>
              {boardSettings && (
-              <Button onClick={handleShare} className="w-full">
-                <Share2 className="mr-2 h-4 w-4" /> {t('sidebar.exportShareBoard')}
-              </Button>
+              <>
+                <Button onClick={handleGeneratePlayLink} className="w-full">
+                    <LinkIcon className="mr-2 h-4 w-4" /> {t('sidebar.generatePlayLink')}
+                </Button>
+                <Button onClick={handleExportBoardFile} className="w-full" variant="outline">
+                    <Download className="mr-2 h-4 w-4" /> {t('sidebar.exportBoardFile')}
+                </Button>
+                <Button asChild variant="outline" className="w-full cursor-pointer">
+                  <Label htmlFor="import-board-file" className="flex items-center cursor-pointer">
+                    <Upload className="mr-2 h-4 w-4" /> {t('sidebar.importBoardFile')}
+                  </Label>
+                </Button>
+                <input 
+                    type="file" 
+                    id="import-board-file" 
+                    ref={importFileInputRef}
+                    accept=".json" 
+                    onChange={handleImportBoardFile} 
+                    className="hidden" 
+                />
+              </>
             )}
           </SidebarGroupContent>
         </SidebarGroup>
@@ -269,7 +339,6 @@ export function AppSidebarContent() {
             
             <SidebarGroup>
               <SidebarGroupLabel className="flex items-center gap-2 font-headline">
-                 {/* Using an SVG for dice as Gem icon might be confusing */}
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-dice-3"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M16 8h.01"/><path d="M12 12h.01"/><path d="M8 16h.01"/></svg>
                 {t('sidebar.diceConfiguration')}
               </SidebarGroupLabel>

@@ -17,7 +17,7 @@ type GameAction =
   | { type: 'SET_BOARD_CONFIG'; payload: BoardConfig }
   | { type: 'UPDATE_BOARD_SETTINGS'; payload: Partial<BoardConfig['settings']> }
   | { type: 'UPDATE_TILES'; payload: Tile[] }
-  | { type: 'SET_PLAYERS'; payload: Player[] } // Can be used for direct player updates if needed later
+  | { type: 'SET_PLAYERS'; payload: Player[] } 
   | { type: 'START_LOADING' }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'RANDOMIZE_TILE_VISUALS' }
@@ -45,12 +45,14 @@ const GameContext = createContext<{
   dispatch: React.Dispatch<GameAction>;
   initializeNewBoard: () => void;
   loadBoardFromBase64: (base64Data: string) => void;
+  loadBoardFromJson: (jsonString: string) => boolean;
   randomizeTileVisuals: () => void;
 }>({
   state: initialState,
   dispatch: () => null,
   initializeNewBoard: () => {},
   loadBoardFromBase64: () => {},
+  loadBoardFromJson: () => false,
   randomizeTileVisuals: () => {},
 });
 
@@ -60,7 +62,7 @@ function generatePlayers(numberOfPlayers: number): Player[] {
     id: nanoid(),
     name: `Player ${i + 1}`,
     color: PLAYER_COLORS[i % PLAYER_COLORS.length],
-    position: 0, // All players start at tile 0
+    position: 0, 
     score: 0,
   }));
 }
@@ -119,27 +121,25 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const maxPosition = state.boardConfig.tiles.length - 1;
       
       let newPosition = currentPlayer.position + diceValue;
-      if (newPosition > maxPosition) newPosition = maxPosition; // Stop at finish line
+      if (newPosition > maxPosition) newPosition = maxPosition; 
 
       newPlayers[state.currentPlayerIndex] = { ...currentPlayer, position: newPosition };
       
       const landedTile = state.boardConfig.tiles[newPosition];
       
-      // If tile is empty, start, or finish (and not game over yet), auto-proceed
       if (landedTile.type === 'empty' || landedTile.type === 'start' || (landedTile.type === 'finish' && state.gameStatus !== 'finished')) {
          if (landedTile.type === 'finish') {
             playSound('finishSound');
-            // Basic win condition: first to finish
             return { 
                 ...state, 
                 players: newPlayers, 
                 diceRoll: diceValue, 
-                activeTileForInteraction: null, // No interaction for finish, handled by PROCEED_TO_NEXT_TURN
-                gameStatus: state.boardConfig.settings.winningCondition === 'firstToFinish' ? 'finished' : 'playing', // Game might continue for highestScore
+                activeTileForInteraction: null, 
+                gameStatus: state.boardConfig.settings.winningCondition === 'firstToFinish' ? 'finished' : 'playing', 
                 winner: state.boardConfig.settings.winningCondition === 'firstToFinish' ? currentPlayer : null,
              };
         }
-        return { ...state, players: newPlayers, diceRoll: diceValue, activeTileForInteraction: null, gameStatus: 'playing' }; // No interaction, turn ends implicitly by DiceRoller triggering PROCEED_TO_NEXT_TURN after this
+        return { ...state, players: newPlayers, diceRoll: diceValue, activeTileForInteraction: null, gameStatus: 'playing' }; 
       }
 
       return { ...state, players: newPlayers, diceRoll: diceValue, activeTileForInteraction: landedTile, gameStatus: 'interaction_pending' };
@@ -158,15 +158,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         if (selectedOption?.isCorrect) {
             newScore += quizConfig.points;
             soundToPlay = 'correctAnswer';
-        } else {
-            // Handle punishment mode (simplified: no score change, turn ends)
-            // More complex punishment (e.g., no move) would require adjusting PLAYER_ROLLED_DICE logic
-            // or storing original position before move. For now, player has moved.
-        }
+        } 
         playSound(soundToPlay);
         newPlayers[state.currentPlayerIndex] = { ...currentPlayer, score: newScore };
         
-        return { ...state, players: newPlayers, activeTileForInteraction: state.activeTileForInteraction }; // Keep tile active until ACKNOWLEDGE_INTERACTION
+        return { ...state, players: newPlayers, activeTileForInteraction: state.activeTileForInteraction }; 
     }
     case 'ACKNOWLEDGE_INTERACTION': {
         if (!state.boardConfig || !state.activeTileForInteraction || state.gameStatus !== 'interaction_pending') return state;
@@ -179,11 +175,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             const rewardConfig = state.activeTileForInteraction.config as TileConfigReward;
             newScore += rewardConfig.points || 0;
             newPlayers[state.currentPlayerIndex] = { ...currentPlayer, score: newScore };
-            playSound('correctAnswer'); // Or a generic "positive" sound
+            playSound('correctAnswer'); 
         }
-        // For info tiles, no score change, just acknowledge.
 
-        return { ...state, players: newPlayers, activeTileForInteraction: state.activeTileForInteraction }; // Keep tile active to show result, then PROCEED_TO_NEXT_TURN is called from UI
+        return { ...state, players: newPlayers, activeTileForInteraction: state.activeTileForInteraction }; 
     }
 
     case 'PROCEED_TO_NEXT_TURN': {
@@ -193,15 +188,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         let gameStatus = state.gameStatus;
         let winner = state.winner;
 
-        // Check if current player landed on finish and game winning condition is highest score
         const currentPlayer = state.players[state.currentPlayerIndex];
         const currentTile = state.boardConfig.tiles[currentPlayer.position];
         
         if (currentTile.type === 'finish' && state.boardConfig.settings.winningCondition === 'highestScore') {
-             // Check if all players have finished or a certain number of rounds passed (not implemented yet)
-             // For simplicity, if anyone reaches finish in highestScore mode, we check scores after all players had a turn in this "round"
-             // This is a simplified check. A full implementation might track rounds or if all players finished.
-            const allPlayersFinishedOrLastPlayerOfRound = nextPlayerIndex === 0; // Basic check if we wrapped around
+            const allPlayersFinishedOrLastPlayerOfRound = nextPlayerIndex === 0; 
             if (allPlayersFinishedOrLastPlayerOfRound) {
                 gameStatus = 'finished';
                 winner = state.players.reduce((prev, current) => (prev.score > current.score) ? prev : current);
@@ -215,7 +206,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             currentPlayerIndex: nextPlayerIndex, 
             activeTileForInteraction: null, 
             diceRoll: null,
-            gameStatus: winner ? 'finished' : 'playing', // if winner determined, game is finished
+            gameStatus: winner ? 'finished' : 'playing', 
             winner: winner
         };
     }
@@ -223,11 +214,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (!state.boardConfig) return state;
       const players = generatePlayers(state.boardConfig.settings.numberOfPlayers);
       return {
-        ...initialState, // Reset most things
-        boardConfig: state.boardConfig, // Keep the loaded board config
-        players, // Reset players
+        ...initialState, 
+        boardConfig: state.boardConfig, 
+        players, 
         isLoading: false,
-        gameStatus: 'playing', // Start in playing state
+        gameStatus: 'playing', 
       };
     }
     default:
@@ -284,23 +275,47 @@ export function GameProvider({ children }: { children: ReactNode }) {
         boardConfig.settings.boardBackgroundImage = boardConfig.settings.boardBackgroundImage || DEFAULT_BOARD_SETTINGS.boardBackgroundImage;
         
         dispatch({ type: 'SET_BOARD_CONFIG', payload: boardConfig });
-        dispatch({ type: 'RESET_GAME_FOR_PLAY' }); // Reset player states for the loaded board
+        dispatch({ type: 'RESET_GAME_FOR_PLAY' }); 
       } else {
-        throw new Error("Invalid board data structure.");
+        throw new Error("Invalid board data structure from Base64.");
       }
     } catch (error) {
       console.error("Failed to load board from Base64:", error);
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to load board data. The link might be corrupted or invalid.' });
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to load board data from link. The link might be corrupted or invalid.' });
       initializeNewBoard(); 
     }
   }, [initializeNewBoard]);
+  
+  const loadBoardFromJson = useCallback((jsonString: string): boolean => {
+    dispatch({ type: 'START_LOADING' });
+    try {
+      const boardConfig = JSON.parse(jsonString) as BoardConfig;
+      if (boardConfig && boardConfig.id && boardConfig.settings && boardConfig.tiles) {
+        boardConfig.settings.numberOfTiles = Math.max(MIN_TILES, Math.min(MAX_TILES, boardConfig.settings.numberOfTiles || DEFAULT_BOARD_SETTINGS.numberOfTiles));
+        boardConfig.settings.numberOfPlayers = Math.max(MIN_PLAYERS, Math.min(MAX_PLAYERS, boardConfig.settings.numberOfPlayers || DEFAULT_BOARD_SETTINGS.numberOfPlayers));
+        boardConfig.settings.winningCondition = boardConfig.settings.winningCondition || DEFAULT_BOARD_SETTINGS.winningCondition;
+        boardConfig.settings.boardBackgroundImage = boardConfig.settings.boardBackgroundImage || DEFAULT_BOARD_SETTINGS.boardBackgroundImage;
+        
+        dispatch({ type: 'SET_BOARD_CONFIG', payload: boardConfig });
+        dispatch({ type: 'RESET_GAME_FOR_PLAY' });
+        return true;
+      } else {
+        throw new Error("Invalid board data structure from JSON file.");
+      }
+    } catch (error) {
+      console.error("Failed to load board from JSON:", error);
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to load board from file. The file might be corrupted or not a valid BoardWise configuration.' });
+      // Do not initialize new board here, let user try again or create new.
+      return false;
+    }
+  }, []);
 
   const randomizeTileVisuals = useCallback(() => {
     dispatch({ type: 'RANDOMIZE_TILE_VISUALS' });
   }, []);
 
   return (
-    <GameContext.Provider value={{ state, dispatch, initializeNewBoard, loadBoardFromBase64, randomizeTileVisuals }}>
+    <GameContext.Provider value={{ state, dispatch, initializeNewBoard, loadBoardFromBase64, loadBoardFromJson, randomizeTileVisuals }}>
       {children}
     </GameContext.Provider>
   );
