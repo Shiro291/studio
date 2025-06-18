@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useGame } from '@/components/game/game-provider';
 import { Dices } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
+import { playSound } from '@/lib/sound-service';
 
 export function DiceRoller() {
   const { state, dispatch } = useGame();
@@ -28,6 +29,8 @@ export function DiceRoller() {
         const finalValue = Math.floor(Math.random() * diceSides) + 1;
         setRolledValue(finalValue);
         setIsRolling(false);
+        playSound('diceRoll'); 
+        // Note: Add dispatch for player movement & game logic here later
       }
     }, 50);
   };

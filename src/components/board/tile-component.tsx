@@ -1,29 +1,32 @@
+
 "use client";
 
-import type { Tile } from '@/types';
+import type { Tile, Player } from '@/types';
 import { cn } from '@/lib/utils';
 import { TILE_TYPE_EMOJIS, DEFAULT_TILE_COLOR } from '@/lib/constants';
-import { Flag, FlagOff, Info, HelpCircle, Star, AlertTriangle, CheckCircle2 } from 'lucide-react'; // Added more icons
+import { Flag, FlagOff, Info, HelpCircle, Star } from 'lucide-react';
 
 interface TileComponentProps {
   tile: Tile;
   onClick?: () => void;
   isInteractive?: boolean;
-  playersOnTile?: { id: string; color: string }[];
+  playersOnTile?: Player[];
 }
 
-const tileTypeIcons: Record<Tile['type'], React.ElementType> = {
+const tileTypeIcons: Record<Tile['type'], React.ElementType | null> = {
   start: Flag,
   finish: FlagOff,
   quiz: HelpCircle,
   info: Info,
   reward: Star,
-  empty: () => null, // No specific icon for empty, emoji is used
+  empty: null, 
 };
 
 export function TileComponent({ tile, onClick, isInteractive, playersOnTile = [] }: TileComponentProps) {
-  const IconComponent = tileTypeIcons[tile.type] || (() => null);
+  const IconComponent = tileTypeIcons[tile.type];
   const tileEmoji = tile.ui.icon || TILE_TYPE_EMOJIS[tile.type] || '';
+
+  const textColor = tile.ui.color && tile.ui.color !== DEFAULT_TILE_COLOR && tile.ui.color !== START_TILE_COLOR && tile.ui.color !== FINISH_TILE_COLOR ? 'white' : 'black';
 
   return (
     <button
@@ -43,28 +46,33 @@ export function TileComponent({ tile, onClick, isInteractive, playersOnTile = []
       aria-label={`Tile ${tile.position + 1}, type: ${tile.type}`}
       role="gridcell"
     >
-      <div className="absolute top-1 left-1 text-[0.6rem] font-bold opacity-70" style={{ color: tile.ui.color && tile.ui.color !== DEFAULT_TILE_COLOR ? 'white' : 'black' }}>
+      <div className="absolute top-1 left-1 text-[0.6rem] font-bold opacity-70" style={{ color: textColor }}>
         {tile.position + 1}
       </div>
       
       <div className="text-2xl mb-0.5" role="img" aria-label={`${tile.type} icon`}>
-        {tileEmoji || <IconComponent size={20} style={{ color: tile.ui.color && tile.ui.color !== DEFAULT_TILE_COLOR ? 'white' : 'black' }} />}
+        {tileEmoji || (IconComponent ? <IconComponent size={20} style={{ color: textColor }} /> : null)}
       </div>
       
-      <span className="truncate text-[0.65rem] capitalize" style={{ color: tile.ui.color && tile.ui.color !== DEFAULT_TILE_COLOR ? 'white' : 'black' }}>
+      <span className="truncate text-[0.65rem] capitalize" style={{ color: textColor }}>
         {tile.type !== 'empty' ? tile.type : ''}
       </span>
 
       {playersOnTile.length > 0 && (
-        <div className="absolute bottom-1 right-1 flex space-x-0.5">
-          {playersOnTile.map(player => (
+        <div className="absolute bottom-0.5 right-0.5 left-0.5 flex flex-wrap justify-end items-end p-px gap-px max-w-full">
+          {playersOnTile.slice(0, 6).map(player => ( // Show max 6 pawns for clarity, can be adjusted
             <div
               key={player.id}
-              className="w-2 h-2 rounded-full border border-background"
+              className="w-2 h-2 rounded-full border border-background shadow-sm"
               style={{ backgroundColor: player.color }}
-              title={`Player on this tile`}
+              title={player.name} // Show player name on hover
             />
           ))}
+          {playersOnTile.length > 6 && (
+             <div className="w-2 h-2 rounded-full bg-muted-foreground/50 text-white flex items-center justify-center text-[0.5rem] leading-none">
+                +{playersOnTile.length - 6}
+             </div>
+          )}
         </div>
       )}
     </button>

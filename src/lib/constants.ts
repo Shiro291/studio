@@ -45,3 +45,19 @@ export const RANDOM_COLORS: string[] = [
   '#BAE1FF', // Pastel Blue
   '#E0BBE4', // Pastel Lavender
 ];
+
+export const PLAYER_COLORS: string[] = [
+  '#FF5733', // Red-Orange
+  '#33FF57', // Bright Green
+  '#3357FF', // Bright Blue
+  '#FF33A1', // Pink
+  '#FFB833', // Orange
+  '#33FFF0', // Cyan
+  '#A133FF', // Purple
+  '#FF3333', // Red
+  '#33A1FF', // Sky Blue
+  '#A1FF33', // Lime Green
+];
+
+export const MIN_PLAYERS = 1;
+export const MAX_PLAYERS = 10;

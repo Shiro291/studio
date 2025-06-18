@@ -2,11 +2,15 @@
 "use client";
 
 import type { ReactNode } from 'react';
-import React, { createContext, useContext, useReducer, useCallback } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
 import type { BoardConfig, GameState, Player, Tile } from '@/types';
 import { DEFAULT_BOARD_SETTINGS } from '@/types';
 import { nanoid } from 'nanoid';
-import { MAX_TILES, MIN_TILES, TILE_TYPE_EMOJIS, START_TILE_COLOR, FINISH_TILE_COLOR, DEFAULT_TILE_COLOR, RANDOM_COLORS, RANDOM_EMOJIS } from '@/lib/constants';
+import { 
+  MAX_TILES, MIN_TILES, TILE_TYPE_EMOJIS, START_TILE_COLOR, 
+  FINISH_TILE_COLOR, DEFAULT_TILE_COLOR, RANDOM_COLORS, RANDOM_EMOJIS, 
+  PLAYER_COLORS, MIN_PLAYERS, MAX_PLAYERS 
+} from '@/lib/constants';
 
 type GameAction =
   | { type: 'SET_BOARD_CONFIG'; payload: BoardConfig }
@@ -41,18 +45,37 @@ const GameContext = createContext<{
   randomizeTileVisuals: () => {},
 });
 
+function generatePlayers(numberOfPlayers: number): Player[] {
+  const numPlayers = Math.max(MIN_PLAYERS, Math.min(MAX_PLAYERS, numberOfPlayers));
+  return Array.from({ length: numPlayers }, (_, i) => ({
+    id: nanoid(),
+    name: `Player ${i + 1}`,
+    color: PLAYER_COLORS[i % PLAYER_COLORS.length],
+    position: 0,
+    score: 0,
+  }));
+}
+
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'SET_BOARD_CONFIG':
-      return { ...state, boardConfig: action.payload, isLoading: false, error: null, gameStatus: 'setup' };
+      const boardConfig = action.payload;
+      const players = generatePlayers(boardConfig.settings.numberOfPlayers);
+      return { ...state, boardConfig, players, isLoading: false, error: null, gameStatus: 'setup' };
     case 'UPDATE_BOARD_SETTINGS':
       if (!state.boardConfig) return state;
+      const updatedSettings = { ...state.boardConfig.settings, ...action.payload };
+      let updatedPlayers = state.players;
+      if (action.payload.numberOfPlayers !== undefined && action.payload.numberOfPlayers !== state.boardConfig.settings.numberOfPlayers) {
+        updatedPlayers = generatePlayers(action.payload.numberOfPlayers);
+      }
       return {
         ...state,
         boardConfig: {
           ...state.boardConfig,
-          settings: { ...state.boardConfig.settings, ...action.payload },
+          settings: updatedSettings,
         },
+        players: updatedPlayers,
       };
     case 'UPDATE_TILES':
       if (!state.boardConfig) return state;
@@ -60,7 +83,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         boardConfig: { ...state.boardConfig, tiles: action.payload },
       };
-    case 'SET_PLAYERS':
+    case 'SET_PLAYERS': // Could be used for more direct player updates if needed later
       return { ...state, players: action.payload };
     case 'START_LOADING':
       return { ...state, isLoading: true, error: null };
@@ -70,7 +93,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (!state.boardConfig) return state;
       const newTiles = state.boardConfig.tiles.map(tile => {
         if (tile.type === 'start' || tile.type === 'finish') {
-          return tile; // Keep start and finish tiles as they are
+          return tile; 
         }
         const randomColor = RANDOM_COLORS[Math.floor(Math.random() * RANDOM_COLORS.length)];
         const randomEmoji = tile.type === 'empty' ? TILE_TYPE_EMOJIS.empty : RANDOM_EMOJIS[Math.floor(Math.random() * RANDOM_EMOJIS.length)];
@@ -119,7 +142,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         };
       }
     }
-
+    
     const newBoardConfig: BoardConfig = {
       id: newBoardId,
       settings: { ...DEFAULT_BOARD_SETTINGS },
@@ -135,6 +158,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const boardConfig = JSON.parse(jsonString) as BoardConfig;
       if (boardConfig && boardConfig.id && boardConfig.settings && boardConfig.tiles) {
         boardConfig.settings.numberOfTiles = Math.max(MIN_TILES, Math.min(MAX_TILES, boardConfig.settings.numberOfTiles || DEFAULT_BOARD_SETTINGS.numberOfTiles));
+        boardConfig.settings.numberOfPlayers = Math.max(MIN_PLAYERS, Math.min(MAX_PLAYERS, boardConfig.settings.numberOfPlayers || DEFAULT_BOARD_SETTINGS.numberOfPlayers));
+        boardConfig.settings.winningCondition = boardConfig.settings.winningCondition || DEFAULT_BOARD_SETTINGS.winningCondition;
+
         dispatch({ type: 'SET_BOARD_CONFIG', payload: boardConfig });
       } else {
         throw new Error("Invalid board data structure.");

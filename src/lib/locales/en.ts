@@ -16,6 +16,14 @@ export const en = {
   'sidebar.numberOfTiles': 'Number of Tiles: {count}',
   'sidebar.punishmentMode': 'Punishment Mode',
   'sidebar.randomizeTilesOnLoad': 'Randomize Tiles (on Load)',
+  
+  'sidebar.playerSettings': 'Player Settings',
+  'sidebar.numberOfPlayers': 'Number of Players: {count}',
+  'sidebar.winningCondition': 'Winning Condition',
+  'sidebar.selectWinningCondition': 'Select how to win',
+  'sidebar.firstToFinish': 'First to Finish Tile',
+  'sidebar.highestScore': 'Highest Score (after finish/X rounds)',
+  
   'sidebar.diceConfiguration': 'Dice Configuration',
   'sidebar.diceSides': 'Dice Sides: {count}',
   'sidebar.tileCustomization': 'Tile Customization',

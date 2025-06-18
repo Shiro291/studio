@@ -16,6 +16,14 @@ export const id = {
   'sidebar.numberOfTiles': 'Jumlah Petak: {count}',
   'sidebar.punishmentMode': 'Mode Hukuman',
   'sidebar.randomizeTilesOnLoad': 'Acak Petak (saat Muat)',
+
+  'sidebar.playerSettings': 'Pengaturan Pemain',
+  'sidebar.numberOfPlayers': 'Jumlah Pemain: {count}',
+  'sidebar.winningCondition': 'Kondisi Menang',
+  'sidebar.selectWinningCondition': 'Pilih cara menang',
+  'sidebar.firstToFinish': 'Pertama Sampai Petak Selesai',
+  'sidebar.highestScore': 'Skor Tertinggi (setelah selesai/X ronde)',
+
   'sidebar.diceConfiguration': 'Konfigurasi Dadu',
   'sidebar.diceSides': 'Sisi Dadu: {count}',
   'sidebar.tileCustomization': 'Kustomisasi Petak',

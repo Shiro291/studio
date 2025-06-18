@@ -1,3 +1,4 @@
+
 export type TileType = 'empty' | 'start' | 'finish' | 'quiz' | 'info' | 'reward';
 
 export interface QuizOption {
@@ -36,6 +37,8 @@ export interface Tile {
   };
 }
 
+export type WinningCondition = 'firstToFinish' | 'highestScore';
+
 export interface BoardSettings {
   name: string;
   description?: string;
@@ -43,6 +46,8 @@ export interface BoardSettings {
   punishmentMode: boolean; // Pawn doesn't move on wrong answer
   randomizeTiles: boolean; // On load or new game, tile types/content could be randomized
   diceSides: number; // 1-12
+  numberOfPlayers: number; // 1-10
+  winningCondition: WinningCondition;
 }
 
 export interface BoardConfig {
@@ -76,4 +81,7 @@ export const DEFAULT_BOARD_SETTINGS: BoardSettings = {
   punishmentMode: false,
   randomizeTiles: false,
   diceSides: 6,
+  numberOfPlayers: 2,
+  winningCondition: 'firstToFinish',
 };
+

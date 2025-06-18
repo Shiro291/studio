@@ -18,12 +18,14 @@ import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGame } from '@/components/game/game-provider';
-import { MAX_TILES, MIN_TILES } from '@/lib/constants';
-import { Gem, Settings, Share2, Zap, Rows3, Palette, Info, Wand2, RefreshCwIcon } from 'lucide-react';
-import type { BoardSettings } from '@/types';
+import { MAX_TILES, MIN_TILES, MIN_PLAYERS, MAX_PLAYERS } from '@/lib/constants';
+import { Gem, Settings, Share2, Zap, Rows3, Palette, Info, Wand2, RefreshCwIcon, Users, Trophy } from 'lucide-react';
+import type { BoardSettings, WinningCondition } from '@/types';
 import React from 'react';
 import { useLanguage } from '@/context/language-context';
 import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 
 export function AppSidebarContent() {
   const { state, dispatch, initializeNewBoard, randomizeTileVisuals } = useGame();
@@ -35,12 +37,12 @@ export function AppSidebarContent() {
     dispatch({ type: 'UPDATE_BOARD_SETTINGS', payload: { [key]: value } });
   };
   
-  const handleNumberOfTilesChange = (value: number[]) => {
-    const newNumberOfTiles = value[0];
-    if (boardSettings && newNumberOfTiles !== boardSettings.numberOfTiles) {
-      handleSettingChange('numberOfTiles', newNumberOfTiles);
+  const handleSliderChange = (key: 'numberOfTiles' | 'diceSides' | 'numberOfPlayers') => (value: number[]) => {
+     if (boardSettings && value[0] !== boardSettings[key]) {
+      handleSettingChange(key, value[0]);
     }
   };
+
 
   const handleShare = () => {
     if (state.boardConfig) {
@@ -137,7 +139,7 @@ export function AppSidebarContent() {
                     max={MAX_TILES}
                     step={1}
                     value={[boardSettings.numberOfTiles]}
-                    onValueChange={handleNumberOfTilesChange}
+                    onValueChange={handleSliderChange('numberOfTiles')}
                     className="mt-2"
                   />
                 </div>
@@ -153,7 +155,7 @@ export function AppSidebarContent() {
                   <Label htmlFor="randomizeTilesOnLoad" className="text-sm font-medium">{t('sidebar.randomizeTilesOnLoad')}</Label>
                   <Switch
                     id="randomizeTilesOnLoad"
-                    checked={boardSettings.randomizeTiles} // Assuming this maps to randomizeTilesOnLoad
+                    checked={boardSettings.randomizeTiles} 
                     onCheckedChange={(checked) => handleSettingChange('randomizeTiles', checked)}
                   />
                 </div>
@@ -162,6 +164,45 @@ export function AppSidebarContent() {
 
             <SidebarSeparator />
 
+            <SidebarGroup>
+              <SidebarGroupLabel className="flex items-center gap-2 font-headline">
+                <Users size={16} /> {t('sidebar.playerSettings')}
+              </SidebarGroupLabel>
+              <SidebarGroupContent className="space-y-4">
+                <div>
+                  <Label htmlFor="numPlayers" className="text-sm font-medium">
+                    {t('sidebar.numberOfPlayers', { count: boardSettings.numberOfPlayers })}
+                  </Label>
+                  <Slider
+                    id="numPlayers"
+                    min={MIN_PLAYERS}
+                    max={MAX_PLAYERS}
+                    step={1}
+                    value={[boardSettings.numberOfPlayers]}
+                    onValueChange={handleSliderChange('numberOfPlayers')}
+                    className="mt-2"
+                  />
+                </div>
+                 <div>
+                  <Label htmlFor="winningCondition" className="text-sm font-medium">{t('sidebar.winningCondition')}</Label>
+                   <Select
+                    value={boardSettings.winningCondition}
+                    onValueChange={(value: WinningCondition) => handleSettingChange('winningCondition', value)}
+                  >
+                    <SelectTrigger id="winningCondition" className="mt-1">
+                      <SelectValue placeholder={t('sidebar.selectWinningCondition')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="firstToFinish">{t('sidebar.firstToFinish')}</SelectItem>
+                      <SelectItem value="highestScore">{t('sidebar.highestScore')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarSeparator />
+            
             <SidebarGroup>
               <SidebarGroupLabel className="flex items-center gap-2 font-headline">
                 <Gem size={16} /> {t('sidebar.diceConfiguration')}
@@ -175,12 +216,13 @@ export function AppSidebarContent() {
                     max={12}
                     step={1}
                     value={[boardSettings.diceSides]}
-                    onValueChange={(val) => handleSettingChange('diceSides', val[0])}
+                    onValueChange={handleSliderChange('diceSides')}
                     className="mt-2"
                   />
                 </div>
               </SidebarGroupContent>
             </SidebarGroup>
+
             <SidebarSeparator />
              <SidebarGroup>
                 <SidebarGroupLabel className="flex items-center gap-2 font-headline">
