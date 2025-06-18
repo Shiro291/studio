@@ -3,7 +3,7 @@
 
 import type { Tile, Player } from '@/types';
 import { cn } from '@/lib/utils';
-import { TILE_TYPE_EMOJIS, DEFAULT_TILE_COLOR } from '@/lib/constants';
+import { TILE_TYPE_EMOJIS, DEFAULT_TILE_COLOR, START_TILE_COLOR, FINISH_TILE_COLOR } from '@/lib/constants';
 import { Flag, FlagOff, Info, HelpCircle, Star } from 'lucide-react';
 
 interface TileComponentProps {
