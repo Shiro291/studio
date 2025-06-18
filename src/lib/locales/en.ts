@@ -47,6 +47,7 @@ export const en = {
   'sidebar.randomizeVisuals': 'Randomize Tile Visuals',
   'sidebar.tutorialAndInfo': 'Tutorial & Info',
   'sidebar.tutorialAndInfoTooltip': 'Learn how to use BoardWise',
+  'sidebar.mobileTitle': 'Menu',
   
   'sidebar.linkCopiedTitle': 'Link Copied!',
   'sidebar.linkCopiedDescriptionPlay': 'Playable game link copied to clipboard. Open it to play!',

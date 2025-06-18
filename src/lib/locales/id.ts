@@ -47,6 +47,7 @@ export const id = {
   'sidebar.randomizeVisuals': 'Acak Tampilan Petak',
   'sidebar.tutorialAndInfo': 'Tutorial & Info',
   'sidebar.tutorialAndInfoTooltip': 'Pelajari cara menggunakan BoardWise',
+  'sidebar.mobileTitle': 'Menu',
 
   'sidebar.linkCopiedTitle': 'Tautan Disalin!',
   'sidebar.linkCopiedDescriptionPlay': 'Tautan permainan yang dapat dimainkan telah disalin! Buka untuk bermain.',
