@@ -3,8 +3,8 @@
 
 import type { Player } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useLanguage } from '@/context/language-context';
+import { cn } from '@/lib/utils';
 
 interface PlayerInfoBarProps {
   players: Player[];
@@ -13,8 +13,20 @@ interface PlayerInfoBarProps {
 
 export function PlayerInfoBar({ players, currentPlayerIndex }: PlayerInfoBarProps) {
   const { t } = useLanguage();
-  const currentPlayer = players[currentPlayerIndex];
 
+  if (!players || players.length === 0) {
+    return (
+      <Card className="shadow-md">
+        <CardHeader>
+          <CardTitle className="font-headline text-xl">{t('playPage.playerInfoTitle')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">{t('playPage.waitingForPlayers')}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+  
   return (
     <Card className="shadow-md">
       <CardHeader>
@@ -24,29 +36,33 @@ export function PlayerInfoBar({ players, currentPlayerIndex }: PlayerInfoBarProp
         {players.map((player, index) => (
           <div 
             key={player.id} 
-            className={`p-2 rounded-md border-2 ${index === currentPlayerIndex ? 'border-primary bg-primary/10 shadow-lg scale-105' : 'border-transparent'}`}
+            className={cn(
+              "p-3 rounded-lg border-2 transition-all duration-200",
+              index === currentPlayerIndex 
+                ? 'border-primary bg-primary/10 shadow-lg scale-105 ring-2 ring-primary ring-offset-2' 
+                : 'border-transparent bg-card'
+            )}
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <div 
-                  className="w-5 h-5 rounded-full border border-background shadow-sm"
-                  style={{ backgroundColor: player.color }}
+                  className="w-6 h-6 rounded-full border-2 border-background shadow-md flex-shrink-0"
+                  style={{ backgroundColor: player.color, borderColor: `color-mix(in srgb, ${player.color} 70%, black)` }}
                   title={player.name}
                 />
-                <span className={`font-medium ${index === currentPlayerIndex ? 'text-primary' : ''}`}>
+                <span className={cn("font-semibold", index === currentPlayerIndex ? 'text-primary' : 'text-foreground')}>
                   {player.name}
                 </span>
               </div>
-              <span className={`text-sm font-semibold ${index === currentPlayerIndex ? 'text-primary' : 'text-muted-foreground'}`}>
+              <span className={cn("text-sm font-bold", index === currentPlayerIndex ? 'text-primary' : 'text-muted-foreground')}>
                 {t('playPage.score')}: {player.score}
               </span>
             </div>
             {index === currentPlayerIndex && (
-              <p className="text-xs text-primary font-semibold mt-1">{t('playPage.currentTurn')}</p>
+              <p className="text-xs text-primary font-semibold mt-1 animate-pulse">{t('playPage.currentTurn')}</p>
             )}
           </div>
         ))}
-        {!currentPlayer && <p className="text-sm text-muted-foreground">{t('playPage.waitingForPlayers')}</p>}
       </CardContent>
     </Card>
   );

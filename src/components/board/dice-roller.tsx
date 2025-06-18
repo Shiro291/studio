@@ -11,46 +11,56 @@ import { playSound } from '@/lib/sound-service';
 export function DiceRoller() {
   const { state, dispatch } = useGame();
   const { t } = useLanguage();
-  const [rolledValue, setRolledValue] = useState<number | null>(null);
+  const [rolledValueDisplay, setRolledValueDisplay] = useState<number | null>(null);
   const [isRolling, setIsRolling] = useState(false);
 
   const diceSides = state.boardConfig?.settings.diceSides || 6;
+  const canRoll = state.gameStatus === 'playing' && state.activeTileForInteraction === null && !state.winner;
 
   const rollDice = () => {
-    if (isRolling) return;
+    if (isRolling || !canRoll) return;
     setIsRolling(true);
-    
-    let currentRollCount = 0; 
+    setRolledValueDisplay(null); // Clear previous display while rolling
+
+    let currentRollCount = 0;
     const rollInterval = setInterval(() => {
-      setRolledValue(Math.floor(Math.random() * diceSides) + 1);
+      setRolledValueDisplay(Math.floor(Math.random() * diceSides) + 1);
       currentRollCount++;
-      if (currentRollCount > 10) { 
+      if (currentRollCount > 10) {
         clearInterval(rollInterval);
         const finalValue = Math.floor(Math.random() * diceSides) + 1;
-        setRolledValue(finalValue);
+        setRolledValueDisplay(finalValue);
         setIsRolling(false);
-        playSound('diceRoll'); 
-        // Note: Add dispatch for player movement & game logic here later
+        playSound('diceRoll');
+        dispatch({ type: 'PLAYER_ROLLED_DICE', payload: { diceValue: finalValue } });
       }
-    }, 50);
+    }, 75); // Slightly slower roll for better visual
   };
-  
+
+  // Reset display when current player changes or game resets
   useEffect(() => {
-    setRolledValue(null);
-  }, [diceSides]);
+    if (state.gameStatus === 'playing' && state.activeTileForInteraction === null) {
+      setRolledValueDisplay(null);
+    }
+  }, [state.currentPlayerIndex, state.gameStatus, state.activeTileForInteraction]);
+
 
   return (
     <div className="flex flex-col items-center space-y-4 p-4 rounded-lg shadow-md bg-card">
-      <div 
+      <div
         className="w-24 h-24 border-2 border-primary rounded-lg flex items-center justify-center text-4xl font-bold text-primary bg-background shadow-inner"
         aria-live="polite"
-        title={rolledValue !== null ? t('diceRoller.diceRolled', {value: rolledValue}) : t('diceRoller.diceNotRolled')}
+        title={rolledValueDisplay !== null ? t('diceRoller.diceRolled', {value: rolledValueDisplay}) : t('diceRoller.diceNotRolled')}
       >
-        {rolledValue !== null ? rolledValue : <Dices size={48} className="text-muted-foreground" />}
+        {isRolling ? "..." : (rolledValueDisplay !== null ? rolledValueDisplay : <Dices size={48} className="text-muted-foreground" />)}
       </div>
-      <Button onClick={rollDice} disabled={isRolling} className="w-full max-w-xs">
+      <Button 
+        onClick={rollDice} 
+        disabled={isRolling || !canRoll || !!state.winner} 
+        className="w-full max-w-xs"
+      >
         <Dices className="mr-2 h-5 w-5" />
-        {isRolling ? t('diceRoller.rolling') : t('diceRoller.roll', {sides: diceSides})}
+        {isRolling ? t('diceRoller.rolling') : (state.winner ? t('playPage.gameOver') : t('diceRoller.roll', {sides: diceSides}))}
       </Button>
     </div>
   );

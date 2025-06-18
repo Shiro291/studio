@@ -69,10 +69,12 @@ export interface GameState {
   boardConfig: BoardConfig | null;
   players: Player[];
   currentPlayerIndex: number;
-  diceRoll: number | null;
-  gameStatus: 'setup' | 'playing' | 'finished';
+  diceRoll: number | null; // Stores the value of the last dice roll
+  gameStatus: 'setup' | 'playing' | 'interaction_pending' | 'finished';
   isLoading: boolean;
   error: string | null;
+  activeTileForInteraction: Tile | null; // Tile current player landed on and needs to interact with
+  winner: Player | null; // Stores the winner when game is finished
 }
 
 // Default values for a new board

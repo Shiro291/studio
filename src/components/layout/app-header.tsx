@@ -21,7 +21,7 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ isPlayMode = false }: AppHeaderProps) {
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar } = useSidebar(); // This call is fine if SidebarProvider is always a parent or conditionally used
   const [mounted, setMounted] = React.useState(false);
   const { theme, setTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();

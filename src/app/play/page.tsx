@@ -9,14 +9,16 @@ import { DiceRoller } from '@/components/board/dice-roller';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Terminal } from "lucide-react";
+import { Button } from '@/components/ui/button';
+import { Terminal, Trophy } from "lucide-react";
 import { useLanguage } from '@/context/language-context';
 import { PlayerInfoBar } from '@/components/play/player-info-bar';
 import { TileInteractionArea } from '@/components/play/tile-interaction-area';
+import Link from 'next/link';
 
 
 export default function PlayPage() {
-  const { state, loadBoardFromBase64, initializeNewBoard } = useGame();
+  const { state, loadBoardFromBase64, dispatch } = useGame();
   const { t } = useLanguage();
   const searchParams = useSearchParams();
   const [initialLoadDone, setInitialLoadDone] = useState(false);
@@ -27,15 +29,11 @@ export default function PlayPage() {
       if (boardData) {
         loadBoardFromBase64(decodeURIComponent(boardData));
       } else {
-        // If no board data, maybe redirect to home or show an error/default board
-        // For now, initialize a new default board if no data is passed for playing
-        initializeNewBoard(); 
-        // Or, set an error:
-        // dispatch({ type: 'SET_ERROR', payload: t('playPage.noBoardDataError') });
+        dispatch({ type: 'SET_ERROR', payload: t('playPage.noBoardDataError') });
       }
       setInitialLoadDone(true);
     }
-  }, [searchParams, loadBoardFromBase64, initializeNewBoard, initialLoadDone, t]);
+  }, [searchParams, loadBoardFromBase64, initialLoadDone, t, dispatch]);
 
   if (state.isLoading || !initialLoadDone) {
     return (
@@ -50,7 +48,7 @@ export default function PlayPage() {
   
   if (state.error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
         <Alert variant="destructive" className="max-w-lg mx-auto">
           <Terminal className="h-4 w-4" />
           <AlertTitle>{t('playPage.errorLoadingTitle')}</AlertTitle>
@@ -58,14 +56,26 @@ export default function PlayPage() {
             {state.error} {t('playPage.errorLoadingDescription')}
           </AlertDescription>
         </Alert>
+        <Link href="/" passHref>
+          <Button variant="link" className="mt-4">{t('playPage.backToEditor')}</Button>
+        </Link>
       </div>
     );
   }
 
   if (!state.boardConfig) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p>{t('playPage.noBoardConfig')}</p>
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
+        <Alert variant="default" className="max-w-lg mx-auto">
+          <Terminal className="h-4 w-4" />
+          <AlertTitle>{t('playPage.noBoardConfigTitle')}</AlertTitle>
+          <AlertDescription>
+             {t('playPage.noBoardConfig')}
+          </AlertDescription>
+        </Alert>
+         <Link href="/" passHref>
+          <Button variant="link" className="mt-4">{t('playPage.backToEditor')}</Button>
+        </Link>
       </div>
     );
   }
@@ -76,6 +86,30 @@ export default function PlayPage() {
         {state.boardConfig.settings.name}
       </h1>
       
+      {state.winner && (
+        <Card className="mb-6 bg-green-100 dark:bg-green-900 border-green-500">
+          <CardHeader className="items-center">
+            <Trophy className="w-12 h-12 text-yellow-500 mb-2" />
+            <CardTitle className="text-2xl font-headline text-green-700 dark:text-green-300">
+              {t('playPage.gameOver')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p className="text-xl font-semibold">
+              {t('playPage.winnerIs', { name: state.winner.name, score: state.winner.score })}
+            </p>
+            <div className="mt-4 flex justify-center gap-2">
+                <Button onClick={() => dispatch({ type: 'RESET_GAME_FOR_PLAY' })}>
+                {t('playPage.playAgain')}
+                </Button>
+                <Link href="/" passHref>
+                    <Button variant="outline">{t('playPage.backToEditor')}</Button>
+                </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-6">
           <Card className="shadow-lg">
@@ -85,8 +119,7 @@ export default function PlayPage() {
             <CardContent>
               <GameBoardDisplay 
                 boardConfig={state.boardConfig} 
-                players={state.players} 
-                // activePlayerId might be needed later
+                players={state.players}
               />
             </CardContent>
           </Card>
@@ -102,7 +135,11 @@ export default function PlayPage() {
                 <DiceRoller />
             </CardContent>
           </Card>
-          <TileInteractionArea tile={null} /> {/* Placeholder */}
+          <TileInteractionArea 
+            tile={state.activeTileForInteraction} 
+            boardSettings={state.boardConfig.settings} 
+            isQuizCorrect={state.activeTileForInteraction?.type === 'quiz' ? (state.players[state.currentPlayerIndex].score > (state.players.find(p=>p.id === state.players[state.currentPlayerIndex].id)?.score ?? 0) - ((state.activeTileForInteraction.config as any)?.points ?? 0)) : undefined} // This is a bit hacky way to check if score increased
+          />
         </div>
       </div>
     </div>

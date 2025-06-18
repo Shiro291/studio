@@ -21,6 +21,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isPlayMode = pathname === '/play';
 
   if (isPlayMode) {
+    // For play mode, AppHeader is rendered directly without SidebarProvider
+    // AppHeader itself needs to conditionally use useSidebar() or not render parts that need it
     return (
       <div className="flex min-h-svh w-full flex-col">
         <AppHeader isPlayMode={isPlayMode} />
@@ -44,7 +46,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </Sidebar>
       <SidebarRail />
       <SidebarInset>
-        <AppHeader isPlayMode={isPlayMode} />
+        <AppHeader isPlayMode={isPlayMode} /> {/* AppHeader is inside SidebarProvider here */}
         <main className="flex-1 p-4 md:p-6 lg:p-8">
           {children}
         </main>
