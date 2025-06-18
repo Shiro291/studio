@@ -1,0 +1,139 @@
+"use client";
+
+import React, { useState, useEffect } from 'react';
+import { useGame } from '@/components/game/game-provider';
+import type { Tile, TileType } from '@/types';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { nanoid } from 'nanoid';
+import { DEFAULT_TILE_COLOR, START_TILE_COLOR, FINISH_TILE_COLOR, TILE_TYPE_EMOJIS } from '@/lib/constants';
+import { Edit3, Trash2 } from 'lucide-react';
+import { TileEditorModal } from './tile-editor-modal'; // To be created
+
+export function BoardDesigner() {
+  const { state, dispatch } = useGame();
+  const [selectedTileForEdit, setSelectedTileForEdit] = useState<Tile | null>(null);
+
+  useEffect(() => {
+    if (state.boardConfig) {
+      const { numberOfTiles } = state.boardConfig.settings;
+      let currentTiles = [...state.boardConfig.tiles];
+
+      if (currentTiles.length !== numberOfTiles) {
+        const newTiles: Tile[] = Array(numberOfTiles).fill(null).map((_, index) => {
+          const existingTile = currentTiles.find(t => t.position === index);
+          if (existingTile) return existingTile;
+          return {
+            id: nanoid(),
+            type: 'empty' as TileType,
+            position: index,
+            ui: { color: DEFAULT_TILE_COLOR, icon: TILE_TYPE_EMOJIS.empty },
+          };
+        });
+
+        // Ensure start and finish tiles are present and correctly positioned
+        if (newTiles.length > 0) {
+          newTiles[0] = { 
+            ...newTiles[0], 
+            type: 'start', 
+            ui: { ...newTiles[0].ui, color: START_TILE_COLOR, icon: TILE_TYPE_EMOJIS.start } 
+          };
+          if (newTiles.length > 1) {
+            newTiles[newTiles.length - 1] = { 
+              ...newTiles[newTiles.length - 1], 
+              type: 'finish', 
+              ui: { ...newTiles[newTiles.length-1].ui, color: FINISH_TILE_COLOR, icon: TILE_TYPE_EMOJIS.finish }
+            };
+          }
+        }
+        dispatch({ type: 'UPDATE_TILES', payload: newTiles });
+      }
+    }
+  }, [state.boardConfig?.settings.numberOfTiles, dispatch, state.boardConfig?.tiles]);
+
+
+  if (!state.boardConfig) {
+    return <p>Loading board configuration...</p>;
+  }
+
+  const { tiles } = state.boardConfig;
+
+  const handleEditTile = (tile: Tile) => {
+    setSelectedTileForEdit(tile);
+  };
+
+  const handleSaveTile = (updatedTile: Tile) => {
+    const newTiles = tiles.map(t => t.id === updatedTile.id ? updatedTile : t);
+    dispatch({ type: 'UPDATE_TILES', payload: newTiles });
+    setSelectedTileForEdit(null);
+  };
+
+  const handleDeleteTileConfig = (tileId: string) => {
+    const targetTile = tiles.find(t => t.id === tileId);
+    if (!targetTile || targetTile.type === 'start' || targetTile.type === 'finish') return;
+
+    const newTiles = tiles.map(t => 
+      t.id === tileId 
+        ? { ...t, type: 'empty' as TileType, config: undefined, ui: { ...t.ui, icon: TILE_TYPE_EMOJIS.empty } } 
+        : t
+    );
+    dispatch({ type: 'UPDATE_TILES', payload: newTiles });
+  };
+
+  return (
+    <Card className="shadow-lg">
+      <CardHeader>
+        <CardTitle className="font-headline">Tile Configuration</CardTitle>
+        <CardDescription>Click on a tile below to customize its type and content.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ScrollArea className="h-[400px] pr-4">
+          <div className="space-y-2">
+            {tiles.map((tile) => (
+              <Card key={tile.id} className="p-3 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                     <span 
+                        className="w-6 h-6 rounded-sm flex items-center justify-center text-xs" 
+                        style={{ backgroundColor: tile.ui.color || DEFAULT_TILE_COLOR, color: tile.ui.color && tile.ui.color !== DEFAULT_TILE_COLOR ? 'white' : 'black' }}
+                        role="img"
+                        aria-label={`${tile.type} tile icon`}
+                      >
+                       {tile.ui.icon || TILE_TYPE_EMOJIS[tile.type] || TILE_TYPE_EMOJIS.empty}
+                      </span>
+                    <span className="font-medium">Tile {tile.position + 1}</span>
+                    <span className="text-sm text-muted-foreground capitalize">{tile.type}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => handleEditTile(tile)} aria-label={`Edit Tile ${tile.position + 1}`}>
+                      <Edit3 className="h-4 w-4" />
+                    </Button>
+                    {(tile.type !== 'empty' && tile.type !== 'start' && tile.type !== 'finish') && (
+                       <Button variant="ghost" size="icon" onClick={() => handleDeleteTileConfig(tile.id)} aria-label={`Clear Tile ${tile.position + 1} Configuration`}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                {tile.config && tile.type === 'quiz' && (
+                  <p className="text-xs text-muted-foreground mt-1 truncate">Q: {tile.config.question}</p>
+                )}
+                 {tile.config && tile.type === 'info' && (
+                  <p className="text-xs text-muted-foreground mt-1 truncate">Info: {tile.config.message}</p>
+                )}
+              </Card>
+            ))}
+          </div>
+        </ScrollArea>
+        {selectedTileForEdit && (
+          <TileEditorModal
+            tile={selectedTileForEdit}
+            onSave={handleSaveTile}
+            onClose={() => setSelectedTileForEdit(null)}
+          />
+        )}
+      </CardContent>
+    </Card>
+  );
+}
