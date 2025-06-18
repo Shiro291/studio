@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import type { Tile, TileConfigQuiz, TileConfigInfo, TileConfigReward, BoardSettings, QuizOption, PunishmentType } from '@/types';
+import type { Tile, TileConfigQuiz, TileConfigInfo, TileConfigReward, BoardSettings, PunishmentType } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -12,12 +12,11 @@ import Image from 'next/image';
 import { useGame } from '@/components/game/game-provider';
 import { useLanguage } from '@/context/language-context';
 import { CheckCircle, XCircle, InfoIcon, GiftIcon, ChevronRight, HelpCircle } from 'lucide-react';
-import { DIFFICULTY_POINTS } from '@/lib/constants';
 
 interface TileInteractionAreaProps {
   tile: Tile | null;
   boardSettings: BoardSettings;
-  isQuizCorrect?: boolean; 
+  isQuizCorrect?: boolean;
 }
 
 export function TileInteractionArea({ tile, boardSettings, isQuizCorrect }: TileInteractionAreaProps) {
@@ -33,19 +32,33 @@ export function TileInteractionArea({ tile, boardSettings, isQuizCorrect }: Tile
     }
   }, [tile, state.gameStatus, state.activeTileForInteraction]);
 
+  useEffect(() => {
+    if (tile && (tile.type === 'start' || tile.type === 'empty' || tile.type === 'finish') &&
+        state.activeTileForInteraction && tile.id === state.activeTileForInteraction.id &&
+        state.gameStatus === 'interaction_pending') {
+      const timer = setTimeout(() => {
+        // Acknowledge handles potential reward/info logging if types were different, harmless here.
+        // For empty/start/finish, it primarily ensures logs are consistent if we add any default interaction log.
+        dispatch({ type: 'ACKNOWLEDGE_INTERACTION' });
+        dispatch({ type: 'PROCEED_TO_NEXT_TURN' });
+      }, 300); // Short delay for user to see landing
+      return () => clearTimeout(timer);
+    }
+  }, [tile, state.activeTileForInteraction, state.gameStatus, dispatch]);
+
 
   const handleQuizSubmit = () => {
     if (selectedQuizOptionId) {
       dispatch({ type: 'ANSWER_QUIZ', payload: { selectedOptionId } });
-      setQuizAttempted(true); 
+      setQuizAttempted(true);
     }
   };
 
   const handleAcknowledge = () => {
-    dispatch({ type: 'ACKNOWLEDGE_INTERACTION' }); 
-    dispatch({ type: 'PROCEED_TO_NEXT_TURN' }); 
+    dispatch({ type: 'ACKNOWLEDGE_INTERACTION' });
+    dispatch({ type: 'PROCEED_TO_NEXT_TURN' });
   };
-  
+
   const renderImage = (src?: string, altKey?: string, hint?:string) => {
     if (!src) return null;
     return (
@@ -55,23 +68,33 @@ export function TileInteractionArea({ tile, boardSettings, isQuizCorrect }: Tile
     );
   };
 
-  const getPunishmentDescription = (quizConfig: TileConfigQuiz) => {
+  const getPunishmentDescriptionForUI = (quizConfig: TileConfigQuiz) => {
     if (!boardSettings || boardSettings.punishmentType === 'none') return null;
+
+    let detailsKey = '';
+    let params: Record<string, string | number | undefined> = {};
 
     switch (boardSettings.punishmentType) {
       case 'revertMove':
-        return t('playPage.punishment.revertMove');
+        detailsKey = 'log.punishmentDetails.revertMove';
+        params = { dice: state.diceRoll || 0 };
+        break;
       case 'moveBackFixed':
-        return t('playPage.punishment.moveBackFixed', { count: boardSettings.punishmentValue });
+        detailsKey = 'log.punishmentDetails.moveBackFixed';
+        params = { count: boardSettings.punishmentValue };
+        break;
       case 'moveBackLevelBased':
         let moveBackAmount = 0;
         if (quizConfig.difficulty === 1) moveBackAmount = 1;
         else if (quizConfig.difficulty === 2) moveBackAmount = 2;
         else if (quizConfig.difficulty === 3) moveBackAmount = 3;
-        return t('playPage.punishment.moveBackLevelBased', { count: moveBackAmount, level: quizConfig.difficulty });
+        detailsKey = 'log.punishmentDetails.moveBackLevelBased';
+        params = { count: moveBackAmount, level: quizConfig.difficulty };
+        break;
       default:
         return null;
     }
+    return t(detailsKey, params);
   };
 
 
@@ -87,8 +110,8 @@ export function TileInteractionArea({ tile, boardSettings, isQuizCorrect }: Tile
       </Card>
     );
   }
-  
-  if (!tile || state.gameStatus === 'playing' || !state.activeTileForInteraction || tile.id !== state.activeTileForInteraction.id) { 
+
+  if (!tile || state.gameStatus === 'playing' || !state.activeTileForInteraction || tile.id !== state.activeTileForInteraction.id) {
     return (
        <Card className="bg-muted/30 shadow-sm">
         <CardHeader>
@@ -100,7 +123,7 @@ export function TileInteractionArea({ tile, boardSettings, isQuizCorrect }: Tile
       </Card>
     );
   }
-  
+
   let interactionContent = null;
 
   switch (tile.type) {
@@ -141,7 +164,7 @@ export function TileInteractionArea({ tile, boardSettings, isQuizCorrect }: Tile
                     {isQuizCorrect ? t('playPage.pointsAwarded', { points: config.points }) : t('playPage.noPoints')}
                 </p>
                 {!isQuizCorrect && boardSettings.punishmentType !== 'none' && (
-                    <p className="text-xs text-destructive-foreground/80">{getPunishmentDescription(config)}</p>
+                    <p className="text-xs text-destructive-foreground/80">{getPunishmentDescriptionForUI(config)}</p>
                 )}
                 <Button onClick={handleAcknowledge} className="w-full mt-3" variant={isQuizCorrect ? 'default' : 'outline'}>
                     {t('playPage.nextTurn')} <ChevronRight className="ml-1 h-4 w-4"/>
@@ -182,14 +205,12 @@ export function TileInteractionArea({ tile, boardSettings, isQuizCorrect }: Tile
     }
      case 'start':
      case 'empty':
-     case 'finish': 
-        if (state.activeTileForInteraction && state.gameStatus === 'interaction_pending') {
-            setTimeout(() => dispatch({ type: 'PROCEED_TO_NEXT_TURN' }), 0);
-        }
-        interactionContent = <p className="text-sm text-muted-foreground">{t('playPage.landedOnEmpty', {type: t(`capitalize.${tile.type}` as any)})}</p>;
+     case 'finish':
+        // The useEffect now handles auto-progression for these tiles.
+        interactionContent = <p className="text-sm text-muted-foreground">{t('playPage.landedOnTile', {type: t(`capitalize.${tile.type}` as any)})}</p>;
         break;
-    default: 
-      interactionContent = <p className="text-sm text-muted-foreground">{t('playPage.landedOnEmpty', {type: t(`capitalize.${tile.type}` as any)})}</p>;
+    default:
+      interactionContent = <p className="text-sm text-muted-foreground">{t('playPage.landedOnTile', {type: t(`capitalize.${tile.type}` as any)})}</p>;
       break;
   }
 

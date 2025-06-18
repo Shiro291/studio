@@ -24,7 +24,7 @@ export const id = {
   'sidebar.punishmentType.moveBackFixed': 'Mundur X Petak',
   'sidebar.punishmentType.moveBackLevelBased': 'Mundur (Berdasarkan Level Kuis)',
   'sidebar.punishmentValue': 'Mundur Petak: {count}',
-  
+
   'sidebar.randomizeTilesOnLoad': 'Acak Petak (saat Muat)',
 
   'sidebar.boardAppearance': 'Tampilan Papan',
@@ -38,7 +38,7 @@ export const id = {
   'sidebar.winningCondition': 'Kondisi Menang',
   'sidebar.selectWinningCondition': 'Pilih cara menang',
   'sidebar.firstToFinish': 'Pertama Sampai Petak Selesai',
-  'sidebar.highestScore': 'Skor Tertinggi (setelah selesai/X ronde)',
+  'sidebar.highestScore': 'Skor Tertinggi (setelah semua selesai/X ronde)',
 
   'sidebar.diceConfiguration': 'Konfigurasi Dadu',
   'sidebar.diceSides': 'Sisi Dadu: {count}',
@@ -68,7 +68,7 @@ export const id = {
   'sidebar.importErrorInvalidFile': 'Berkas yang dipilih bukan konfigurasi BoardWise yang valid.',
   'sidebar.importErrorDescription': 'Tidak dapat mengimpor berkas papan.',
   'sidebar.fileReadError': 'Kesalahan membaca berkas.',
-  
+
   'sidebar.visualsRandomizedTitle': 'Tampilan Diacak!',
   'sidebar.visualsRandomizedDescription': 'Ikon dan warna petak telah diperbarui.',
 
@@ -86,7 +86,7 @@ export const id = {
   'boardDesigner.editTile': 'Edit Petak {position}',
   'boardDesigner.clearTileConfig': 'Hapus Konfigurasi Petak {position}',
   'boardDesigner.tile': 'Petak',
-  'boardDesigner.questionShort': 'P', 
+  'boardDesigner.questionShort': 'P',
   'boardDesigner.infoShort': 'Info',
 
   // TileEditorModal
@@ -194,19 +194,36 @@ export const id = {
   'playPage.rewardMessage': 'Hadiah!',
   'playPage.collectReward': 'Ambil Hadiah',
   'playPage.pointsAwarded': '{points} poin diberikan!',
-  'playPage.landedOnEmpty': 'Mendarat di petak {type}.',
+  'playPage.landedOnTile': 'Mendarat di petak {type}.',
   'playPage.tileNumber': 'Petak {number}',
   'playPage.correctAnswer': 'Benar!',
   'playPage.wrongAnswer': 'Salah!',
-  'playPage.punishment.revertMove': 'Yah! Kamu kembali ke posisi awal giliran ini.',
-  'playPage.punishment.moveBackFixed': 'Yah! Kamu mundur {count} petak.',
-  'playPage.punishment.moveBackLevelBased': 'Yah! Ini pertanyaan Level {level}. Kamu mundur {count} petak.',
   'playPage.noPoints': 'Tidak ada poin kali ini.',
   'playPage.nextTurn': 'Giliran Berikutnya',
   'playPage.gameOver': 'Permainan Selesai!',
   'playPage.gameHasEnded': 'Permainan telah berakhir. Lihat hasilnya di atas.',
   'playPage.winnerIs': '🎉 Pemenang: {name} dengan {score} poin! 🎉',
   'playPage.playAgain': 'Main Lagi',
+  'playPage.gameLogTitle': 'Log Permainan',
+  'playPage.noLogsYet': 'Belum ada kejadian permainan.',
+
+  // Game Log Messages
+  'log.playerRolled': '{name} mengocok dadu dan mendapat {value}.',
+  'log.playerMovedTo': '{name} pindah ke petak {position} ({tileType}).',
+  'log.quizCorrect': '{name} menjawab dengan benar! +{points} poin.',
+  'log.quizIncorrect': '{name} menjawab salah.',
+  'log.punishmentApplied': '{name} terkena penalti: {detailsKey}',
+  'log.punishmentDetails.revertMove': 'Mundur {dice} petak (mundur sesuai hasil dadu).',
+  'log.punishmentDetails.moveBackFixed': 'Mundur {count} petak.',
+  'log.punishmentDetails.moveBackLevelBased': 'Mundur {count} petak (kuis Level {level}).',
+  'log.rewardCollected': '{name} mengambil hadiah! +{points} poin.',
+  'log.infoAcknowledged': '{name} membaca pesan info.',
+  'log.playerFinished': '{name} mencapai garis finish!',
+  'log.highestScoreWinner': '{name} menang dengan skor tertinggi: {score} poin!',
+  'log.event.gameStarted': 'Permainan "{name}" telah dimulai.',
+  'log.event.gameReset': 'Permainan telah direset.',
+  'log.event.playerMismatch': 'Data pemain tidak cocok dengan pengaturan papan. Pemain direset.',
+  'log.event.errorOccurred': 'Terjadi kesalahan: {error}',
 
   // Misc
   'capitalize.empty': 'Kosong',

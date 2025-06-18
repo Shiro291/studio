@@ -16,7 +16,7 @@ export const en = {
   'sidebar.boardName': 'Board Name',
   'sidebar.description': 'Description',
   'sidebar.numberOfTiles': 'Number of Tiles: {count}',
-  
+
   'sidebar.punishmentType.label': 'Punishment Type (on wrong quiz answer)',
   'sidebar.punishmentType.selectPlaceholder': 'Select punishment type',
   'sidebar.punishmentType.none': 'None (Stay on tile, no points)',
@@ -26,7 +26,7 @@ export const en = {
   'sidebar.punishmentValue': 'Move Back Tiles: {count}',
 
   'sidebar.randomizeTilesOnLoad': 'Randomize Tiles (on Load)',
-  
+
   'sidebar.boardAppearance': 'Board Appearance',
   'sidebar.boardBackgroundImage': 'Board Background Image',
   'sidebar.boardBackgroundImageHelp': 'Upload an image to set as the board background.',
@@ -38,8 +38,8 @@ export const en = {
   'sidebar.winningCondition': 'Winning Condition',
   'sidebar.selectWinningCondition': 'Select how to win',
   'sidebar.firstToFinish': 'First to Finish Tile',
-  'sidebar.highestScore': 'Highest Score (after finish/X rounds)',
-  
+  'sidebar.highestScore': 'Highest Score (after all finish/X rounds)',
+
   'sidebar.diceConfiguration': 'Dice Configuration',
   'sidebar.diceSides': 'Dice Sides: {count}',
   'sidebar.tileCustomization': 'Tile Customization',
@@ -48,20 +48,20 @@ export const en = {
   'sidebar.tutorialAndInfo': 'Tutorial & Info',
   'sidebar.tutorialAndInfoTooltip': 'Learn how to use BoardWise',
   'sidebar.mobileTitle': 'Menu',
-  
+
   'sidebar.linkCopiedTitle': 'Link Copied!',
   'sidebar.linkCopiedDescriptionPlay': 'Playable game link copied to clipboard. Open it to play!',
   'sidebar.copyFailedTitle': 'Copy Failed',
   'sidebar.copyFailedDescription': 'Could not copy the link. Please try again.',
   'sidebar.linkErrorTitle': 'Link Creation Error',
   'sidebar.linkErrorDescription': 'Could not create the shareable link.',
-  
+
   'sidebar.boardExportedTitle': 'Board Exported!',
   'sidebar.boardExportedDescription': 'Board configuration file has been downloaded.',
   'sidebar.exportErrorTitle': 'Export Error',
   'sidebar.noBoardToExport': 'There is no board configuration to export.',
   'sidebar.exportErrorDescription': 'Could not export the board file.',
-  
+
   'sidebar.boardImportedTitle': 'Board Imported!',
   'sidebar.boardImportedDescription': 'Board configuration has been loaded.',
   'sidebar.importErrorTitle': 'Import Error',
@@ -123,7 +123,7 @@ export const en = {
   'tileEditor.uploadImage': 'Upload Image',
   'tileEditor.removeImage': 'Remove Image',
   'tileEditor.imagePreview': 'Image Preview',
-  
+
   // DiceRoller
   'diceRoller.roll': 'Roll D{sides}',
   'diceRoller.rolling': 'Rolling...',
@@ -195,20 +195,37 @@ export const en = {
   'playPage.rewardMessage': 'Reward!',
   'playPage.collectReward': 'Collect Reward',
   'playPage.pointsAwarded': '{points} points awarded!',
-  'playPage.landedOnEmpty': 'Landed on a {type} tile.',
+  'playPage.landedOnTile': 'Landed on a {type} tile.',
   'playPage.tileNumber': 'Tile {number}',
   'playPage.correctAnswer': 'Correct!',
   'playPage.wrongAnswer': 'Incorrect!',
-  'playPage.punishment.revertMove': 'Oh no! You move back to where you started this turn.',
-  'playPage.punishment.moveBackFixed': 'Oh no! You move back {count} tile(s).',
-  'playPage.punishment.moveBackLevelBased': 'Oh no! This was a Level {level} question. You move back {count} tile(s).',
   'playPage.noPoints': 'No points this time.',
   'playPage.nextTurn': 'Next Turn',
   'playPage.gameOver': 'Game Over!',
   'playPage.gameHasEnded': 'The game has ended. See the results above.',
   'playPage.winnerIs': '🎉 Winner: {name} with {score} points! 🎉',
   'playPage.playAgain': 'Play Again',
-  
+  'playPage.gameLogTitle': 'Game Log',
+  'playPage.noLogsYet': 'No game events yet.',
+
+  // Game Log Messages
+  'log.playerRolled': '{name} rolled a {value}.',
+  'log.playerMovedTo': '{name} moved to tile {position} ({tileType}).',
+  'log.quizCorrect': '{name} answered correctly! +{points} points.',
+  'log.quizIncorrect': '{name} answered incorrectly.',
+  'log.punishmentApplied': '{name} faces a penalty: {detailsKey}',
+  'log.punishmentDetails.revertMove': 'Moved back {dice} tiles (reverted dice roll).',
+  'log.punishmentDetails.moveBackFixed': 'Moved back {count} tile(s).',
+  'log.punishmentDetails.moveBackLevelBased': 'Moved back {count} tile(s) (Level {level} quiz).',
+  'log.rewardCollected': '{name} collected a reward! +{points} points.',
+  'log.infoAcknowledged': '{name} read an info message.',
+  'log.playerFinished': '{name} reached the finish line!',
+  'log.highestScoreWinner': '{name} wins with the highest score: {score} points!',
+  'log.event.gameStarted': 'Game "{name}" has started.',
+  'log.event.gameReset': 'Game has been reset.',
+  'log.event.playerMismatch': 'Player data mismatch with board settings. Players reset.',
+  'log.event.errorOccurred': 'An error occurred: {error}',
+
 
   // Misc
   'capitalize.empty': 'Empty',

@@ -3,7 +3,7 @@
 
 import type { ReactNode } from 'react';
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
-import type { BoardConfig, GameState, Player, Tile, TileConfigQuiz, TileConfigReward, QuizOption, GameStatus, PersistedPlayState, PunishmentType } from '@/types';
+import type { BoardConfig, GameState, Player, Tile, TileConfigQuiz, TileConfigReward, QuizOption, GameStatus, PersistedPlayState, PunishmentType, LogEntry, BoardSettings } from '@/types';
 import { DEFAULT_BOARD_SETTINGS } from '@/types';
 import { DEFAULT_TILE_COLOR, FINISH_TILE_COLOR, MAX_PLAYERS, MAX_TILES, MIN_PLAYERS, MIN_TILES, PLAYER_COLORS, RANDOM_COLORS, RANDOM_EMOJIS, START_TILE_COLOR, TILE_TYPE_EMOJIS, DIFFICULTY_POINTS } from '@/lib/constants';
 import { nanoid } from 'nanoid';
@@ -29,11 +29,12 @@ const initialState: GameState = {
   players: [],
   currentPlayerIndex: 0,
   diceRoll: null,
-  gameStatus: 'setup', 
+  gameStatus: 'setup',
   isLoading: true,
   error: null,
   activeTileForInteraction: null,
   winner: null,
+  logs: [],
 };
 
 const GameContext = createContext<{
@@ -67,7 +68,6 @@ function applyBoardRandomizationSettings(boardConfig: BoardConfig): BoardConfig 
   let newTiles = [...boardConfig.tiles];
 
   if (boardConfig.settings.randomizeTiles) {
-    // Visual randomization
     newTiles = newTiles.map(tile => {
       if (tile.type === 'start' || tile.type === 'finish') return tile;
       const randomColor = RANDOM_COLORS[Math.floor(Math.random() * RANDOM_COLORS.length)];
@@ -75,7 +75,6 @@ function applyBoardRandomizationSettings(boardConfig: BoardConfig): BoardConfig 
       return { ...tile, ui: { ...tile.ui, color: randomColor, icon: randomEmoji } };
     });
 
-    // Quiz option shuffling
     newTiles = newTiles.map(tile => {
       if (tile.type === 'quiz' && tile.config) {
         const quizConfig = tile.config as TileConfigQuiz;
@@ -94,6 +93,40 @@ function applyBoardRandomizationSettings(boardConfig: BoardConfig): BoardConfig 
     });
   }
   return { ...boardConfig, tiles: newTiles };
+}
+
+function addLogEntry(currentLogs: LogEntry[], messageKey: string, type: LogEntry['type'], messageParams?: Record<string, string | number | undefined>): LogEntry[] {
+  const newLog: LogEntry = {
+    id: nanoid(),
+    messageKey,
+    messageParams,
+    timestamp: Date.now(),
+    type,
+  };
+  return [newLog, ...currentLogs].slice(0, 50); // Keep last 50 logs
+}
+
+function getPunishmentLogDetails(
+  punishmentType: PunishmentType,
+  punishmentValue: number,
+  quizDifficulty: 1 | 2 | 3,
+  diceRoll: number | null
+): { key: string; params?: Record<string, string | number | undefined> } | null {
+  switch (punishmentType) {
+    case 'revertMove':
+      return { key: 'log.punishmentDetails.revertMove', params: { dice: diceRoll || 0 } };
+    case 'moveBackFixed':
+      return { key: 'log.punishmentDetails.moveBackFixed', params: { count: punishmentValue } };
+    case 'moveBackLevelBased':
+      let moveBackAmount = 0;
+      if (quizDifficulty === 1) moveBackAmount = 1;
+      else if (quizDifficulty === 2) moveBackAmount = 2;
+      else if (quizDifficulty === 3) moveBackAmount = 3;
+      return { key: 'log.punishmentDetails.moveBackLevelBased', params: { count: moveBackAmount, level: quizDifficulty } };
+    case 'none':
+    default:
+      return null;
+  }
 }
 
 
@@ -119,15 +152,23 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let activeTileForInteraction: Tile | null = persistedPlayState?.activeTileForInteraction ?? null;
       let winner: Player | null = persistedPlayState?.winner ?? null;
       let diceRoll: number | null = persistedPlayState?.diceRoll ?? null;
+      let logs: LogEntry[] = persistedPlayState?.logs ?? [];
+
 
       if (persistedPlayState?.players) {
         if (persistedPlayState.players.length === processedBoardConfig.settings.numberOfPlayers) {
           players = persistedPlayState.players;
         } else {
           console.warn("Persisted player count mismatch with board settings. Regenerating players.");
+          logs = addLogEntry(logs, 'log.event.playerMismatch', 'game_event');
         }
         currentPlayerIndex = persistedPlayState.currentPlayerIndex ?? 0;
       }
+      
+      if (logs.length === 0 && !persistedPlayState) { // Add initial game start log if no logs exist
+        logs = addLogEntry(logs, 'log.event.gameStarted', 'game_event', { name: processedBoardConfig.settings.name });
+      }
+
 
       if (gameStatus === 'finished' && !winner && persistedPlayState?.winner) {
           winner = persistedPlayState.winner;
@@ -142,6 +183,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         activeTileForInteraction,
         winner,
         diceRoll,
+        logs,
         isLoading: false,
         error: null
       };
@@ -164,6 +206,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
     case 'UPDATE_TILES': {
       if (!state.boardConfig) return state;
+      // Removed quiz option shuffling here, as it's handled by applyBoardRandomizationSettings on load/reset
       return {
         ...state,
         boardConfig: { ...state.boardConfig, tiles: action.payload },
@@ -172,9 +215,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SET_PLAYERS':
       return { ...state, players: action.payload };
     case 'START_LOADING':
-      return { ...state, isLoading: true, error: null };
+      return { ...state, isLoading: true, error: null, logs: state.logs }; // Preserve logs on loading
     case 'SET_ERROR':
-      return { ...state, isLoading: false, error: action.payload };
+      return { ...state, isLoading: false, error: action.payload, logs: addLogEntry(state.logs, 'log.event.errorOccurred', 'game_event', { error: action.payload }) };
      case 'PLAYER_ROLLED_DICE': {
       if (!state.boardConfig || state.gameStatus !== 'playing' || state.winner) return state;
 
@@ -189,6 +232,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       newPlayers[state.currentPlayerIndex] = { ...currentPlayer, position: newPosition };
 
       const landedTile = state.boardConfig.tiles[newPosition];
+      let currentLogs = state.logs;
+      currentLogs = addLogEntry(currentLogs, 'log.playerRolled', 'roll', { name: currentPlayer.name, value: diceValue });
+      currentLogs = addLogEntry(currentLogs, 'log.playerMovedTo', 'move', { name: currentPlayer.name, position: newPosition + 1, tileType: landedTile.type });
+
 
       if (landedTile.type === 'empty' || landedTile.type === 'start' || (landedTile.type === 'finish' && state.gameStatus !== 'finished')) {
          if (landedTile.type === 'finish') {
@@ -197,19 +244,22 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             let gameWinner = state.winner;
             if (!gameWinner && state.boardConfig.settings.winningCondition === 'firstToFinish') {
                 gameWinner = finishedPlayer;
+                currentLogs = addLogEntry(currentLogs, 'log.playerFinished', 'winner', { name: finishedPlayer.name });
             }
+             // Log for highest score will be handled in PROCEED_TO_NEXT_TURN
             return {
                 ...state,
                 players: newPlayers,
                 diceRoll: diceValue,
                 activeTileForInteraction: landedTile,
-                gameStatus: gameWinner ? 'finished' : 'interaction_pending', 
+                gameStatus: gameWinner ? 'finished' : 'interaction_pending',
                 winner: gameWinner,
+                logs: currentLogs,
              };
         }
-        return { ...state, players: newPlayers, diceRoll: diceValue, activeTileForInteraction: landedTile, gameStatus: 'interaction_pending' };
+        return { ...state, players: newPlayers, diceRoll: diceValue, activeTileForInteraction: landedTile, gameStatus: 'interaction_pending', logs: currentLogs };
       }
-      return { ...state, players: newPlayers, diceRoll: diceValue, activeTileForInteraction: landedTile, gameStatus: 'interaction_pending' };
+      return { ...state, players: newPlayers, diceRoll: diceValue, activeTileForInteraction: landedTile, gameStatus: 'interaction_pending', logs: currentLogs };
     }
     case 'ANSWER_QUIZ': {
         if (!state.boardConfig || !state.activeTileForInteraction || state.activeTileForInteraction.type !== 'quiz' || state.gameStatus !== 'interaction_pending' || state.diceRoll === null) return state;
@@ -220,6 +270,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         const currentPlayer = state.players[state.currentPlayerIndex];
         const newPlayers = [...state.players];
         const boardSettings = state.boardConfig.settings;
+        let currentLogs = state.logs;
 
         let newScore = currentPlayer.score;
         let newPosition = currentPlayer.position;
@@ -228,7 +279,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         if (selectedOption?.isCorrect) {
             newScore += quizConfig.points;
             soundToPlay = 'correctAnswer';
+            currentLogs = addLogEntry(currentLogs, 'log.quizCorrect', 'quiz_correct', { name: currentPlayer.name, points: quizConfig.points });
         } else {
+            currentLogs = addLogEntry(currentLogs, 'log.quizIncorrect', 'quiz_incorrect', { name: currentPlayer.name });
+            const punishmentDetails = getPunishmentLogDetails(boardSettings.punishmentType, boardSettings.punishmentValue, quizConfig.difficulty, state.diceRoll);
+
+            if (punishmentDetails) {
+                currentLogs = addLogEntry(currentLogs, 'log.punishmentApplied', 'punishment', { name: currentPlayer.name, detailsKey: punishmentDetails.key, ...punishmentDetails.params });
+            }
+
             switch (boardSettings.punishmentType) {
                 case 'revertMove':
                     newPosition = Math.max(0, newPosition - state.diceRoll);
@@ -250,23 +309,28 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         }
         playSound(soundToPlay);
         newPlayers[state.currentPlayerIndex] = { ...currentPlayer, score: newScore, position: newPosition };
-        
-        return { ...state, players: newPlayers };
+
+        return { ...state, players: newPlayers, logs: currentLogs };
     }
     case 'ACKNOWLEDGE_INTERACTION': {
         if (!state.boardConfig || !state.activeTileForInteraction || state.gameStatus !== 'interaction_pending') return state;
 
         const currentPlayer = state.players[state.currentPlayerIndex];
         const newPlayers = [...state.players];
+        let currentLogs = state.logs;
         let newScore = currentPlayer.score;
 
         if (state.activeTileForInteraction.type === 'reward') {
             const rewardConfig = state.activeTileForInteraction.config as TileConfigReward;
             newScore += rewardConfig.points || 0;
             newPlayers[state.currentPlayerIndex] = { ...currentPlayer, score: newScore };
-            playSound('correctAnswer'); 
+            playSound('correctAnswer');
+            currentLogs = addLogEntry(currentLogs, 'log.rewardCollected', 'reward', { name: currentPlayer.name, points: rewardConfig.points || 0 });
+        } else if (state.activeTileForInteraction.type === 'info') {
+             currentLogs = addLogEntry(currentLogs, 'log.infoAcknowledged', 'info', { name: currentPlayer.name });
         }
-        return { ...state, players: newPlayers };
+        // No log for empty/start/finish from here, as they are auto-acknowledged. Player move log is enough.
+        return { ...state, players: newPlayers, logs: currentLogs };
     }
 
     case 'PROCEED_TO_NEXT_TURN': {
@@ -275,22 +339,28 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         let nextPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
         let currentWinner = state.winner;
         let gameIsFinished = !!currentWinner;
+        let currentLogs = state.logs;
 
         if (!currentWinner && state.boardConfig.settings.winningCondition === 'highestScore') {
             const playerWhoJustMoved = state.players[state.currentPlayerIndex];
-            if(playerWhoJustMoved.position === state.boardConfig.tiles.length -1) { 
-                if (state.currentPlayerIndex === state.players.length - 1) { 
+            if(playerWhoJustMoved.position === state.boardConfig.tiles.length -1) {
+                if (state.currentPlayerIndex === state.players.length - 1) { // Last player has reached the finish
                     gameIsFinished = true;
                 }
             }
             if (gameIsFinished) {
                 currentWinner = state.players.reduce((prev, current) => (prev.score > current.score) ? prev : current, state.players[0]);
-                if (currentWinner) playSound('finishSound');
+                if (currentWinner) {
+                    playSound('finishSound');
+                    currentLogs = addLogEntry(currentLogs, 'log.highestScoreWinner', 'winner', { name: currentWinner.name, score: currentWinner.score });
+                }
             }
         } else if (!currentWinner && state.boardConfig.settings.winningCondition === 'firstToFinish') {
-            if (state.players[state.currentPlayerIndex].position === state.boardConfig.tiles.length -1 && state.winner) {
-                 gameIsFinished = true; 
-                 currentWinner = state.winner; 
+            // Winner is already determined in PLAYER_ROLLED_DICE for 'firstToFinish'
+            if (state.winner) { // If a winner was set by landing on finish
+                 gameIsFinished = true;
+                 currentWinner = state.winner;
+                 // Log for firstToFinish is in PLAYER_ROLLED_DICE
             }
         }
 
@@ -301,7 +371,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             activeTileForInteraction: null,
             diceRoll: null,
             gameStatus: gameIsFinished ? 'finished' : 'playing',
-            winner: currentWinner
+            winner: currentWinner,
+            logs: currentLogs
         };
     }
     case 'RESET_GAME_FOR_PLAY': {
@@ -313,16 +384,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       }
       const reRandomizedBoardConfig = applyBoardRandomizationSettings(state.boardConfig);
       const players = generatePlayers(reRandomizedBoardConfig.settings.numberOfPlayers);
+      let initialLogs = addLogEntry([], 'log.event.gameReset', 'game_event');
+      initialLogs = addLogEntry(initialLogs, 'log.event.gameStarted', 'game_event', { name: reRandomizedBoardConfig.settings.name });
+
       return {
-        ...initialState, 
-        boardConfig: reRandomizedBoardConfig, 
+        ...initialState,
+        boardConfig: reRandomizedBoardConfig,
         players,
         isLoading: false,
-        gameStatus: 'playing', 
+        gameStatus: 'playing',
         winner: null,
         activeTileForInteraction: null,
         diceRoll: null,
         currentPlayerIndex: 0,
+        logs: initialLogs,
       };
     }
     default:
@@ -342,6 +417,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         gameStatus: state.gameStatus,
         activeTileForInteraction: state.activeTileForInteraction,
         winner: state.winner,
+        logs: state.logs,
       };
       try {
         localStorage.setItem(`boardwise-play-state-${state.boardConfig.id}`, JSON.stringify(persistState));
@@ -349,7 +425,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         console.warn("Failed to save play state to localStorage", e);
       }
     }
-  }, [state.players, state.currentPlayerIndex, state.diceRoll, state.gameStatus, state.activeTileForInteraction, state.winner, state.boardConfig, state.isLoading]);
+  }, [state.players, state.currentPlayerIndex, state.diceRoll, state.gameStatus, state.activeTileForInteraction, state.winner, state.logs, state.boardConfig, state.isLoading]);
 
 
   const initializeNewBoard = useCallback(() => {

@@ -19,7 +19,7 @@ const tileTypeIcons: Record<Tile['type'], React.ElementType | null> = {
   quiz: HelpCircle,
   info: Info,
   reward: Star,
-  empty: null, 
+  empty: null,
 };
 
 export function TileComponent({ tile, onClick, isInteractive, playersOnTile = [] }: TileComponentProps) {
@@ -39,7 +39,7 @@ export function TileComponent({ tile, onClick, isInteractive, playersOnTile = []
         tile.type === 'start' && 'border-green-500',
         tile.type === 'finish' && 'border-red-500',
       )}
-      style={{ 
+      style={{
         backgroundColor: tile.ui.color || DEFAULT_TILE_COLOR,
         borderColor: tile.ui.color ? `color-mix(in srgb, ${tile.ui.color} 70%, black)` : undefined,
       }}
@@ -49,28 +49,28 @@ export function TileComponent({ tile, onClick, isInteractive, playersOnTile = []
       <div className="absolute top-1 left-1 text-[0.6rem] font-bold opacity-70" style={{ color: textColor }}>
         {tile.position + 1}
       </div>
-      
+
       <div className="text-2xl mb-0.5" role="img" aria-label={`${tile.type} icon`}>
         {tileEmoji || (IconComponent ? <IconComponent size={20} style={{ color: textColor }} /> : null)}
       </div>
-      
+
       <span className="truncate text-[0.65rem] capitalize" style={{ color: textColor }}>
         {tile.type !== 'empty' ? tile.type : ''}
       </span>
 
       {playersOnTile.length > 0 && (
         <div className="absolute bottom-0.5 right-0.5 left-0.5 flex flex-wrap justify-end items-end p-px gap-px max-w-full">
-          {playersOnTile.slice(0, 6).map(player => ( 
+          {playersOnTile.slice(0, 4).map(player => (
             <div
               key={player.id}
-              className="w-2 h-2 rounded-full border border-background shadow-sm"
+              className="w-3 h-3 rounded-full border border-background shadow-md"
               style={{ backgroundColor: player.color }}
-              title={player.name} 
+              title={player.name}
             />
           ))}
-          {playersOnTile.length > 6 && (
-             <div className="w-2 h-2 rounded-full bg-muted-foreground/50 text-white flex items-center justify-center text-[0.5rem] leading-none">
-                +{playersOnTile.length - 6}
+          {playersOnTile.length > 4 && (
+             <div className="w-3 h-3 rounded-full bg-muted-foreground/50 text-white flex items-center justify-center text-[0.6rem] leading-none">
+                +{playersOnTile.length - 4}
              </div>
           )}
         </div>

@@ -5,20 +5,20 @@ export interface QuizOption {
   id: string;
   text: string;
   isCorrect: boolean;
-  image?: string; 
+  image?: string;
 }
 
 export interface TileConfigQuiz {
   question: string;
-  questionImage?: string; 
+  questionImage?: string;
   options: QuizOption[];
-  difficulty: 1 | 2 | 3; 
-  points: number; 
+  difficulty: 1 | 2 | 3;
+  points: number;
 }
 
 export interface TileConfigInfo {
   message: string;
-  image?: string; 
+  image?: string;
 }
 
 export interface TileConfigReward {
@@ -29,11 +29,11 @@ export interface TileConfigReward {
 export interface Tile {
   id:string;
   type: TileType;
-  position: number; 
-  config?: TileConfigQuiz | TileConfigInfo | TileConfigReward; 
+  position: number;
+  config?: TileConfigQuiz | TileConfigInfo | TileConfigReward;
   ui: {
-    color?: string; 
-    icon?: string; 
+    color?: string;
+    icon?: string;
   };
 }
 
@@ -43,18 +43,18 @@ export type PunishmentType = 'none' | 'revertMove' | 'moveBackFixed' | 'moveBack
 export interface BoardSettings {
   name: string;
   description?: string;
-  numberOfTiles: number; 
-  punishmentType: PunishmentType; 
-  punishmentValue: number; 
-  randomizeTiles: boolean; 
-  diceSides: number; 
-  numberOfPlayers: number; 
+  numberOfTiles: number;
+  punishmentType: PunishmentType;
+  punishmentValue: number;
+  randomizeTiles: boolean;
+  diceSides: number;
+  numberOfPlayers: number;
   winningCondition: WinningCondition;
-  boardBackgroundImage?: string; 
+  boardBackgroundImage?: string;
 }
 
 export interface BoardConfig {
-  id: string; 
+  id: string;
   settings: BoardSettings;
   tiles: Tile[];
 }
@@ -62,23 +62,32 @@ export interface BoardConfig {
 export interface Player {
   id: string;
   name: string;
-  color: string; 
-  position: number; 
+  color: string;
+  position: number;
   score: number;
 }
 
 export type GameStatus = 'setup' | 'playing' | 'interaction_pending' | 'finished';
 
+export interface LogEntry {
+  id: string;
+  messageKey: string;
+  messageParams?: Record<string, string | number | undefined>;
+  timestamp: number;
+  type: 'roll' | 'move' | 'quiz_correct' | 'quiz_incorrect' | 'punishment' | 'reward' | 'info' | 'game_event' | 'winner';
+}
+
 export interface GameState {
   boardConfig: BoardConfig | null;
   players: Player[];
   currentPlayerIndex: number;
-  diceRoll: number | null; 
+  diceRoll: number | null;
   gameStatus: GameStatus;
   isLoading: boolean;
   error: string | null;
-  activeTileForInteraction: Tile | null; 
-  winner: Player | null; 
+  activeTileForInteraction: Tile | null;
+  winner: Player | null;
+  logs: LogEntry[];
 }
 
 export const DEFAULT_BOARD_SETTINGS: BoardSettings = {
@@ -98,6 +107,7 @@ export interface PersistedPlayState {
   currentPlayerIndex: number;
   diceRoll: number | null;
   gameStatus: GameStatus;
-  activeTileForInteraction: Tile | null; 
+  activeTileForInteraction: Tile | null;
   winner: Player | null;
+  logs: LogEntry[];
 }
