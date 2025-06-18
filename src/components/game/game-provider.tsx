@@ -1,11 +1,12 @@
+
 "use client";
 
 import type { ReactNode } from 'react';
 import React, { createContext, useContext, useReducer, useCallback } from 'react';
 import type { BoardConfig, GameState, Player, Tile } from '@/types';
 import { DEFAULT_BOARD_SETTINGS } from '@/types';
-import { nanoid } from 'nanoid'; // Assuming nanoid is available or can be added. For now, simple string.
-import { MAX_TILES, MIN_TILES } from '@/lib/constants';
+import { nanoid } from 'nanoid';
+import { MAX_TILES, MIN_TILES, TILE_TYPE_EMOJIS, START_TILE_COLOR, FINISH_TILE_COLOR, DEFAULT_TILE_COLOR } from '@/lib/constants';
 
 type GameAction =
   | { type: 'SET_BOARD_CONFIG'; payload: BoardConfig }
@@ -77,15 +78,24 @@ export function GameProvider({ children }: { children: ReactNode }) {
       id: nanoid(),
       type: 'empty',
       position: i,
-      ui: {},
+      ui: { icon: TILE_TYPE_EMOJIS.empty, color: DEFAULT_TILE_COLOR },
     }));
 
-    // Set start and finish tiles
     if (initialTiles.length > 0) {
-      initialTiles[0] = { ...initialTiles[0], type: 'start', ui: { icon: 'Flag' } };
-      initialTiles[initialTiles.length - 1] = { ...initialTiles[initialTiles.length -1], type: 'finish', ui: { icon: 'FlagOff' } };
+      initialTiles[0] = { 
+        ...initialTiles[0], 
+        type: 'start', 
+        ui: { icon: TILE_TYPE_EMOJIS.start, color: START_TILE_COLOR } 
+      };
+      if (initialTiles.length > 1) {
+        initialTiles[initialTiles.length - 1] = { 
+          ...initialTiles[initialTiles.length - 1], 
+          type: 'finish', 
+          ui: { icon: TILE_TYPE_EMOJIS.finish, color: FINISH_TILE_COLOR }
+        };
+      }
+      // If only one tile, it remains 'start' as set above.
     }
-
 
     const newBoardConfig: BoardConfig = {
       id: newBoardId,
@@ -100,12 +110,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
     try {
       const jsonString = atob(base64Data);
       const boardConfig = JSON.parse(jsonString) as BoardConfig;
-      // Basic validation
       if (boardConfig && boardConfig.id && boardConfig.settings && boardConfig.tiles) {
-        // Ensure tile count is within limits
         boardConfig.settings.numberOfTiles = Math.max(MIN_TILES, Math.min(MAX_TILES, boardConfig.settings.numberOfTiles || DEFAULT_BOARD_SETTINGS.numberOfTiles));
-        boardConfig.tiles = boardConfig.tiles.slice(0, boardConfig.settings.numberOfTiles);
-
+        // Tiles will be further processed by BoardDesigner's useEffect to ensure start/finish integrity
         dispatch({ type: 'SET_BOARD_CONFIG', payload: boardConfig });
       } else {
         throw new Error("Invalid board data structure.");
@@ -113,7 +120,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Failed to load board from Base64:", error);
       dispatch({ type: 'SET_ERROR', payload: 'Failed to load board data. The link might be corrupted or invalid.' });
-      initializeNewBoard(); // Fallback to a new board
+      initializeNewBoard(); 
     }
   }, [initializeNewBoard]);
 

@@ -21,12 +21,46 @@ export function BoardDesigner() {
   useEffect(() => {
     if (state.boardConfig) {
       const { numberOfTiles } = state.boardConfig.settings;
-      let currentTiles = [...state.boardConfig.tiles];
+      const currentTiles = state.boardConfig.tiles;
 
-      if (currentTiles.length !== numberOfTiles) {
+      const needsUpdate = 
+        currentTiles.length !== numberOfTiles ||
+        currentTiles.length === 0 ||
+        (currentTiles.length > 0 && currentTiles[0].type !== 'start') ||
+        (currentTiles.length > 1 && currentTiles[currentTiles.length - 1].type !== 'finish') ||
+        (numberOfTiles === 1 && currentTiles.length > 0 && currentTiles[0].type !== 'start');
+
+      if (needsUpdate) {
         const newTiles: Tile[] = Array(numberOfTiles).fill(null).map((_, index) => {
-          const existingTile = currentTiles.find(t => t.position === index);
-          if (existingTile) return existingTile;
+          const existingTileAtPosition = currentTiles.find(t => t.position === index);
+
+          if (index === 0) {
+            return {
+              id: existingTileAtPosition?.id && existingTileAtPosition.type === 'start' ? existingTileAtPosition.id : nanoid(),
+              type: 'start' as TileType,
+              position: index,
+              ui: { color: START_TILE_COLOR, icon: TILE_TYPE_EMOJIS.start },
+              config: undefined,
+            };
+          }
+          
+          if (index === numberOfTiles - 1 && numberOfTiles > 1) {
+            return {
+              id: existingTileAtPosition?.id && existingTileAtPosition.type === 'finish' ? existingTileAtPosition.id : nanoid(),
+              type: 'finish' as TileType,
+              position: index,
+              ui: { color: FINISH_TILE_COLOR, icon: TILE_TYPE_EMOJIS.finish },
+              config: undefined,
+            };
+          }
+
+          if (existingTileAtPosition && existingTileAtPosition.type !== 'start' && existingTileAtPosition.type !== 'finish') {
+            return {
+              ...existingTileAtPosition,
+              position: index,
+            };
+          }
+          
           return {
             id: nanoid(),
             type: 'empty' as TileType,
@@ -34,25 +68,21 @@ export function BoardDesigner() {
             ui: { color: DEFAULT_TILE_COLOR, icon: TILE_TYPE_EMOJIS.empty },
           };
         });
-
-        if (newTiles.length > 0) {
-          newTiles[0] = { 
-            ...newTiles[0], 
-            type: 'start', 
-            ui: { ...newTiles[0].ui, color: START_TILE_COLOR, icon: TILE_TYPE_EMOJIS.start } 
-          };
-          if (newTiles.length > 1) {
-            newTiles[newTiles.length - 1] = { 
-              ...newTiles[newTiles.length - 1], 
-              type: 'finish', 
-              ui: { ...newTiles[newTiles.length-1].ui, color: FINISH_TILE_COLOR, icon: TILE_TYPE_EMOJIS.finish }
-            };
-          }
+        
+        if (newTiles.length === 1 && (newTiles[0].type !== 'start' || !newTiles[0].ui.icon || !newTiles[0].ui.color)) {
+             newTiles[0] = {
+                id: newTiles[0].id || nanoid(),
+                type: 'start' as TileType,
+                position: 0,
+                ui: { color: START_TILE_COLOR, icon: TILE_TYPE_EMOJIS.start },
+                config: undefined,
+             };
         }
+
         dispatch({ type: 'UPDATE_TILES', payload: newTiles });
       }
     }
-  }, [state.boardConfig?.settings.numberOfTiles, dispatch, state.boardConfig?.tiles]);
+  }, [state.boardConfig?.settings.numberOfTiles, state.boardConfig?.tiles, dispatch, state.boardConfig]);
 
 
   if (!state.boardConfig) {
@@ -77,7 +107,7 @@ export function BoardDesigner() {
 
     const newTiles = tiles.map(t => 
       t.id === tileId 
-        ? { ...t, type: 'empty' as TileType, config: undefined, ui: { ...t.ui, icon: TILE_TYPE_EMOJIS.empty } } 
+        ? { ...t, type: 'empty' as TileType, config: undefined, ui: { ...t.ui, icon: TILE_TYPE_EMOJIS.empty, color: DEFAULT_TILE_COLOR } } 
         : t
     );
     dispatch({ type: 'UPDATE_TILES', payload: newTiles });
@@ -103,7 +133,7 @@ export function BoardDesigner() {
                   <div className="flex items-center gap-2">
                      <span 
                         className="w-6 h-6 rounded-sm flex items-center justify-center text-xs" 
-                        style={{ backgroundColor: tile.ui.color || DEFAULT_TILE_COLOR, color: tile.ui.color && tile.ui.color !== DEFAULT_TILE_COLOR ? 'white' : 'black' }}
+                        style={{ backgroundColor: tile.ui.color || DEFAULT_TILE_COLOR, color: tile.ui.color && tile.ui.color !== DEFAULT_TILE_COLOR && tile.ui.color !== START_TILE_COLOR && tile.ui.color !== FINISH_TILE_COLOR ? 'white' : 'black' }}
                         role="img"
                         aria-label={`${tile.type} tile icon`}
                       >
