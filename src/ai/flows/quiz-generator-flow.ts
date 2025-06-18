@@ -13,7 +13,7 @@ import {z} from 'genkit';
 import {nanoid} from 'nanoid';
 
 const GenerateQuizInputSchema = z.object({
-  sourceText: z.string().min(20, { message: "Source text must be at least 20 characters." }).describe('The source text or topic to generate a quiz question from.'),
+  sourceText: z.string().min(20, { message: "Source text must be at least 20 characters." }).describe('The source text or topic to generate a quiz question from. The AI will base its question and options strictly on this text.'),
   numberOfOptions: z.number().min(2).max(5).default(4).describe('The number of multiple-choice options to generate.'),
 });
 export type GenerateQuizInput = z.infer<typeof GenerateQuizInputSchema>;
@@ -32,13 +32,13 @@ const PromptOutputOptionSchema = z.object({
     id: z.string().default(() => nanoid()),
     text: z.string().describe('The text of the answer option.'),
     isCorrect: z.boolean().describe('Whether this option is the correct answer.'),
-    imageDescriptionForGeneration: z.string().optional().describe("If an image would be beneficial for this option, provide a concise text description (max 15 words) suitable for an image generation model. Example: 'A detailed diagram of a plant cell'. If no image is needed, omit this field."),
+    imageDescriptionForGeneration: z.string().optional().describe("If an image would be significantly beneficial for visualizing or understanding this option, provide a concise (max 15 words) text description suitable for an image generation model (e.g., 'A detailed diagram of a plant cell', 'Photo of a red apple'). The description must be directly illustrative of the option's text. If no image is needed or applicable, omit this field."),
 });
 
 const PromptOutputSchema = z.object({
-  question: z.string().describe('The generated quiz question.'),
-  options: z.array(PromptOutputOptionSchema).describe('An array of multiple-choice options, potentially with image descriptions.'),
-  suggestedDifficulty: z.enum(['1', '2', '3']).describe('The suggested difficulty level (1, 2, or 3).'),
+  question: z.string().describe('The generated quiz question, derived directly from the source text.'),
+  options: z.array(PromptOutputOptionSchema).describe('An array of multiple-choice options. One must be correct based on the source text, others plausible but clearly incorrect distractors based on the source text.'),
+  suggestedDifficulty: z.enum(['1', '2', '3']).describe('The suggested difficulty level (1 for easy, 2 for medium, 3 for hard), based on the complexity of the question relative to the source text.'),
 });
 
 
@@ -59,22 +59,28 @@ const quizTextPrompt = ai.definePrompt({
   name: 'quizGeneratorTextPrompt',
   input: {schema: GenerateQuizInputSchema},
   output: {schema: PromptOutputSchema}, // Uses the intermediate schema with imageDescriptionForGeneration
-  prompt: `Based on the following source text, generate one multiple-choice quiz question.
+  prompt: `You are an expert quiz designer. Your task is to generate ONE multiple-choice quiz question based *strictly and solely* on the provided Source Text.
 
 Source Text:
 {{{sourceText}}}
 
-The question should have {{{numberOfOptions}}} answer options.
-One option must be clearly correct, and the others should be plausible but incorrect distractors.
+The question must have {{{numberOfOptions}}} answer options.
+One option must be clearly and verifiably correct based *only* on the information present in the Source Text.
+The other options should be plausible distractors but demonstrably incorrect according to the Source Text. Avoid options that are too obviously wrong or unrelated.
 
-For each answer option, decide if an image would be significantly helpful to understanding or visualizing the option.
-If an image IS helpful for an option, provide a concise text description for that image in a field named 'imageDescriptionForGeneration'. This description should be suitable for an image generation model and be a maximum of 15 words (e.g., "A diagram of a plant cell with labels", "A photo of a red delicious apple").
-If an image IS NOT helpful or not applicable for an option, omit the 'imageDescriptionForGeneration' field for that option.
+For each answer option, critically assess if an image would be significantly beneficial to understanding or visualizing the option.
+- If an image IS helpful for an option, provide a concise text description for that image in a field named 'imageDescriptionForGeneration'. This description must be highly relevant to the option's text, suitable for an image generation model, and a maximum of 15 words (e.g., "A diagram of a plant cell with labels", "A photo of a red delicious apple", "Map showing the location of ancient Rome").
+- If an image IS NOT helpful, not significantly beneficial, or not applicable for an option, you MUST omit the 'imageDescriptionForGeneration' field for that option. Do not invent image descriptions if they don't add clear value.
 
-The output should include the question, the array of options (each with 'text', 'isCorrect', and optionally 'imageDescriptionForGeneration' fields), and a suggestedDifficulty ('1' for easy, '2' for medium, '3' for hard).
+The output should include:
+1.  The 'question' itself, directly derived from the Source Text.
+2.  An array of 'options', each with 'text', 'isCorrect' (boolean), and optionally 'imageDescriptionForGeneration' fields.
+3.  A 'suggestedDifficulty' ('1' for easy, '2' for medium, '3' for hard), reflecting the question's complexity relative to the Source Text.
 
-Ensure exactly one option has isCorrect set to true.
-Present the difficulty as a string: "1", "2", or "3".
+Key Constraints:
+- Ensure exactly one option has 'isCorrect' set to true.
+- All textual content (question, options) must be directly supported by or inferable from the provided Source Text. Do not introduce outside information.
+- Present the difficulty as a string: "1", "2", or "3".
 `,
 });
 
@@ -99,7 +105,7 @@ const quizGeneratorFlow = ai.defineFlow(
         try {
           console.log(`Generating image for: ${promptOption.imageDescriptionForGeneration}`);
           const {media} = await ai.generate({
-            model: 'googleai/gemini-2.0-flash-exp',
+            model: 'googleai/gemini-2.0-flash-exp', // Explicitly use image generation model
             prompt: promptOption.imageDescriptionForGeneration,
             config: {
               responseModalities: ['TEXT', 'IMAGE'],
@@ -121,28 +127,28 @@ const quizGeneratorFlow = ai.defineFlow(
     }
 
     // Ensure options have unique IDs and at least one correct answer logic (fallback)
-    if (!processedOptions.some(opt => opt.isCorrect) && processedOptions.length > 0) {
-        processedOptions[0].isCorrect = true;
-    } else if (processedOptions.filter(opt => opt.isCorrect).length > 1) {
-        let foundCorrect = false;
-        for (const opt of processedOptions) {
-            if (opt.isCorrect) {
-                if (foundCorrect) opt.isCorrect = false;
-                else foundCorrect = true;
+    // This also ensures only one option is correct if the LLM makes a mistake.
+    let correctOptionFound = false;
+    const finalOptions = processedOptions.map(opt => {
+        if (opt.isCorrect) {
+            if (correctOptionFound) {
+                return {...opt, isCorrect: false}; // Only one correct answer allowed
             }
+            correctOptionFound = true;
         }
-    }
-     // If still no correct option after processing (e.g., all were marked false by LLM and then image gen failed for the one auto-marked true),
-     // ensure the first one is correct.
-    if (!processedOptions.some(opt => opt.isCorrect) && processedOptions.length > 0) {
-        processedOptions[0].isCorrect = true;
+        return opt;
+    });
+
+    if (!correctOptionFound && finalOptions.length > 0) {
+        finalOptions[0].isCorrect = true; // Fallback: mark first option as correct if none are
     }
 
 
     return {
         question: textOutput.question,
-        options: processedOptions,
+        options: finalOptions,
         suggestedDifficulty: textOutput.suggestedDifficulty || "1",
     };
   }
 );
+
