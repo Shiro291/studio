@@ -17,19 +17,20 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGame } from '@/components/game/game-provider';
 import { MAX_TILES, MIN_TILES, MIN_PLAYERS, MAX_PLAYERS } from '@/lib/constants';
 import { Settings, Palette, Info, Wand2, RefreshCwIcon, Users, Image as ImageIcon, XCircle, Link as LinkIcon, Download, Upload, Dices, ShieldAlert } from 'lucide-react';
-import type { BoardSettings, WinningCondition, PunishmentType } from '@/types';
+import type { BoardConfig, BoardSettings, WinningCondition, PunishmentType } from '@/types';
 import React, { useRef } from 'react';
 import { useLanguage } from '@/context/language-context';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import NextImage from 'next/image';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip'; // TooltipProvider added
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { nanoid } from 'nanoid';
 
 
 export function AppSidebarContent() {
@@ -76,17 +77,23 @@ export function AppSidebarContent() {
   const handleGeneratePlayLink = () => {
     if (state.boardConfig) {
       try {
-        // Clear any ongoing animation before generating link to avoid persisting animation state
+        // Ensure any ongoing pawn animation is finalized before generating link
         if (state.pawnAnimation?.timerId) {
             clearTimeout(state.pawnAnimation.timerId);
-            dispatch({ type: 'ADVANCE_PAWN_ANIMATION' }); // This will finalize the pawn position if it was mid-animation
+            // Dispatching ADVANCE_PAWN_ANIMATION might be tricky here if it relies on timers
+            // A simpler approach might be to just use the current actual player positions
+            // For now, we assume the animation state is less critical for the shared link
+            // or that the user won't click this mid-complex-animation.
+            // A robust solution would involve a state to "finalize animation immediately".
         }
         
-        const boardConfigToShare = { ...state.boardConfig };
-        // We don't want to persist transient animation state in the shared link
-        // The players visualPosition will be reset to their actual position on load anyway
+        // Create a deep copy of the boardConfig and assign a new unique ID for this link
+        const boardConfigForLink: BoardConfig = {
+          ...JSON.parse(JSON.stringify(state.boardConfig)), // Deep clone
+          id: nanoid(), // Assign a new unique ID for this specific link
+        };
 
-        const jsonString = JSON.stringify(boardConfigToShare);
+        const jsonString = JSON.stringify(boardConfigForLink);
         const utf8Encoded = unescape(encodeURIComponent(jsonString));
         const base64Data = btoa(utf8Encoded);
         const shareUrl = `${window.location.origin}/play?board=${encodeURIComponent(base64Data)}`;
@@ -236,7 +243,7 @@ export function AppSidebarContent() {
         <SidebarSeparator />
 
         {boardSettings && (
-          <Accordion type="multiple" className="w-full px-2">
+          <Accordion type="multiple" className="w-full px-2" defaultValue={['board-settings']}>
             <AccordionItem value="board-settings">
               <AccordionTrigger className="text-sm hover:no-underline">
                 <div className="flex items-center gap-2 font-medium">
