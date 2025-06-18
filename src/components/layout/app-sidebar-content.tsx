@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -73,12 +74,12 @@ export function AppSidebarContent() {
       try {
         const jsonString = JSON.stringify(state.boardConfig);
         const base64Data = btoa(jsonString);
-        const shareUrl = `${window.location.origin}/?board=${encodeURIComponent(base64Data)}`;
+        const shareUrl = `${window.location.origin}/play?board=${encodeURIComponent(base64Data)}`;
         navigator.clipboard.writeText(shareUrl)
           .then(() => {
             toast({
               title: t('sidebar.linkCopiedTitle'),
-              description: t('sidebar.linkCopiedDescription'),
+              description: t('sidebar.linkCopiedDescriptionPlay'),
             });
           })
           .catch(err => {

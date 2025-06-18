@@ -15,10 +15,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+interface AppHeaderProps {
+  isPlayMode?: boolean;
+}
 
-export function AppHeader() {
+export function AppHeader({ isPlayMode = false }: AppHeaderProps) {
   const { toggleSidebar } = useSidebar();
   const [mounted, setMounted] = React.useState(false);
   const { theme, setTheme } = useTheme();
@@ -32,7 +34,7 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur md:px-6">
-      <SidebarTrigger className="md:hidden" />
+      {!isPlayMode && <SidebarTrigger className="md:hidden" />}
       <Link href="/" className="flex items-center gap-2">
         <Logo className="h-8 w-auto" />
       </Link>

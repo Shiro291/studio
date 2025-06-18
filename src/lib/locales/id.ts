@@ -1,3 +1,4 @@
+
 export const id = {
   // AppHeader
   'appHeader.toggleTheme': 'Ganti tema',
@@ -38,6 +39,7 @@ export const id = {
   'sidebar.tutorialAndInfoTooltip': 'Pelajari cara menggunakan BoardWise',
   'sidebar.linkCopiedTitle': 'Tautan Disalin!',
   'sidebar.linkCopiedDescription': 'Tautan papan yang dapat dibagikan telah disalin ke clipboard.',
+  'sidebar.linkCopiedDescriptionPlay': 'Tautan permainan yang dapat dibagikan telah disalin! Buka untuk bermain.',
   'sidebar.copyFailedTitle': 'Penyalinan Gagal',
   'sidebar.copyFailedDescription': 'Tidak dapat menyalin tautan. Silakan coba lagi.',
   'sidebar.linkErrorTitle': 'Kesalahan Pembuatan Tautan',
@@ -133,8 +135,32 @@ export const id = {
   'tutorialModal.tileConfiguration.types.reward': 'Berikan pemain pesan atau poin.',
   'tutorialModal.tileConfiguration.customization': 'Sesuaikan warna dan ikon (emoji) untuk setiap petak.',
   'tutorialModal.sharing.title': 'Membagikan Permainan Anda',
-  'tutorialModal.sharing.text': 'Tombol "Ekspor/Bagikan Tautan Papan" menghasilkan URL unik. Simpan URL ini atau kirimkan ke orang lain. Saat mereka membuka tautan tersebut, papan Anda akan dimuat secara otomatis!',
+  'tutorialModal.sharing.text': 'Tombol "Ekspor/Bagikan Tautan Papan" menghasilkan URL unik. Simpan URL ini atau kirimkan ke orang lain. Saat mereka membuka tautan tersebut, papan Anda akan dimuat secara otomatis dalam mode bermain!',
   'tutorialModal.haveFun': 'Selamat berkreasi!',
+
+  // PlayPage
+  'playPage.loadingGame': 'Memuat permainan, harap tunggu...',
+  'playPage.errorLoadingTitle': 'Gagal Memuat Permainan',
+  'playPage.errorLoadingDescription': 'Permainan tidak dapat dimuat. Silakan periksa tautan atau coba lagi.',
+  'playPage.noBoardConfig': 'Papan permainan tidak ditemukan. Tautan mungkin tidak valid atau data permainan hilang.',
+  'playPage.noBoardDataError': 'Tidak ada data papan yang ditemukan di tautan.',
+  'playPage.gameBoardTitle': 'Papan Permainan',
+  'playPage.controlsTitle': 'Kontrol Permainan',
+  'playPage.playerInfoTitle': "Info Pemain",
+  'playPage.currentTurn': "Giliranmu!",
+  'playPage.score': "Skor",
+  'playPage.waitingForPlayers': "Menunggu pemain...",
+  'playPage.tileInteractionTitle': 'Interaksi Petak',
+  'playPage.noInteractionYet': 'Kocok dadu untuk memulai!',
+  'playPage.quizQuestion': 'Pertanyaan Kuis',
+  'playPage.submitAnswer': 'Kirim Jawaban',
+  'playPage.infoMessage': 'Informasi',
+  'playPage.acknowledge': 'Mengerti!',
+  'playPage.rewardMessage': 'Hadiah!',
+  'playPage.collectReward': 'Ambil Hadiah',
+  'playPage.pointsAwarded': '{points} poin diberikan!',
+  'playPage.landedOnEmpty': 'Mendarat di petak {type} kosong.',
+  'playPage.tileNumber': 'Petak {number}',
   
   // Misc
   'capitalize.empty': 'Kosong',

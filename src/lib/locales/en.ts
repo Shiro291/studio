@@ -1,3 +1,4 @@
+
 export const en = {
   // AppHeader
   'appHeader.toggleTheme': 'Toggle theme',
@@ -38,6 +39,7 @@ export const en = {
   'sidebar.tutorialAndInfoTooltip': 'Learn how to use BoardWise',
   'sidebar.linkCopiedTitle': 'Link Copied!',
   'sidebar.linkCopiedDescription': 'Shareable board link copied to clipboard.',
+  'sidebar.linkCopiedDescriptionPlay': 'Shareable game link copied to clipboard. Open it to play!',
   'sidebar.copyFailedTitle': 'Copy Failed',
   'sidebar.copyFailedDescription': 'Could not copy the link. Please try again.',
   'sidebar.linkErrorTitle': 'Link Creation Error',
@@ -134,8 +136,32 @@ export const en = {
   'tutorialModal.tileConfiguration.types.reward': 'Give players a message or points.',
   'tutorialModal.tileConfiguration.customization': 'Customize color and icon (emoji) for each tile.',
   'tutorialModal.sharing.title': 'Sharing Your Game',
-  'tutorialModal.sharing.text': 'The "Export/Share Board Link" button generates a unique URL. Save this URL or send it to others. When they open the link, your board will load automatically!',
+  'tutorialModal.sharing.text': 'The "Export/Share Board Link" button generates a unique URL. Save this URL or send it to others. When they open the link, your board will load automatically in play mode!',
   'tutorialModal.haveFun': 'Have fun creating!',
+
+  // PlayPage
+  'playPage.loadingGame': 'Loading game, please wait...',
+  'playPage.errorLoadingTitle': 'Error Loading Game',
+  'playPage.errorLoadingDescription': 'The game could not be loaded. Please check the link or try again.',
+  'playPage.noBoardConfig': 'No game board found. The link might be invalid or the game data is missing.',
+  'playPage.noBoardDataError': 'No board data found in the link.',
+  'playPage.gameBoardTitle': 'Game Board',
+  'playPage.controlsTitle': 'Game Controls',
+  'playPage.playerInfoTitle': "Player Info",
+  'playPage.currentTurn': "Your Turn!",
+  'playPage.score': "Score",
+  'playPage.waitingForPlayers': "Waiting for players...",
+  'playPage.tileInteractionTitle': 'Tile Interaction',
+  'playPage.noInteractionYet': 'Roll the dice to start!',
+  'playPage.quizQuestion': 'Quiz Question',
+  'playPage.submitAnswer': 'Submit Answer',
+  'playPage.infoMessage': 'Information',
+  'playPage.acknowledge': 'Got it!',
+  'playPage.rewardMessage': 'Reward!',
+  'playPage.collectReward': 'Collect Reward',
+  'playPage.pointsAwarded': '{points} points awarded!',
+  'playPage.landedOnEmpty': 'Landed on an empty {type} tile.',
+  'playPage.tileNumber': 'Tile {number}',
   
 
   // Misc
