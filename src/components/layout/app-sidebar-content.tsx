@@ -19,8 +19,8 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGame } from '@/components/game/game-provider';
 import { MAX_TILES, MIN_TILES, MIN_PLAYERS, MAX_PLAYERS } from '@/lib/constants';
-import { Gem, Settings, Share2, Zap, Rows3, Palette, Info, Wand2, RefreshCwIcon, Users, Trophy, LayoutGrid, Image as ImageIcon, XCircle } from 'lucide-react';
-import type { BoardSettings, WinningCondition, BoardLayoutType } from '@/types';
+import { Gem, Settings, Share2, Zap, Palette, Info, Wand2, RefreshCwIcon, Users, Trophy, Image as ImageIcon, XCircle } from 'lucide-react';
+import type { BoardSettings, WinningCondition } from '@/types';
 import React, { useRef } from 'react';
 import { useLanguage } from '@/context/language-context';
 import { useToast } from '@/hooks/use-toast';
@@ -152,24 +152,6 @@ export function AppSidebarContent() {
                     onChange={(e) => handleSettingChange('description', e.target.value)}
                     className="mt-1"
                   />
-                </div>
-                <div>
-                  <Label htmlFor="layout" className="text-sm font-medium">{t('sidebar.boardLayout')}</Label>
-                   <Select
-                    value={boardSettings.layout} // This will always be 'grid' for now
-                    onValueChange={(value: BoardLayoutType) => handleSettingChange('layout', value)}
-                  >
-                    <SelectTrigger id="layout" className="mt-1">
-                      <SelectValue placeholder={t('sidebar.selectBoardLayout')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="grid">
-                        <div className="flex items-center gap-2">
-                           <LayoutGrid size={14} /> {t('sidebar.layoutGrid')}
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="numTiles" className="text-sm font-medium">
