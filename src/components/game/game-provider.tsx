@@ -642,13 +642,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'SET_BOARD_CONFIG', payload: { boardConfig: newBoardConfig } });
   }, [state.pawnAnimation?.timerId]);
 
-  const loadBoardFromBase64 = useCallback((base64Data: string) => {
+  const loadBoardFromBase64 = useCallback((rawBase64Data: string) => {
     dispatch({ type: 'START_LOADING' });
     if (state.pawnAnimation?.timerId) clearTimeout(state.pawnAnimation.timerId);
     let boardConfig: BoardConfig | null = null;
     let persistedPlayState: PersistedPlayState | null = null;
     try {
-      const jsonString = decodeURIComponent(atob(base64Data).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+      const binaryString = atob(rawBase64Data);
+      const jsonString = decodeURIComponent(escape(binaryString));
+      
       const rawBoardData = JSON.parse(jsonString) as Partial<BoardConfig> & { settings: Partial<BoardSettings> & { punishmentMode?: boolean } };
 
       if (rawBoardData && rawBoardData.id && rawBoardData.settings && rawBoardData.tiles) {
@@ -690,7 +692,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error("Failed to load board from Base64:", error);
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to load board data from link. The link might be corrupted or invalid.' });
+      let errorMessage = 'Failed to load board data from link. The link might be corrupted or invalid.';
+      if (error instanceof Error) {
+          errorMessage += ` Details: ${error.message}`;
+      }
+      // Specifically check for InvalidCharacterError which occurs with bad Base64
+      if (typeof DOMException !== 'undefined' && error instanceof DOMException && error.name === 'InvalidCharacterError') {
+          errorMessage = 'Failed to decode board data (Invalid Base64). The link may be corrupted.';
+      }
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
     }
   }, [dispatch, state.pawnAnimation?.timerId]);
 
@@ -773,4 +783,3 @@ export function useGame() {
   }
   return context;
 }
-    

@@ -21,7 +21,6 @@ import { TileInteractionModal } from '@/components/play/tile-interaction-modal';
 export default function PlayPage() {
   const { state, loadBoardFromBase64, dispatch } = useGame();
   const { t } = useLanguage();
-  // const searchParams = useSearchParams(); // Switched to hash
   const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [isInteractionModalOpen, setIsInteractionModalOpen] = useState(false);
   const [currentTileForModal, setCurrentTileForModal] = useState<Tile | null>(null);
@@ -30,16 +29,27 @@ export default function PlayPage() {
     if (!initialLoadDone && typeof window !== 'undefined') {
       const hash = window.location.hash;
       if (hash && hash.length > 1) {
-        const boardData = hash.substring(1); // Remove leading '#'
-        // The boardData is already URI encoded by the sender
-        // loadBoardFromBase64 expects a base64 string, so it will decodeURI and then atob
-        loadBoardFromBase64(boardData); 
+        const uriEncodedBase64Data = hash.substring(1); // Remove leading '#'
+        try {
+          const rawBase64Data = decodeURIComponent(uriEncodedBase64Data);
+          loadBoardFromBase64(rawBase64Data);
+        } catch (e) {
+          console.error("Error decoding URI component from hash:", e);
+          dispatch({ type: 'SET_ERROR', payload: t('playPage.noBoardDataError') + ' (Malformed Link Hash)' });
+        }
       } else {
         // Fallback or check if there's an old query param for backward compatibility if needed
         const searchParams = new URLSearchParams(window.location.search);
         const boardDataQuery = searchParams.get('board');
         if (boardDataQuery) {
-          loadBoardFromBase64(decodeURIComponent(boardDataQuery));
+          try {
+            // boardDataQuery was already URI encoded by the old system if it existed
+            const rawBase64DataFromQuery = decodeURIComponent(boardDataQuery);
+            loadBoardFromBase64(rawBase64DataFromQuery);
+          } catch (e) {
+             console.error("Error decoding URI component from query param:", e);
+             dispatch({ type: 'SET_ERROR', payload: t('playPage.noBoardDataError') + ' (Malformed Link Query)' });
+          }
         } else {
           dispatch({ type: 'SET_ERROR', payload: t('playPage.noBoardDataError') });
         }
@@ -194,5 +204,3 @@ export default function PlayPage() {
     </div>
   );
 }
-
-    
