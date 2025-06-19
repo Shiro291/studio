@@ -1,16 +1,16 @@
-No.,"Pernyataan","1","2","3","4","5","Saran / Komentar"
-1,"Fitur perancangan papan (Board Designer) memungkinkan pembuatan konten permainan edukatif yang sesuai dengan tujuan pembelajaran.",,,,,"",""
-2,"Editor Petak Kuis (Quiz Tile) mendukung pembuatan soal yang dapat merepresentasikan berbagai tingkat kognitif (C1–C6) dan HOTS.",,,,,"",""
-3,"Bahasa yang digunakan pada antarmuka aplikasi, instruksi, dan tooltip bantuan jelas dan mudah dipahami oleh pengguna (guru/siswa).",,,,,"",""
-4,"Dukungan unggah gambar untuk pertanyaan kuis, opsi jawaban, dan petak info efektif dalam mendukung pemahaman konsep.",,,,,"",""
-5,"Mekanisme inti permainan (lempar dadu digital, perpindahan pion, interaksi dengan modal pop-up petak) intuitif dan mudah dioperasikan.",,,,,"",""
-6,"Tata letak antarmuka pengguna (termasuk tampilan papan permainan, sidebar pengaturan, tombol aksi) menarik secara visual dan responsif di berbagai ukuran layar.",,,,,"",""
-7,"Sistem skor, umpan balik jawaban, dan kondisi kemenangan yang beragam (misalnya, skor tertinggi, kombinasi) berpotensi memotivasi pengguna.",,,,,"",""
-8,"Petunjuk penggunaan fitur-fitur utama melalui tooltip dan deskripsi pada sidebar cukup jelas dan membantu pengguna baru.",,,,,"",""
-9,"Aplikasi BoardWise dapat dijalankan dengan lancar pada peramban web umum (misalnya, Chrome, Firefox, Edge) tanpa kendala teknis signifikan.",,,,,"",""
-10,"Fitur kustomisasi (jumlah petak, jenis petak, sisi dadu, aturan hukuman, gambar latar) memberikan fleksibilitas yang memadai bagi guru untuk membuat permainan yang beragam.",,,,,"",""
-11,"Fitur pembuatan tautan permainan (Shareable URL) mudah digunakan dan berfungsi dengan baik untuk berbagi permainan yang telah dibuat.",,,,,"",""
-12,"Opsi ""Mode Aman Epilepsi"" merupakan fitur yang berguna untuk meningkatkan aksesibilitas bagi pengguna yang sensitif terhadap stimulasi visual.",,,,,"",""
-13,"Fitur impor/ekspor konfigurasi papan dalam format JSON praktis untuk menyimpan, berbagi, dan memodifikasi desain papan permainan.",,,,,"",""
-14,"Fungsi AI untuk menghasilkan kuis (AI Quiz Generator) membantu mempercepat proses pembuatan konten dan memberikan inspirasi soal.",,,,,"",""
-15,"Secara keseluruhan, aplikasi web BoardWise memiliki potensi sebagai media pembelajaran interaktif yang efektif dan menarik.",,,,,"",""
+No.,Pernyataan,1,2,3,4,5,Saran / Komentar
+1,"Fitur perancangan papan (Board Designer) memungkinkan pembuatan konten permainan edukatif yang sesuai dengan tujuan pembelajaran.",,,,,
+2,"Editor Petak Kuis (Quiz Tile) mendukung pembuatan soal yang dapat merepresentasikan berbagai tingkat kognitif (C1–C6) dan HOTS.",,,,,
+3,"Bahasa yang digunakan pada antarmuka aplikasi, instruksi, dan tooltip bantuan jelas dan mudah dipahami oleh pengguna (guru/siswa).",,,,,
+4,"Dukungan unggah gambar untuk pertanyaan kuis, opsi jawaban, dan petak info efektif dalam mendukung pemahaman konsep.",,,,,
+5,"Mekanisme inti permainan (lempar dadu digital, perpindahan pion, interaksi dengan modal pop-up petak) intuitif dan mudah dioperasikan.",,,,,
+6,"Tata letak antarmuka pengguna (termasuk tampilan papan permainan, sidebar pengaturan, tombol aksi) menarik secara visual dan responsif di berbagai ukuran layar.",,,,,
+7,"Sistem skor, umpan balik jawaban, dan kondisi kemenangan yang beragam (misalnya, skor tertinggi, kombinasi) berpotensi memotivasi pengguna.",,,,,
+8,"Petunjuk penggunaan fitur-fitur utama melalui tooltip dan deskripsi pada sidebar cukup jelas dan membantu pengguna baru.",,,,,
+9,"Aplikasi BoardWise dapat dijalankan dengan lancar pada peramban web umum (misalnya, Chrome, Firefox, Edge) tanpa kendala teknis signifikan.",,,,,
+10,"Fitur kustomisasi (jumlah petak, jenis petak, sisi dadu, aturan hukuman, gambar latar) memberikan fleksibilitas yang memadai bagi guru untuk membuat permainan yang beragam.",,,,,
+11,"Fitur pembuatan tautan permainan (Shareable URL) mudah digunakan dan berfungsi dengan baik untuk berbagi permainan yang telah dibuat.",,,,,
+12,"Opsi ""Mode Aman Epilepsi"" merupakan fitur yang berguna untuk meningkatkan aksesibilitas bagi pengguna yang sensitif terhadap stimulasi visual.",,,,,
+13,"Fitur impor/ekspor konfigurasi papan dalam format JSON praktis untuk menyimpan, berbagi, dan memodifikasi desain papan permainan.",,,,,
+14,"Fungsi AI untuk menghasilkan kuis (AI Quiz Generator) membantu mempercepat proses pembuatan konten dan memberikan inspirasi soal.",,,,,
+15,"Secara keseluruhan, aplikasi web BoardWise memiliki potensi sebagai media pembelajaran interaktif yang efektif dan menarik.",,,,,
