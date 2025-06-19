@@ -14,16 +14,24 @@ import {
 import { AppHeader } from './app-header';
 import { AppSidebarContent } from './app-sidebar-content';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useGame } from '@/components/game/game-provider'; // Import useGame
-import { cn } from '@/lib/utils'; // Import cn
+import { useGame } from '@/components/game/game-provider';
+import { cn } from '@/lib/utils';
+import { useLanguage } from '@/context/language-context'; // Import useLanguage
 
 export function AppShell({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile();
   const pathname = usePathname();
   const isPlayMode = pathname === '/play';
-  const { state: gameState } = useGame(); // Get game state
+  const { state: gameState } = useGame();
+  const { t } = useLanguage(); // Get the translation function
 
   const applyEpilepsySafeMode = isPlayMode && gameState.boardConfig?.settings.epilepsySafeMode;
+
+  const CreditFooter = () => (
+    <footer className="mt-auto pt-8 pb-4 text-center text-xs text-muted-foreground">
+      {t('appShell.madeBy')} Fathan Faqih Ali
+    </footer>
+  );
 
   if (isPlayMode) {
     return (
@@ -31,10 +39,11 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="flex min-h-svh w-full flex-col">
           <AppHeader isPlayMode={isPlayMode} />
           <main className={cn(
-            "flex-1 p-4 md:p-6 lg:p-8 bg-background text-foreground",
+            "flex-1 flex flex-col p-4 md:p-6 lg:p-8 bg-background text-foreground",
             { 'epilepsy-safe-mode-active': applyEpilepsySafeMode }
           )}>
-            {children}
+            <div className="flex-grow">{children}</div>
+            <CreditFooter />
           </main>
         </div>
       </SidebarProvider>
@@ -53,8 +62,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       <SidebarRail />
       <SidebarInset>
         <AppHeader isPlayMode={isPlayMode} /> 
-        <main className="flex-1 p-4 md:p-6 lg:p-8">
-          {children}
+        <main className="flex-1 flex flex-col p-4 md:p-6 lg:p-8">
+          <div className="flex-grow">{children}</div>
+          <CreditFooter />
         </main>
       </SidebarInset>
     </SidebarProvider>

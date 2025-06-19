@@ -6,6 +6,9 @@ export const en = {
   'appHeader.english': 'English',
   'appHeader.indonesian': 'Indonesian',
 
+  // AppShell
+  'appShell.madeBy': 'Made by',
+
   // AppSidebarContent
   'sidebar.title': 'BoardWise Designer',
   'sidebar.newBoard': 'New Board',
@@ -105,7 +108,7 @@ export const en = {
   'tooltip.epilepsySafeMode.description': 'Reduces visual stimulation in play mode by rendering in grayscale and slowing some animations. Does not affect the board designer.',
   'tooltip.boardBackground.description': 'Upload an image to serve as the background for the game board area. Helps personalize your game.',
   'tooltip.numberOfPlayers.description': 'Set how many players can join a game session (1-10 players).',
-  'tooltip.winningCondition.description': 'Choose how the winner is determined:\n- First to Finish: The first player to reach the finish tile wins.\n- Highest Score: The game ends after all players finish. The player with the most points wins.\n- Combined: Points are awarded for finishing order and added to in-game scores. Highest total wins.',
+  'tooltip.winningCondition.description': 'Choose how the winner is determined:\\n- First to Finish: The first player to reach the finish tile wins.\\n- Highest Score: The game ends after all players finish. The player with the most points wins.\\n- Combined: Points are awarded for finishing order and added to in-game scores. Highest total wins.',
   'tooltip.diceSides.description': 'Choose the number of sides for the game dice (1-12). This affects the range of movement per roll.',
   'tooltip.tileCustomization.description': 'Click on a tile in the "Tile Configuration" list (found in the main panel under the game board) to edit its type, content, and appearance.',
   'tooltip.randomizeVisuals.description': 'Instantly applies random colors and icons to all tiles that haven\'t been manually customized. This does not affect tile types or configurations.',
@@ -276,5 +279,3 @@ export const en = {
   'capitalize.info': 'Info',
   'capitalize.reward': 'Reward',
 };
-
-

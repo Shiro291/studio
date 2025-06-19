@@ -6,6 +6,9 @@ export const id = {
   'appHeader.english': 'Inggris',
   'appHeader.indonesian': 'Indonesia',
 
+  // AppShell
+  'appShell.madeBy': 'Dibuat oleh',
+
   // AppSidebarContent
   'sidebar.title': 'Perancang BoardWise',
   'sidebar.newBoard': 'Papan Baru',
@@ -102,7 +105,7 @@ export const id = {
   'tooltip.epilepsySafeMode.description': 'Mengurangi stimulasi visual dalam mode main dengan merender dalam grayscale dan memperlambat beberapa animasi. Tidak memengaruhi perancang papan.',
   'tooltip.boardBackground.description': 'Unggah gambar untuk dijadikan latar belakang area papan permainan. Membantu mempersonalisasi permainan Anda.',
   'tooltip.numberOfPlayers.description': 'Atur berapa banyak pemain yang dapat bergabung dalam sesi permainan (1-10 pemain).',
-  'tooltip.winningCondition.description': 'Pilih bagaimana pemenang ditentukan:\n- Pertama Selesai: Pemain pertama yang mencapai petak selesai menang.\n- Skor Tertinggi: Permainan berakhir setelah semua pemain selesai. Pemain dengan poin terbanyak menang.\n- Kombinasi: Poin diberikan untuk urutan selesai dan ditambahkan ke skor dalam game. Total tertinggi menang.',
+  'tooltip.winningCondition.description': 'Pilih bagaimana pemenang ditentukan:\\n- Pertama Selesai: Pemain pertama yang mencapai petak selesai menang.\\n- Skor Tertinggi: Permainan berakhir setelah semua pemain selesai. Pemain dengan poin terbanyak menang.\\n- Kombinasi: Poin diberikan untuk urutan selesai dan ditambahkan ke skor dalam game. Total tertinggi menang.',
   'tooltip.diceSides.description': 'Pilih jumlah sisi untuk dadu permainan (1-12). Ini memengaruhi jangkauan gerakan per lemparan.',
   'tooltip.tileCustomization.description': 'Klik petak dalam daftar "Konfigurasi Petak" (ditemukan di panel utama di bawah papan permainan) untuk mengedit jenis, konten, dan tampilannya.',
   'tooltip.randomizeVisuals.description': 'Langsung menerapkan warna dan ikon acak ke semua petak yang belum disesuaikan secara manual. Ini tidak memengaruhi jenis atau konfigurasi petak.',
@@ -271,5 +274,3 @@ export const id = {
   'capitalize.info': 'Info',
   'capitalize.reward': 'Hadiah',
 };
-
-
