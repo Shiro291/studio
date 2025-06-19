@@ -39,7 +39,7 @@ export function AppHeader({ isPlayMode = false }: AppHeaderProps) {
 
 
   return (
-    <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur md:px-6">
+    <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur md:px-6"> {/* Increased z-index for header */}
       {!isPlayMode && <SidebarTrigger className="md:hidden" />}
       <Link href="/" className="flex items-center gap-2">
         <Logo className="h-8 w-auto" />
@@ -52,9 +52,8 @@ export function AppHeader({ isPlayMode = false }: AppHeaderProps) {
                 <Languages className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {/* Diagnostic Text */}
-              {/* <div style={{ padding: '8px', color: 'red', border: '1px solid blue' }}>Test Text Visible?</div> */}
+            <DropdownMenuContent align="end" className="z-[100]"> {/* Explicitly set higher z-index for content */}
+              {/* Simplified Content for Debugging */}
               <DropdownMenuItem onClick={() => setLanguage('en')} disabled={currentLanguage === 'en'}>
                 {englishText}
               </DropdownMenuItem>
@@ -73,3 +72,4 @@ export function AppHeader({ isPlayMode = false }: AppHeaderProps) {
     </header>
   );
 }
+

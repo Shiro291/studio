@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet" // Added SheetHeader, SheetTitle
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetOverlay, SheetPortal } from "@/components/ui/sheet" // Added SheetHeader, SheetTitle, SheetOverlay, SheetPortal
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
@@ -19,7 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { useLanguage } from "@/context/language-context" // Added for translated title
+import { useLanguage } from "@/context/language-context" 
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 
@@ -192,26 +192,31 @@ const Sidebar = React.forwardRef<
     }
 
     if (isMobile) {
+      // For mobile, Sheet component handles the off-canvas behavior including overlay
       return (
         <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
-          <SheetContent
-            data-sidebar="sidebar"
-            data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground flex flex-col [&>button]:hidden"
-            style={
-              {
-                "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-              } as React.CSSProperties
-            }
-            side={side}
-          >
-            <SheetHeader className="p-4 border-b shrink-0">
-              <SheetTitle>{t('sidebar.mobileTitle')}</SheetTitle>
-            </SheetHeader>
-            <div className="flex-grow overflow-y-auto">
-              {children}
-            </div>
-          </SheetContent>
+          {/* SheetPortal ensures content is rendered at the root, helping with stacking context */}
+          <SheetPortal> 
+            <SheetOverlay /> {/* Explicitly add overlay to ensure it's interactive */}
+            <SheetContent
+              data-sidebar="sidebar"
+              data-mobile="true"
+              className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground flex flex-col [&>button]:hidden"
+              style={
+                {
+                  "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+                } as React.CSSProperties
+              }
+              side={side}
+            >
+              <SheetHeader className="p-4 border-b shrink-0">
+                <SheetTitle>{t('sidebar.mobileTitle')}</SheetTitle>
+              </SheetHeader>
+              <div className="flex-grow overflow-y-auto">
+                {children}
+              </div>
+            </SheetContent>
+          </SheetPortal>
         </Sheet>
       )
     }
@@ -760,3 +765,4 @@ export {
   SidebarTrigger,
   useSidebar,
 }
+
