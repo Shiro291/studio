@@ -35,6 +35,8 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
+  DialogHeader,
+  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useIsMobile } from '@/hooks/use-is-mobile';
@@ -99,7 +101,7 @@ export function AppSidebarContent() {
         }
         
         const boardConfigForLink: BoardConfig = JSON.parse(JSON.stringify(state.boardConfig));
-        boardConfigForLink.id = nanoid();
+        boardConfigForLink.id = nanoid(); // Ensure play link has unique ID to avoid local state conflicts
 
         // Aggressively strip all image data URIs for link generation
         if (boardConfigForLink.settings.boardBackgroundImage?.startsWith('data:image')) {
@@ -274,10 +276,13 @@ export function AppSidebarContent() {
       return (
         <Dialog>
           <DialogTrigger asChild>{children}</DialogTrigger>
-          <DialogContent className="sm:max-w-xs w-11/12">
-            <div className="py-2 max-h-[60vh] overflow-y-auto">
-              <p className="text-sm text-foreground whitespace-pre-line">{helpText}</p>
-            </div>
+          <DialogContent className="sm:max-w-xs w-11/12 p-4">
+            <DialogHeader>
+              <DialogTitle className="text-base font-medium">{t('sidebar.helpTitle')}</DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="max-h-[60vh] pr-2 -mr-2 mt-2">
+              <p className="text-sm text-foreground whitespace-pre-line pr-2">{helpText}</p>
+            </ScrollArea>
           </DialogContent>
         </Dialog>
       );

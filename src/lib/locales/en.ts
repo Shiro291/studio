@@ -15,6 +15,8 @@ export const en = {
   'sidebar.copyBoardJson': 'Copy Board JSON',
   'sidebar.pasteBoardJsonPlaceholder': 'Paste Board JSON here...',
   'sidebar.loadFromJsonPaste': 'Load from Pasted JSON',
+  'sidebar.helpTitle': 'Help Information',
+
 
   'sidebar.boardSettings': 'Board Settings',
   'sidebar.boardName': 'Board Name',
@@ -274,4 +276,5 @@ export const en = {
   'capitalize.info': 'Info',
   'capitalize.reward': 'Reward',
 };
+
 

@@ -15,6 +15,8 @@ export const id = {
   'sidebar.copyBoardJson': 'Salin JSON Papan',
   'sidebar.pasteBoardJsonPlaceholder': 'Tempel JSON Papan di sini...',
   'sidebar.loadFromJsonPaste': 'Muat dari JSON Tertempel',
+  'sidebar.helpTitle': 'Informasi Bantuan',
+
 
   'sidebar.boardSettings': 'Pengaturan Papan',
   'sidebar.boardName': 'Nama Papan',
@@ -269,4 +271,5 @@ export const id = {
   'capitalize.info': 'Info',
   'capitalize.reward': 'Hadiah',
 };
+
 
