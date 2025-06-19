@@ -41,7 +41,6 @@ export function TileInteractionModal({
   const [isCorrectQuizAnswer, setIsCorrectQuizAnswer] = useState<boolean | null>(null);
 
   useEffect(() => {
-    // Reset local modal state when it opens with a new tile
     if (isOpen && tileForModal) {
       setSelectedQuizOptionIdFromModal(undefined);
       setQuizAttemptedFromModal(false);
@@ -61,11 +60,11 @@ export function TileInteractionModal({
 
   const handleInfoRewardAcknowledge = () => {
     dispatch({ type: 'ACKNOWLEDGE_INTERACTION' });
-    onModalClose(true); // Proceed to next turn
+    onModalClose(true); 
   };
   
   const handleQuizFeedbackContinue = () => {
-     onModalClose(true); // Proceed to next turn after seeing feedback
+     onModalClose(true); 
   };
 
 
@@ -143,7 +142,7 @@ export function TileInteractionModal({
             {t('playPage.submitAnswer')}
           </Button>
         );
-      } else { // Quiz attempted, show feedback
+      } else { 
         modalContent = (
            <div className="space-y-2 p-3 rounded-md text-center">
             {isCorrectQuizAnswer ? (
@@ -209,20 +208,24 @@ export function TileInteractionModal({
       break;
     }
     default:
-      return null; // Should not happen for interactive tiles
+      return null; 
   }
 
   return (
     <Dialog 
         open={isOpen} 
         onOpenChange={(open) => {
-            if (!open) { // If the modal is attempting to close
-                // If it's a quiz and not yet attempted, prevent closing by 'X' or overlay click.
-                // Allow closing only through designated buttons after interaction or for non-quiz types.
-                if (tileForModal.type === 'quiz' && !quizAttemptedFromModal) {
-                    return; // Don't close
+            if (!open) { 
+                if (tileForModal.type === 'quiz') {
+                    if (!quizAttemptedFromModal) {
+                        return; // Don't close if quiz not yet attempted
+                    }
+                    // If quiz was attempted, closing via overlay/X should proceed to next turn
+                    onModalClose(true); 
+                } else {
+                    // For info/reward tiles, closing via overlay/X should proceed
+                    onModalClose(true);
                 }
-                onModalClose(false); // Call close handler, indicating not to proceed to next turn automatically
             }
         }}
     >
@@ -248,3 +251,4 @@ export function TileInteractionModal({
     </Dialog>
   );
 }
+

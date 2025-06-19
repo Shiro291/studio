@@ -101,39 +101,16 @@ export function AppSidebarContent() {
         }
         
         const boardConfigForLink: BoardConfig = JSON.parse(JSON.stringify(state.boardConfig));
-        boardConfigForLink.id = nanoid(); // Ensure play link has unique ID to avoid local state conflicts
+        boardConfigForLink.id = nanoid(); 
 
-        // Aggressively strip all image data URIs for link generation
+        // Remove board background image if it's a data URI to save space
         if (boardConfigForLink.settings.boardBackgroundImage?.startsWith('data:image')) {
           boardConfigForLink.settings.boardBackgroundImage = undefined;
         }
-
-        boardConfigForLink.tiles = boardConfigForLink.tiles.map(tile => {
-          const newTile = { ...tile };
-          if (newTile.config) {
-            if (newTile.type === 'quiz') {
-              const quizConfig = newTile.config as TileConfigQuiz;
-              if (quizConfig.questionImage?.startsWith('data:image')) {
-                quizConfig.questionImage = undefined;
-              }
-              quizConfig.options = quizConfig.options.map(opt => {
-                if (opt.image?.startsWith('data:image')) {
-                  return { ...opt, image: undefined };
-                }
-                return opt;
-              });
-              newTile.config = quizConfig;
-            } else if (newTile.type === 'info') {
-              const infoConfig = newTile.config as TileConfigInfo;
-              if (infoConfig.image?.startsWith('data:image')) {
-                infoConfig.image = undefined;
-              }
-              newTile.config = infoConfig;
-            }
-          }
-          return newTile;
-        });
         
+        // Keep quiz question images and option images for the link
+        // No aggressive stripping here for quiz images as the fragment should handle more data.
+
         const jsonString = JSON.stringify(boardConfigForLink);
         const utf8Encoded = unescape(encodeURIComponent(jsonString));
         const base64Data = btoa(utf8Encoded);
