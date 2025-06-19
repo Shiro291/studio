@@ -32,6 +32,12 @@ export function AppHeader({ isPlayMode = false }: AppHeaderProps) {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
+  // Capture stable values for dependencies
+  const currentLanguage = language;
+  const englishText = t('appHeader.english');
+  const indonesianText = t('appHeader.indonesian');
+
+
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur md:px-6">
       {!isPlayMode && <SidebarTrigger className="md:hidden" />}
@@ -47,11 +53,13 @@ export function AppHeader({ isPlayMode = false }: AppHeaderProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setLanguage('en')} disabled={language === 'en'}>
-                {t('appHeader.english')}
+              {/* Diagnostic Text */}
+              {/* <div style={{ padding: '8px', color: 'red', border: '1px solid blue' }}>Test Text Visible?</div> */}
+              <DropdownMenuItem onClick={() => setLanguage('en')} disabled={currentLanguage === 'en'}>
+                {englishText}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setLanguage('id')} disabled={language === 'id'}>
-                {t('appHeader.indonesian')}
+              <DropdownMenuItem onClick={() => setLanguage('id')} disabled={currentLanguage === 'id'}>
+                {indonesianText}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
