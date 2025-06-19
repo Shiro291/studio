@@ -32,6 +32,12 @@ import {
 } from "@/components/ui/accordion";
 import { nanoid } from 'nanoid';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useIsMobile } from '@/hooks/use-is-mobile';
 
 
 export function AppSidebarContent() {
@@ -42,6 +48,7 @@ export function AppSidebarContent() {
   const boardBgInputRef = useRef<HTMLInputElement>(null);
   const importFileInputRef = useRef<HTMLInputElement>(null);
   const [jsonPasteContent, setJsonPasteContent] = useState('');
+  const isMobile = useIsMobile();
 
 
   const handleSettingChange = <K extends keyof BoardSettings>(key: K, value: BoardSettings[K]) => {
@@ -92,17 +99,43 @@ export function AppSidebarContent() {
         }
         
         const boardConfigForLink: BoardConfig = JSON.parse(JSON.stringify(state.boardConfig));
-        boardConfigForLink.id = nanoid(); 
+        boardConfigForLink.id = nanoid();
 
-        // No image stripping for URL fragment method for now, let's test full data.
-        // If still too large for browser URL limits, we might need to revisit stripping
-        // very large non-essential images (e.g., AI option images if they are huge).
+        // Aggressively strip all image data URIs for link generation
+        if (boardConfigForLink.settings.boardBackgroundImage?.startsWith('data:image')) {
+          boardConfigForLink.settings.boardBackgroundImage = undefined;
+        }
 
+        boardConfigForLink.tiles = boardConfigForLink.tiles.map(tile => {
+          const newTile = { ...tile };
+          if (newTile.config) {
+            if (newTile.type === 'quiz') {
+              const quizConfig = newTile.config as TileConfigQuiz;
+              if (quizConfig.questionImage?.startsWith('data:image')) {
+                quizConfig.questionImage = undefined;
+              }
+              quizConfig.options = quizConfig.options.map(opt => {
+                if (opt.image?.startsWith('data:image')) {
+                  return { ...opt, image: undefined };
+                }
+                return opt;
+              });
+              newTile.config = quizConfig;
+            } else if (newTile.type === 'info') {
+              const infoConfig = newTile.config as TileConfigInfo;
+              if (infoConfig.image?.startsWith('data:image')) {
+                infoConfig.image = undefined;
+              }
+              newTile.config = infoConfig;
+            }
+          }
+          return newTile;
+        });
+        
         const jsonString = JSON.stringify(boardConfigForLink);
         const utf8Encoded = unescape(encodeURIComponent(jsonString));
         const base64Data = btoa(utf8Encoded);
         
-        // Use URL fragment (#) instead of query parameter
         const shareUrl = `${window.location.origin}/play#${encodeURIComponent(base64Data)}`;
         
         navigator.clipboard.writeText(shareUrl)
@@ -223,8 +256,6 @@ export function AppSidebarContent() {
     if (loadBoardFromJson(jsonPasteContent)) {
         toast({ title: t('sidebar.boardImportedTitle'), description: t('sidebar.boardImportedDescription') });
         setJsonPasteContent(''); 
-    } else {
-        // Error toast is handled by loadBoardFromJson if parsing fails
     }
   };
 
@@ -237,16 +268,32 @@ export function AppSidebarContent() {
     });
   };
 
-  const renderTooltip = (contentKey: string, children: React.ReactNode) => (
-    <TooltipProvider delayDuration={300}>
-      <Tooltip>
-        <TooltipTrigger asChild>{children}</TooltipTrigger>
-        <TooltipContent side="right" className="max-w-xs z-50">
-          <p className="text-xs">{t(contentKey)}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
+  const renderHelpDisplay = (contentKey: string, children: React.ReactNode) => {
+    const helpText = t(contentKey);
+    if (isMobile) {
+      return (
+        <Dialog>
+          <DialogTrigger asChild>{children}</DialogTrigger>
+          <DialogContent className="sm:max-w-xs w-11/12">
+            <div className="py-2 max-h-[60vh] overflow-y-auto">
+              <p className="text-sm text-foreground whitespace-pre-line">{helpText}</p>
+            </div>
+          </DialogContent>
+        </Dialog>
+      );
+    } else {
+      return (
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger asChild>{children}</TooltipTrigger>
+            <TooltipContent side="right" className="max-w-xs z-50">
+              <p className="text-xs whitespace-pre-line">{helpText}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+  };
 
   return (
     <>
@@ -255,24 +302,24 @@ export function AppSidebarContent() {
         <SidebarGroup>
           <SidebarGroupLabel className="font-headline">{t('sidebar.title')}</SidebarGroupLabel>
           <SidebarGroupContent className="space-y-2">
-             {renderTooltip("tooltip.newBoard", 
+             {renderHelpDisplay("tooltip.newBoard", 
               <Button onClick={initializeNewBoard} className="w-full" variant="outline">
                 <Wand2 className="mr-2 h-4 w-4" /> {t('sidebar.newBoard')}
               </Button>
              )}
              {boardSettings && (
               <>
-                {renderTooltip("tooltip.generatePlayLink",
+                {renderHelpDisplay("tooltip.generatePlayLink",
                   <Button onClick={handleGeneratePlayLink} className="w-full">
                       <LinkIcon className="mr-2 h-4 w-4" /> {t('sidebar.generatePlayLink')}
                   </Button>
                 )}
-                {renderTooltip("tooltip.exportBoardFile",
+                {renderHelpDisplay("tooltip.exportBoardFile",
                   <Button onClick={handleExportBoardFile} className="w-full" variant="outline">
                       <Download className="mr-2 h-4 w-4" /> {t('sidebar.exportBoardFile')}
                   </Button>
                 )}
-                {renderTooltip("tooltip.importBoardFile",
+                {renderHelpDisplay("tooltip.importBoardFile",
                   <Button asChild variant="outline" className="w-full cursor-pointer">
                     <Label htmlFor="import-board-file" className="flex items-center cursor-pointer w-full justify-center">
                       <Upload className="mr-2 h-4 w-4" /> {t('sidebar.importBoardFile')}
@@ -287,13 +334,13 @@ export function AppSidebarContent() {
                     onChange={handleImportBoardFile} 
                     className="hidden" 
                 />
-                 {renderTooltip("tooltip.copyBoardJson",
+                 {renderHelpDisplay("tooltip.copyBoardJson",
                   <Button onClick={handleCopyBoardJson} className="w-full" variant="outline">
                     <ClipboardCopy className="mr-2 h-4 w-4" /> {t('sidebar.copyBoardJson')}
                   </Button>
                 )}
                 <div className="space-y-1 pt-1">
-                   {renderTooltip("tooltip.pasteBoardJsonArea",
+                   {renderHelpDisplay("tooltip.pasteBoardJsonArea",
                     <Textarea
                       placeholder={t('sidebar.pasteBoardJsonPlaceholder')}
                       value={jsonPasteContent}
@@ -302,7 +349,7 @@ export function AppSidebarContent() {
                       aria-label={t('sidebar.pasteBoardJsonPlaceholder')}
                     />
                   )}
-                  {renderTooltip("tooltip.loadFromJsonPaste",
+                  {renderHelpDisplay("tooltip.loadFromJsonPaste",
                     <Button onClick={handleLoadFromJsonPaste} className="w-full" variant="outline" disabled={!jsonPasteContent.trim()}>
                       <ClipboardPaste className="mr-2 h-4 w-4" /> {t('sidebar.loadFromJsonPaste')}
                     </Button>
@@ -327,7 +374,7 @@ export function AppSidebarContent() {
                 <div>
                   <div className="flex items-center gap-1 mb-1">
                     <Label htmlFor="boardName" className="text-xs font-medium">{t('sidebar.boardName')}</Label>
-                    {renderTooltip("tooltip.boardName.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
+                    {renderHelpDisplay("tooltip.boardName.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
                   </div>
                   <Input 
                     id="boardName" 
@@ -341,7 +388,7 @@ export function AppSidebarContent() {
                     <Label htmlFor="numTiles" className="text-xs font-medium">
                       {t('sidebar.numberOfTiles', { count: boardSettings.numberOfTiles })}
                     </Label>
-                     {renderTooltip("tooltip.numberOfTiles.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
+                     {renderHelpDisplay("tooltip.numberOfTiles.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
                   </div>
                   <Slider
                     id="numTiles"
@@ -357,7 +404,7 @@ export function AppSidebarContent() {
                 <div>
                   <div className="flex items-center gap-1 mb-1">
                     <Label htmlFor="punishmentType" className="text-xs font-medium">{t('sidebar.punishmentType.label')}</Label>
-                    {renderTooltip("tooltip.punishmentType.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
+                    {renderHelpDisplay("tooltip.punishmentType.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
                   </div>
                   <Select
                     value={boardSettings.punishmentType}
@@ -381,7 +428,7 @@ export function AppSidebarContent() {
                       <Label htmlFor="punishmentValue" className="text-xs font-medium">
                         {t('sidebar.punishmentValue', { count: boardSettings.punishmentValue })}
                       </Label>
-                      {renderTooltip("tooltip.punishmentValue.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
+                      {renderHelpDisplay("tooltip.punishmentValue.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
                     </div>
                     <Slider
                       id="punishmentValue"
@@ -398,7 +445,7 @@ export function AppSidebarContent() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1">
                     <Label htmlFor="randomizeTilesOnLoad" className="text-xs font-medium">{t('sidebar.randomizeTilesOnLoad')}</Label>
-                    {renderTooltip("tooltip.randomizeTiles.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
+                    {renderHelpDisplay("tooltip.randomizeTiles.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
                   </div>
                   <Switch
                     id="randomizeTilesOnLoad"
@@ -419,7 +466,7 @@ export function AppSidebarContent() {
                  <div>
                     <div className="flex items-center gap-1 mb-1">
                       <Label htmlFor="boardBgImage" className="text-xs font-medium">{t('sidebar.boardBackgroundImage')}</Label>
-                      {renderTooltip("tooltip.boardBackground.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
+                      {renderHelpDisplay("tooltip.boardBackground.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
                     </div>
                     {boardSettings.boardBackgroundImage && (
                       <div className="mt-2 relative w-full aspect-video border rounded-md overflow-hidden">
@@ -448,7 +495,7 @@ export function AppSidebarContent() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1">
                       <Label htmlFor="epilepsySafeMode" className="text-xs font-medium">{t('sidebar.epilepsySafeMode')}</Label>
-                       {renderTooltip("tooltip.epilepsySafeMode.description", <ShieldAlert size={12} className="text-muted-foreground cursor-help" />)}
+                       {renderHelpDisplay("tooltip.epilepsySafeMode.description", <ShieldAlert size={12} className="text-muted-foreground cursor-help" />)}
                     </div>
                     <Switch
                       id="epilepsySafeMode"
@@ -471,7 +518,7 @@ export function AppSidebarContent() {
                     <Label htmlFor="numPlayers" className="text-xs font-medium">
                       {t('sidebar.numberOfPlayers', { count: boardSettings.numberOfPlayers })}
                     </Label>
-                    {renderTooltip("tooltip.numberOfPlayers.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
+                    {renderHelpDisplay("tooltip.numberOfPlayers.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
                   </div>
                   <Slider
                     id="numPlayers"
@@ -486,7 +533,7 @@ export function AppSidebarContent() {
                  <div>
                   <div className="flex items-center gap-1 mb-1">
                     <Label htmlFor="winningCondition" className="text-xs font-medium">{t('sidebar.winningCondition')}</Label>
-                    {renderTooltip("tooltip.winningCondition.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
+                    {renderHelpDisplay("tooltip.winningCondition.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
                   </div>
                    <Select
                     value={boardSettings.winningCondition}
@@ -515,7 +562,7 @@ export function AppSidebarContent() {
                 <div>
                   <div className="flex items-center gap-1 mb-1">
                     <Label htmlFor="diceSides" className="text-xs font-medium">{t('sidebar.diceSides', { count: boardSettings.diceSides })}</Label>
-                    {renderTooltip("tooltip.diceSides.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
+                    {renderHelpDisplay("tooltip.diceSides.description", <Info size={12} className="text-muted-foreground cursor-help" />)}
                   </div>
                   <Slider
                     id="diceSides"
@@ -537,10 +584,10 @@ export function AppSidebarContent() {
                     </div>
                 </AccordionTrigger>
                 <AccordionContent className="space-y-2 pt-2 pb-4">
-                    {renderTooltip("tooltip.tileCustomization.description",
+                    {renderHelpDisplay("tooltip.tileCustomization.description",
                         <p className="text-xs text-muted-foreground">{t('sidebar.selectTileToEdit')}</p>
                     )}
-                    {renderTooltip("tooltip.randomizeVisuals.description",
+                    {renderHelpDisplay("tooltip.randomizeVisuals.description",
                         <Button onClick={handleRandomizeVisuals} className="w-full h-8 text-xs" variant="outline">
                             <RefreshCwIcon className="mr-2 h-3 w-3" /> {t('sidebar.randomizeVisuals')}
                         </Button>
