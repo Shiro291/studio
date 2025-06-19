@@ -670,6 +670,21 @@ export function GameProvider({ children }: { children: ReactNode }) {
         };
         delete (boardConfig.settings as any).punishmentMode;
 
+        if (boardConfig) {
+          boardConfig.tiles = boardConfig.tiles.map(tile => {
+            if (tile.type === 'quiz' && tile.config) {
+              const quizConfig = tile.config as TileConfigQuiz;
+              if (![1, 2, 3].includes(quizConfig.difficulty)) {
+                console.warn(`Invalid quiz difficulty '${quizConfig.difficulty}' found for tile ${tile.id}. Defaulting to 1.`);
+                quizConfig.difficulty = 1;
+              }
+              quizConfig.points = DIFFICULTY_POINTS[quizConfig.difficulty as 1 | 2 | 3];
+            }
+            return tile;
+          });
+        }
+
+
         try {
           const storedState = localStorage.getItem(`boardwise-play-state-${boardConfig.id}`);
           if (storedState) {
@@ -696,7 +711,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (error instanceof Error) {
           errorMessage += ` Details: ${error.message}`;
       }
-      // Specifically check for InvalidCharacterError which occurs with bad Base64
       if (typeof DOMException !== 'undefined' && error instanceof DOMException && error.name === 'InvalidCharacterError') {
           errorMessage = 'Failed to decode board data (Invalid Base64). The link may be corrupted.';
       }
@@ -727,6 +741,20 @@ export function GameProvider({ children }: { children: ReactNode }) {
             tiles: rawBoardData.tiles as Tile[],
         };
         delete (boardConfig.settings as any).punishmentMode;
+
+        if (boardConfig) {
+          boardConfig.tiles = boardConfig.tiles.map(tile => {
+            if (tile.type === 'quiz' && tile.config) {
+              const quizConfig = tile.config as TileConfigQuiz;
+              if (![1, 2, 3].includes(quizConfig.difficulty)) {
+                console.warn(`Invalid quiz difficulty '${quizConfig.difficulty}' found for tile ${tile.id}. Defaulting to 1.`);
+                quizConfig.difficulty = 1;
+              }
+              quizConfig.points = DIFFICULTY_POINTS[quizConfig.difficulty as 1 | 2 | 3];
+            }
+            return tile;
+          });
+        }
 
         try {
           const storedState = localStorage.getItem(`boardwise-play-state-${boardConfig.id}`);
@@ -783,3 +811,5 @@ export function useGame() {
   }
   return context;
 }
+
+    

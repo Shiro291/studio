@@ -59,6 +59,26 @@ const quizTextPrompt = ai.definePrompt({
   name: 'quizGeneratorTextPrompt',
   input: {schema: GenerateQuizInputSchema},
   output: {schema: PromptOutputSchema}, // Uses the intermediate schema with imageDescriptionForGeneration
+  config: {
+    safetySettings: [
+      {
+        category: 'HARM_CATEGORY_HATE_SPEECH',
+        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+      },
+      {
+        category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+      },
+      {
+        category: 'HARM_CATEGORY_HARASSMENT',
+        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+      },
+      {
+        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+      },
+    ],
+  },
   prompt: `You are an expert quiz designer. Your task is to generate ONE multiple-choice quiz question based *strictly and solely* on the provided Source Text.
 
 Source Text:
