@@ -42,7 +42,6 @@ export type PunishmentType = 'none' | 'revertMove' | 'moveBackFixed' | 'moveBack
 
 export interface BoardSettings {
   name: string;
-  // description?: string; // Removed
   numberOfTiles: number;
   punishmentType: PunishmentType;
   punishmentValue: number;
@@ -90,12 +89,13 @@ export interface PawnAnimation {
 }
 
 export interface GameState {
-  boardConfig: BoardConfig | null;
+  boardConfig: BoardConfig | null; // This is the currently displayed (potentially translated) board
+  originalBoardConfig: BoardConfig | null; // Stores the board in its original loaded language
   players: Player[];
   currentPlayerIndex: number;
   diceRoll: number | null;
   gameStatus: GameStatus;
-  isLoading: boolean;
+  isLoading: boolean; // Also true when isTranslating
   error: string | null;
   activeTileForInteraction: Tile | null;
   winner: Player | null;
@@ -118,14 +118,13 @@ export const DEFAULT_BOARD_SETTINGS: BoardSettings = {
 };
 
 export interface PersistedPlayState {
-  players: Player[]; // visualPosition and animation state are not persisted
+  players: Player[];
   currentPlayerIndex: number;
   diceRoll: number | null;
-  gameStatus: GameStatus; // if 'animating_pawn' on save, might reset to 'playing' or 'interaction_pending' on load
-  activeTileForInteraction: Tile | null;
+  gameStatus: GameStatus;
+  activeTileForInteraction: Tile | null; // This tile should ideally be from originalBoardConfig or re-matched
   winner: Player | null;
   logs: LogEntry[];
   playersFinishedCount: number;
+  // Note: Persisted board content itself isn't directly used; originalBoardConfig is the source of truth for content.
 }
-
-    
