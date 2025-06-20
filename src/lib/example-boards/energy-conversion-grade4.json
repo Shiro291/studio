@@ -2,7 +2,7 @@
 {
   "id": "board-energy-grade4-12345",
   "settings": {
-    "name": "Energy Conversion Adventure (Grade 4)",
+    "name": "Petualangan Konversi Energi (Kelas 4 SD)",
     "numberOfTiles": 45,
     "punishmentType": "none",
     "punishmentValue": 1,
@@ -28,11 +28,11 @@
       "type": "quiz",
       "position": 1,
       "config": {
-        "question": "What is the main source of energy for the Earth?",
+        "question": "Apa sumber energi utama bagi Bumi?",
         "options": [
-          { "id": "opt-q1-1", "text": "The Moon", "isCorrect": false },
-          { "id": "opt-q1-2", "text": "The Sun", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
-          { "id": "opt-q1-3", "text": "Stars", "isCorrect": false }
+          { "id": "opt-q1-1", "text": "Bulan", "isCorrect": false },
+          { "id": "opt-q1-2", "text": "Matahari", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q1-3", "text": "Bintang-bintang", "isCorrect": false }
         ],
         "difficulty": 1,
         "points": 5
@@ -48,7 +48,7 @@
       "type": "info",
       "position": 2,
       "config": {
-        "message": "Energy can make things move, heat up, or light up!"
+        "message": "Energi bisa membuat benda bergerak, menjadi panas, atau menyala!"
       },
       "ui": {
         "icon": "💡",
@@ -60,11 +60,11 @@
       "type": "quiz",
       "position": 3,
       "config": {
-        "question": "Explain what 'kinetic energy' is.",
+        "question": "Jelaskan apa itu 'energi kinetik'.",
         "options": [
-          { "id": "opt-q3-1", "text": "Energy that is stored", "isCorrect": false },
-          { "id": "opt-q3-2", "text": "Energy of something moving", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
-          { "id": "opt-q3-3", "text": "Energy from electricity", "isCorrect": false }
+          { "id": "opt-q3-1", "text": "Energi yang tersimpan", "isCorrect": false },
+          { "id": "opt-q3-2", "text": "Energi dari benda yang bergerak", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q3-3", "text": "Energi dari listrik", "isCorrect": false }
         ],
         "difficulty": 2,
         "points": 10
@@ -80,7 +80,7 @@
       "type": "reward",
       "position": 4,
       "config": {
-        "message": "Energy Expert! You got a boost! +5 points.",
+        "message": "Pakar Energi! Kamu dapat tambahan! +5 poin.",
         "points": 5
       },
       "ui": {
@@ -93,11 +93,11 @@
       "type": "quiz",
       "position": 5,
       "config": {
-        "question": "Which of these uses electrical energy to make light?",
+        "question": "Manakah dari benda ini yang menggunakan energi listrik untuk menghasilkan cahaya?",
         "options": [
-          { "id": "opt-q5-1", "text": "A bicycle", "isCorrect": false },
-          { "id": "opt-q5-2", "text": "A lamp", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
-          { "id": "opt-q5-3", "text": "A drum", "isCorrect": false }
+          { "id": "opt-q5-1", "text": "Sepeda", "isCorrect": false },
+          { "id": "opt-q5-2", "text": "Lampu", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q5-3", "text": "Drum", "isCorrect": false }
         ],
         "difficulty": 1,
         "points": 5
@@ -113,7 +113,7 @@
       "type": "info",
       "position": 6,
       "config": {
-        "message": "A battery stores chemical energy, which can turn into electrical energy.",
+        "message": "Baterai menyimpan energi kimia, yang bisa berubah menjadi energi listrik.",
         "image": "https://placehold.co/300x200.png"
       },
       "ui": {
@@ -127,11 +127,11 @@
       "type": "quiz",
       "position": 7,
       "config": {
-        "question": "When you toast bread, what energy changes happen?",
+        "question": "Saat kamu memanggang roti, perubahan energi apa yang terjadi?",
         "options": [
-          { "id": "opt-q7-1", "text": "Light to Heat", "isCorrect": false },
-          { "id": "opt-q7-2", "text": "Electrical to Heat (and some Light)", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
-          { "id": "opt-q7-3", "text": "Chemical to Heat", "isCorrect": false }
+          { "id": "opt-q7-1", "text": "Cahaya menjadi Panas", "isCorrect": false },
+          { "id": "opt-q7-2", "text": "Listrik menjadi Panas (dan sedikit Cahaya)", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q7-3", "text": "Kimia menjadi Panas", "isCorrect": false }
         ],
         "difficulty": 2,
         "points": 10
@@ -147,7 +147,7 @@
       "type": "reward",
       "position": 8,
       "config": {
-        "message": "Smart Thinker! You understand energy changes. +10 points.",
+        "message": "Pemikir Cerdas! Kamu mengerti perubahan energi. +10 poin.",
         "points": 10
       },
       "ui": {
@@ -160,11 +160,11 @@
       "type": "quiz",
       "position": 9,
       "config": {
-        "question": "Name one way people use wind energy.",
+        "question": "Sebutkan satu cara manusia menggunakan energi angin.",
         "options": [
-          { "id": "opt-q9-1", "text": "To make food", "isCorrect": false },
-          { "id": "opt-q9-2", "text": "To power windmills for electricity", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
-          { "id": "opt-q9-3", "text": "To grow plants", "isCorrect": false }
+          { "id": "opt-q9-1", "text": "Untuk membuat makanan", "isCorrect": false },
+          { "id": "opt-q9-2", "text": "Untuk menggerakkan kincir angin penghasil listrik", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q9-3", "text": "Untuk menumbuhkan tanaman", "isCorrect": false }
         ],
         "difficulty": 1,
         "points": 5
@@ -180,7 +180,7 @@
       "type": "info",
       "position": 10,
       "config": {
-        "message": "Sound is a form of energy that travels in waves."
+        "message": "Suara adalah bentuk energi yang merambat dalam bentuk gelombang."
       },
       "ui": {
         "icon": "🔊",
@@ -192,11 +192,11 @@
       "type": "quiz",
       "position": 11,
       "config": {
-        "question": "Why is using solar power (energy from the sun) often better for our planet than using coal?",
+        "question": "Mengapa menggunakan tenaga surya (energi dari matahari) seringkali lebih baik bagi planet kita daripada menggunakan batu bara?",
         "options": [
-          { "id": "opt-q11-1", "text": "Solar power is cheaper.", "isCorrect": false },
-          { "id": "opt-q11-2", "text": "Solar power doesn't run out and makes less pollution.", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
-          { "id": "opt-q11-3", "text": "Coal is easier to find.", "isCorrect": false }
+          { "id": "opt-q11-1", "text": "Tenaga surya lebih murah.", "isCorrect": false },
+          { "id": "opt-q11-2", "text": "Tenaga surya tidak akan habis dan menghasilkan lebih sedikit polusi.", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q11-3", "text": "Batu bara lebih mudah ditemukan.", "isCorrect": false }
         ],
         "difficulty": 3,
         "points": 15
@@ -212,7 +212,7 @@
       "type": "reward",
       "position": 12,
       "config": {
-        "message": "Eco Warrior! Great thinking about the planet! +10 points.",
+        "message": "Pejuang Lingkungan! Pemikiran hebat tentang planet ini! +10 poin.",
         "points": 10
       },
       "ui": {
@@ -225,11 +225,11 @@
       "type": "quiz",
       "position": 13,
       "config": {
-        "question": "What type of energy is stored in the food you eat?",
+        "question": "Jenis energi apa yang tersimpan dalam makanan yang kamu makan?",
         "options": [
-          { "id": "opt-q13-1", "text": "Light energy", "isCorrect": false },
-          { "id": "opt-q13-2", "text": "Chemical energy", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
-          { "id": "opt-q13-3", "text": "Sound energy", "isCorrect": false }
+          { "id": "opt-q13-1", "text": "Energi cahaya", "isCorrect": false },
+          { "id": "opt-q13-2", "text": "Energi kimia", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q13-3", "text": "Energi suara", "isCorrect": false }
         ],
         "difficulty": 1,
         "points": 5
@@ -245,7 +245,7 @@
       "type": "info",
       "position": 14,
       "config": {
-        "message": "When you run, your body changes chemical energy from food into kinetic energy (movement) and heat energy.",
+        "message": "Saat kamu berlari, tubuhmu mengubah energi kimia dari makanan menjadi energi kinetik (gerakan) dan energi panas.",
         "image": "https://placehold.co/300x200.png"
       },
       "ui": {
@@ -259,11 +259,11 @@
       "type": "quiz",
       "position": 15,
       "config": {
-        "question": "If you wanted to build a simple toy that moves using stored energy (not batteries), what could you use?",
+        "question": "Jika kamu ingin membuat mainan sederhana yang bergerak menggunakan energi tersimpan (bukan baterai), apa yang bisa kamu gunakan?",
         "options": [
-          { "id": "opt-q15-1", "text": "A small light bulb", "isCorrect": false },
-          { "id": "opt-q15-2", "text": "A stretched rubber band", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
-          { "id": "opt-q15-3", "text": "A speaker", "isCorrect": false }
+          { "id": "opt-q15-1", "text": "Bola lampu kecil", "isCorrect": false },
+          { "id": "opt-q15-2", "text": "Karet gelang yang diregangkan", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q15-3", "text": "Pengeras suara", "isCorrect": false }
         ],
         "difficulty": 3,
         "points": 15
@@ -279,11 +279,11 @@
       "type": "quiz",
       "position": 16,
       "config": {
-        "question": "A ringing alarm clock makes what kind of energy?",
+        "question": "Jam weker yang berdering menghasilkan jenis energi apa?",
         "options": [
-          { "id": "opt-q16-1", "text": "Light energy", "isCorrect": false },
-          { "id": "opt-q16-2", "text": "Sound energy", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
-          { "id": "opt-q16-3", "text": "Heat energy", "isCorrect": false }
+          { "id": "opt-q16-1", "text": "Energi cahaya", "isCorrect": false },
+          { "id": "opt-q16-2", "text": "Energi suara", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q16-3", "text": "Energi panas", "isCorrect": false }
         ],
         "difficulty": 1,
         "points": 5
@@ -299,7 +299,7 @@
       "type": "reward",
       "position": 17,
       "config": {
-        "message": "Energy Detective! You solved it! +5 points.",
+        "message": "Detektif Energi! Kamu berhasil memecahkannya! +5 poin.",
         "points": 5
       },
       "ui": {
@@ -312,7 +312,7 @@
       "type": "info",
       "position": 18,
       "config": {
-        "message": "Non-renewable energy sources like coal and oil can run out and cause pollution.",
+        "message": "Sumber energi tak terbarukan seperti batu bara dan minyak bumi bisa habis dan menyebabkan polusi.",
         "image": "https://placehold.co/300x200.png"
       },
       "ui": {
@@ -326,11 +326,11 @@
       "type": "quiz",
       "position": 19,
       "config": {
-        "question": "A plant uses sunlight for photosynthesis. What are the main energy types involved?",
+        "question": "Tumbuhan menggunakan sinar matahari untuk fotosintesis. Apa jenis energi utama yang terlibat?",
         "options": [
-          { "id": "opt-q19-1", "text": "Heat energy into Chemical energy", "isCorrect": false },
-          { "id": "opt-q19-2", "text": "Light energy into Chemical energy (food for the plant)", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
-          { "id": "opt-q19-3", "text": "Electrical energy into Light energy", "isCorrect": false }
+          { "id": "opt-q19-1", "text": "Energi panas menjadi Energi kimia", "isCorrect": false },
+          { "id": "opt-q19-2", "text": "Energi cahaya menjadi Energi kimia (makanan untuk tumbuhan)", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q19-3", "text": "Energi listrik menjadi Energi cahaya", "isCorrect": false }
         ],
         "difficulty": 2,
         "points": 10
@@ -346,11 +346,11 @@
       "type": "quiz",
       "position": 20,
       "config": {
-        "question": "What do we call energy from the sun?",
+        "question": "Kita menyebut energi dari matahari sebagai apa?",
         "options": [
-          { "id": "opt-q20-1", "text": "Moon Power", "isCorrect": false },
-          { "id": "opt-q20-2", "text": "Solar Energy", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
-          { "id": "opt-q20-3", "text": "Wind Power", "isCorrect": false }
+          { "id": "opt-q20-1", "text": "Tenaga Bulan", "isCorrect": false },
+          { "id": "opt-q20-2", "text": "Energi Surya", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q20-3", "text": "Tenaga Angin", "isCorrect": false }
         ],
         "difficulty": 1,
         "points": 5
@@ -366,7 +366,7 @@
       "type": "reward",
       "position": 21,
       "config": {
-        "message": "Shining Bright! +10 points for knowing solar facts.",
+        "message": "Bersinar Terang! +10 poin karena mengetahui fakta tentang energi surya.",
         "points": 10
       },
       "ui": {
@@ -379,7 +379,7 @@
       "type": "info",
       "position": 22,
       "config": {
-        "message": "Hydroelectric dams use moving water (kinetic energy) to turn turbines and make electricity."
+        "message": "Bendungan hidroelektrik menggunakan air yang bergerak (energi kinetik) untuk memutar turbin dan menghasilkan listrik."
       },
       "ui": {
         "icon": "🌊",
@@ -391,11 +391,11 @@
       "type": "quiz",
       "position": 23,
       "config": {
-        "question": "What happens to the chemical energy in a log when it burns?",
+        "question": "Apa yang terjadi pada energi kimia dalam sebatang kayu saat terbakar?",
         "options": [
-          { "id": "opt-q23-1", "text": "It disappears.", "isCorrect": false },
-          { "id": "opt-q23-2", "text": "It turns into heat and light energy.", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
-          { "id": "opt-q23-3", "text": "It turns into sound energy only.", "isCorrect": false }
+          { "id": "opt-q23-1", "text": "Energi itu menghilang.", "isCorrect": false },
+          { "id": "opt-q23-2", "text": "Energi itu berubah menjadi energi panas dan cahaya.", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q23-3", "text": "Energi itu hanya berubah menjadi energi suara.", "isCorrect": false }
         ],
         "difficulty": 2,
         "points": 10
@@ -411,11 +411,11 @@
       "type": "quiz",
       "position": 24,
       "config": {
-        "question": "Your friend says leaving the computer on all night doesn't waste much energy. Is this a good idea for saving energy? Why or why not?",
+        "question": "Temanmu bilang membiarkan komputer menyala semalaman tidak banyak membuang energi. Apakah ini ide bagus untuk menghemat energi? Mengapa atau mengapa tidak?",
         "options": [
-          { "id": "opt-q24-1", "text": "Yes, it's fine, computers don't use much energy.", "isCorrect": false },
-          { "id": "opt-q24-2", "text": "No, it's better to turn it off to save electrical energy.", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
-          { "id": "opt-q24-3", "text": "It only matters if the screen is on.", "isCorrect": false }
+          { "id": "opt-q24-1", "text": "Ya, tidak apa-apa, komputer tidak menggunakan banyak energi.", "isCorrect": false },
+          { "id": "opt-q24-2", "text": "Tidak, lebih baik dimatikan untuk menghemat energi listrik.", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q24-3", "text": "Itu hanya penting jika layarnya menyala.", "isCorrect": false }
         ],
         "difficulty": 3,
         "points": 15
@@ -431,7 +431,7 @@
       "type": "reward",
       "position": 25,
       "config": {
-        "message": "Super Saver! You know how to conserve energy! +10 points.",
+        "message": "Super Hemat! Kamu tahu cara menghemat energi! +10 poin.",
         "points": 10
       },
       "ui": {
@@ -444,7 +444,7 @@
       "type": "info",
       "position": 26,
       "config": {
-        "message": "Potential energy is stored energy, like a ball held up high before you drop it.",
+        "message": "Energi potensial adalah energi yang tersimpan, seperti bola yang dipegang tinggi sebelum kamu jatuhkan.",
         "image": "https://placehold.co/300x200.png"
       },
       "ui": {
@@ -458,11 +458,11 @@
       "type": "quiz",
       "position": 27,
       "config": {
-        "question": "A fan uses electrical energy to create what other kind of energy that you can feel?",
+        "question": "Kipas angin menggunakan energi listrik untuk menciptakan jenis energi lain apa yang bisa kamu rasakan?",
         "options": [
-          { "id": "opt-q27-1", "text": "Light energy", "isCorrect": false },
-          { "id": "opt-q27-2", "text": "Kinetic energy (moving air)", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
-          { "id": "opt-q27-3", "text": "Chemical energy", "isCorrect": false }
+          { "id": "opt-q27-1", "text": "Energi cahaya", "isCorrect": false },
+          { "id": "opt-q27-2", "text": "Energi kinetik (udara bergerak)", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q27-3", "text": "Energi kimia", "isCorrect": false }
         ],
         "difficulty": 1,
         "points": 5
@@ -478,11 +478,11 @@
       "type": "quiz",
       "position": 28,
       "config": {
-        "question": "Design a simple experiment to show that sound is a form of energy. What would you do?",
+        "question": "Rancanglah eksperimen sederhana untuk menunjukkan bahwa suara adalah bentuk energi. Apa yang akan kamu lakukan?",
         "options": [
-          { "id": "opt-q28-1", "text": "Shine a flashlight on a wall.", "isCorrect": false },
-          { "id": "opt-q28-2", "text": "Place rice grains on a drum and hit it to see them bounce.", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
-          { "id": "opt-q28-3", "text": "Mix baking soda and vinegar.", "isCorrect": false }
+          { "id": "opt-q28-1", "text": "Menyorotkan senter ke dinding.", "isCorrect": false },
+          { "id": "opt-q28-2", "text": "Meletakkan butiran beras di atas drum dan memukulnya untuk melihatnya melompat.", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q28-3", "text": "Mencampur soda kue dan cuka.", "isCorrect": false }
         ],
         "difficulty": 3,
         "points": 15
@@ -498,7 +498,7 @@
       "type": "reward",
       "position": 29,
       "config": {
-        "message": "Future Scientist! Amazing idea! +15 points.",
+        "message": "Ilmuwan Masa Depan! Ide luar biasa! +15 poin.",
         "points": 15
       },
       "ui": {
@@ -511,7 +511,7 @@
       "type": "info",
       "position": 30,
       "config": {
-        "message": "Renewable energy sources, like wind and solar, can be used over and over again!"
+        "message": "Sumber energi terbarukan, seperti angin dan surya, dapat digunakan berulang kali!"
       },
       "ui": {
         "icon": "🔄",
@@ -523,10 +523,10 @@
       "type": "quiz",
       "position": 31,
       "config": {
-        "question": "Is wood a renewable or non-renewable energy source?",
+        "question": "Apakah kayu merupakan sumber energi terbarukan atau tidak terbarukan?",
         "options": [
-          { "id": "opt-q31-1", "text": "Renewable (if we plant more trees)", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
-          { "id": "opt-q31-2", "text": "Non-renewable", "isCorrect": false }
+          { "id": "opt-q31-1", "text": "Terbarukan (jika kita menanam lebih banyak pohon)", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q31-2", "text": "Tidak terbarukan", "isCorrect": false }
         ],
         "difficulty": 2,
         "points": 10
@@ -542,11 +542,11 @@
       "type": "quiz",
       "position": 32,
       "config": {
-        "question": "Compare a flashlight (battery powered) and a candle. How do they get energy to make light?",
+        "question": "Bandingkan senter (bertenaga baterai) dan lilin. Bagaimana keduanya mendapatkan energi untuk menghasilkan cahaya?",
         "options": [
-          { "id": "opt-q32-1", "text": "Both use only electrical energy.", "isCorrect": false },
-          { "id": "opt-q32-2", "text": "Flashlight: chemical to electrical to light. Candle: chemical to heat and light.", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
-          { "id": "opt-q32-3", "text": "Both store light energy.", "isCorrect": false }
+          { "id": "opt-q32-1", "text": "Keduanya hanya menggunakan energi listrik.", "isCorrect": false },
+          { "id": "opt-q32-2", "text": "Senter: kimia menjadi listrik menjadi cahaya. Lilin: kimia menjadi panas dan cahaya.", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q32-3", "text": "Keduanya menyimpan energi cahaya.", "isCorrect": false }
         ],
         "difficulty": 3,
         "points": 15
@@ -562,7 +562,7 @@
       "type": "reward",
       "position": 33,
       "config": {
-        "message": "Illuminating Answer! +10 points.",
+        "message": "Jawaban yang Mencerahkan! +10 poin.",
         "points": 10
       },
       "ui": {
@@ -575,7 +575,7 @@
       "type": "info",
       "position": 34,
       "config": {
-        "message": "Energy efficiency means using less energy to do the same job. LED light bulbs are more energy efficient than old incandescent bulbs.",
+        "message": "Efisiensi energi berarti menggunakan lebih sedikit energi untuk melakukan pekerjaan yang sama. Bohlam LED lebih hemat energi daripada bohlam pijar lama.",
         "image": "https://placehold.co/300x200.png"
       },
       "ui": {
@@ -589,11 +589,11 @@
       "type": "quiz",
       "position": 35,
       "config": {
-        "question": "What form of energy does a microwave oven use to heat food?",
+        "question": "Bentuk energi apa yang digunakan oven microwave untuk memanaskan makanan?",
         "options": [
-          { "id": "opt-q35-1", "text": "Sound energy", "isCorrect": false },
-          { "id": "opt-q35-2", "text": "Electrical energy (which produces microwaves, a form of light energy)", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
-          { "id": "opt-q35-3", "text": "Chemical energy", "isCorrect": false }
+          { "id": "opt-q35-1", "text": "Energi suara", "isCorrect": false },
+          { "id": "opt-q35-2", "text": "Energi listrik (yang menghasilkan gelombang mikro, bentuk energi cahaya)", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q35-3", "text": "Energi kimia", "isCorrect": false }
         ],
         "difficulty": 2,
         "points": 10
@@ -609,11 +609,11 @@
       "type": "quiz",
       "position": 36,
       "config": {
-        "question": "If you are riding a skateboard, what type of energy are you using to move?",
+        "question": "Jika kamu sedang bermain skateboard, jenis energi apa yang kamu gunakan untuk bergerak?",
         "options": [
-          { "id": "opt-q36-1", "text": "Electrical Energy", "isCorrect": false },
-          { "id": "opt-q36-2", "text": "Kinetic Energy (from your body's chemical energy)", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
-          { "id": "opt-q36-3", "text": "Solar Energy", "isCorrect": false }
+          { "id": "opt-q36-1", "text": "Energi Listrik", "isCorrect": false },
+          { "id": "opt-q36-2", "text": "Energi Kinetik (dari energi kimia tubuhmu)", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q36-3", "text": "Energi Surya", "isCorrect": false }
         ],
         "difficulty": 1,
         "points": 5
@@ -629,7 +629,7 @@
       "type": "reward",
       "position": 37,
       "config": {
-        "message": "Rolling to Victory! +5 points.",
+        "message": "Meluncur Menuju Kemenangan! +5 poin.",
         "points": 5
       },
       "ui": {
@@ -642,7 +642,7 @@
       "type": "info",
       "position": 38,
       "config": {
-        "message": "Thermal energy is another name for heat energy. It's the energy of tiny moving particles in an object."
+        "message": "Energi termal adalah nama lain untuk energi panas. Ini adalah energi dari partikel kecil yang bergerak dalam suatu benda."
       },
       "ui": {
         "icon": "🌡️",
@@ -654,12 +654,12 @@
       "type": "quiz",
       "position": 39,
       "config": {
-        "question": "Which of these is NOT a form of energy?",
+        "question": "Manakah dari berikut ini yang BUKAN bentuk energi?",
         "options": [
-          { "id": "opt-q39-1", "text": "Heat", "isCorrect": false },
-          { "id": "opt-q39-2", "text": "Color", "isCorrect": true },
-          { "id": "opt-q39-3", "text": "Light", "isCorrect": false },
-          { "id": "opt-q39-4", "text": "Sound", "isCorrect": false }
+          { "id": "opt-q39-1", "text": "Panas", "isCorrect": false },
+          { "id": "opt-q39-2", "text": "Warna", "isCorrect": true },
+          { "id": "opt-q39-3", "text": "Cahaya", "isCorrect": false },
+          { "id": "opt-q39-4", "text": "Suara", "isCorrect": false }
         ],
         "difficulty": 1,
         "points": 5
@@ -675,11 +675,11 @@
       "type": "quiz",
       "position": 40,
       "config": {
-        "question": "A power plant burns coal to make electricity. What is one problem with this for the environment?",
+        "question": "Pembangkit listrik membakar batu bara untuk menghasilkan listrik. Apa salah satu masalahnya bagi lingkungan?",
         "options": [
-          { "id": "opt-q40-1", "text": "It makes the sky very bright.", "isCorrect": false },
-          { "id": "opt-q40-2", "text": "Burning coal releases pollution into the air.", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
-          { "id": "opt-q40-3", "text": "It uses too much water.", "isCorrect": false }
+          { "id": "opt-q40-1", "text": "Itu membuat langit sangat terang.", "isCorrect": false },
+          { "id": "opt-q40-2", "text": "Pembakaran batu bara melepaskan polusi ke udara.", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q40-3", "text": "Itu menggunakan terlalu banyak air.", "isCorrect": false }
         ],
         "difficulty": 2,
         "points": 10
@@ -695,7 +695,7 @@
       "type": "reward",
       "position": 41,
       "config": {
-        "message": "Planet Protector! +10 points for environmental awareness!",
+        "message": "Pelindung Planet! +10 poin untuk kesadaran lingkungan!",
         "points": 10
       },
       "ui": {
@@ -708,7 +708,7 @@
       "type": "info",
       "position": 42,
       "config": {
-        "message": "Energy can be transferred from one object to another, like when a hot stove heats up a pot of water.",
+        "message": "Energi dapat dipindahkan dari satu benda ke benda lain, seperti saat kompor panas memanaskan panci berisi air.",
         "image": "https://placehold.co/300x200.png"
       },
       "ui": {
@@ -722,11 +722,11 @@
       "type": "quiz",
       "position": 43,
       "config": {
-        "question": "If you want to dry your clothes, which method saves more energy: using an electric dryer or hanging them outside on a sunny day? Why?",
+        "question": "Jika kamu ingin mengeringkan pakaian, metode mana yang lebih hemat energi: menggunakan pengering listrik atau menjemurnya di luar pada hari yang cerah? Mengapa?",
         "options": [
-          { "id": "opt-q43-1", "text": "Electric dryer, because it's faster.", "isCorrect": false },
-          { "id": "opt-q43-2", "text": "Hanging them outside, because it uses free solar energy and wind.", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
-          { "id": "opt-q43-3", "text": "Both use the same amount of energy.", "isCorrect": false }
+          { "id": "opt-q43-1", "text": "Pengering listrik, karena lebih cepat.", "isCorrect": false },
+          { "id": "opt-q43-2", "text": "Menjemurnya di luar, karena menggunakan energi surya dan angin gratis.", "isCorrect": true, "image": "https://placehold.co/150x100.png" },
+          { "id": "opt-q43-3", "text": "Keduanya menggunakan jumlah energi yang sama.", "isCorrect": false }
         ],
         "difficulty": 3,
         "points": 15
