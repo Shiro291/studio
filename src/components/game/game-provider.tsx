@@ -3,25 +3,23 @@
 
 import type { ReactNode } from 'react';
 import React, { createContext, useContext, useReducer, useCallback, useEffect, useRef } from 'react';
-import type { BoardConfig, GameState, Player, Tile, TileConfigQuiz, TileConfigInfo, TileConfigReward, GameStatus, PersistedPlayState, PunishmentType, LogEntry, BoardSettings, PawnAnimation, QuizOption } from '@/types';
+import type { BoardConfig, GameState, Player, Tile, TileConfigQuiz, TileConfigInfo, TileConfigReward, GameStatus, PersistedPlayState, PunishmentType, LogEntry, BoardSettings, PawnAnimation } from '@/types';
 import { DEFAULT_BOARD_SETTINGS }
   from '@/types';
 import { DEFAULT_TILE_COLOR, FINISH_TILE_COLOR, MAX_PLAYERS, MAX_TILES, MIN_PLAYERS, MIN_TILES, PLAYER_COLORS, RANDOM_COLORS, RANDOM_EMOJIS, START_TILE_COLOR, TILE_TYPE_EMOJIS, DIFFICULTY_POINTS } from '@/lib/constants';
 import { nanoid } from 'nanoid';
 import { playSound } from '@/lib/sound-service';
 import { shuffleArray } from '@/lib/utils';
-import { useLanguage } from '@/context/language-context';
-import { translateText } from '@/ai/flows/translate-text-flow';
+
 
 const PAWN_ANIMATION_STEP_DELAY = 500;
-const ASSUMED_ORIGINAL_BOARD_LANGUAGE = 'en'; // Or determined dynamically in future
 
 type GameAction =
-  | { type: 'SET_INITIAL_BOARD_DATA'; payload: { boardConfig: BoardConfig; persistedPlayState?: PersistedPlayState | null } }
-  | { type: 'UPDATE_BOARD_SETTINGS'; payload: Partial<BoardConfig['settings']> } // This should update originalBoardConfig and trigger re-translation
-  | { type: 'UPDATE_TILES'; payload: Tile[] } // This should update originalBoardConfig and trigger re-translation
+  | { type: 'SET_BOARD_CONFIG'; payload: { boardConfig: BoardConfig; persistedPlayState?: PersistedPlayState | null } }
+  | { type: 'UPDATE_BOARD_SETTINGS'; payload: Partial<BoardConfig['settings']> }
+  | { type: 'UPDATE_TILES'; payload: Tile[] }
   | { type: 'SET_PLAYERS'; payload: Player[] }
-  | { type: 'START_LOADING' } // Generic loading, can be used by translation too
+  | { type: 'START_LOADING' }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'PLAYER_ROLLED_DICE'; payload: { diceValue: number } }
   | { type: 'ADVANCE_PAWN_ANIMATION' }
@@ -29,15 +27,11 @@ type GameAction =
   | { type: 'ACKNOWLEDGE_INTERACTION' }
   | { type: 'PROCEED_TO_NEXT_TURN' }
   | { type: 'RESET_GAME_FOR_PLAY' }
-  | { type: 'UPDATE_PLAYER_NAME', payload: { playerId: string; newName: string }}
-  | { type: 'TRANSLATION_STARTED' }
-  | { type: 'TRANSLATION_FINISHED'; payload: BoardConfig } // Payload is the translated board
-  | { type: 'SET_DISPLAY_BOARD'; payload: BoardConfig }; // Sets boardConfig directly (e.g., to original)
+  | { type: 'UPDATE_PLAYER_NAME', payload: { playerId: string; newName: string }};
 
 
 const initialState: GameState = {
   boardConfig: null,
-  originalBoardConfig: null,
   players: [],
   currentPlayerIndex: 0,
   diceRoll: null,
@@ -67,37 +61,6 @@ const GameContext = createContext<{
   randomizeTileVisuals: () => {},
 });
 
-// Translation cache: Key: "textToTranslate::targetLanguageCode", Value: "translatedText"
-const translationCache = new Map<string, string>();
-
-async function translateTextCached(
-  text: string,
-  targetLanguageCode: string,
-  sourceLanguageCode: string = ASSUMED_ORIGINAL_BOARD_LANGUAGE
-): Promise<string> {
-  if (!text || typeof text !== 'string' || text.trim() === '') return text;
-  if (targetLanguageCode === sourceLanguageCode) return text;
-
-  const cacheKey = `${sourceLanguageCode}::${text}::${targetLanguageCode}`;
-  if (translationCache.has(cacheKey)) {
-    return translationCache.get(cacheKey)!;
-  }
-
-  try {
-    // console.log(`Translating from cache miss: "${text}" to ${targetLanguageCode}`);
-    const { translatedText } = await translateText({ textToTranslate: text, targetLanguageCode });
-    if (translatedText) {
-      translationCache.set(cacheKey, translatedText);
-      return translatedText;
-    }
-    return text; // Fallback to original if translation returns empty
-  } catch (error) {
-    console.error(`Translation API failed for text "${text}" to ${targetLanguageCode}:`, error);
-    return text; // Fallback to original text on API error
-  }
-}
-
-
 function generatePlayers(numberOfPlayers: number): Player[] {
   const numPlayers = Math.max(MIN_PLAYERS, Math.min(MAX_PLAYERS, numberOfPlayers));
   return Array.from({ length: numPlayers }, (_, i) => ({
@@ -113,7 +76,7 @@ function generatePlayers(numberOfPlayers: number): Player[] {
   }));
 }
 
-function applyBoardRandomizationSettings(boardConfig: BoardConfig, persistedActiveTile?: Tile | null): BoardConfig {
+function applyBoardRandomizationSettings(boardConfig: BoardConfig): BoardConfig {
   let newTiles = [...boardConfig.tiles];
 
   if (boardConfig.settings.randomizeTiles) {
@@ -128,21 +91,9 @@ function applyBoardRandomizationSettings(boardConfig: BoardConfig, persistedActi
   }
   
   newTiles = newTiles.map(tile => {
-    if (tile.type === 'quiz' && tile.config) {
-      let quizConfig = { ...(tile.config as TileConfigQuiz) };
-      if (persistedActiveTile && persistedActiveTile.id === tile.id && persistedActiveTile.type === 'quiz' && !boardConfig.settings.randomizeTiles) {
-         // If active tile is persisted and randomization is OFF, try to keep its option order
-         // This logic is tricky due to ID changes. Comparing by position and question might be more robust.
-         const persistedQuizConfig = persistedActiveTile.config as TileConfigQuiz;
-         if (persistedQuizConfig.question === quizConfig.question && persistedQuizConfig.options.length === quizConfig.options.length) {
-            quizConfig.options = persistedQuizConfig.options;
-         } else {
-            quizConfig.options = shuffleArray([...quizConfig.options]);
-         }
-
-      } else if (quizConfig.options && quizConfig.options.length > 0 && boardConfig.settings.randomizeTiles) {
-        quizConfig.options = shuffleArray([...quizConfig.options]);
-      }
+    if (tile.type === 'quiz' && tile.config && (tile.config as TileConfigQuiz).options) {
+      const quizConfig = { ...(tile.config as TileConfigQuiz) };
+      quizConfig.options = shuffleArray([...quizConfig.options]);
       return { ...tile, config: quizConfig };
     }
     return tile;
@@ -150,7 +101,6 @@ function applyBoardRandomizationSettings(boardConfig: BoardConfig, persistedActi
 
   return { ...boardConfig, tiles: newTiles };
 }
-
 
 function addLogEntry(currentLogs: LogEntry[], messageKey: string, type: LogEntry['type'], messageParams?: Record<string, string | number | undefined>): LogEntry[] {
   const newLog: LogEntry = {
@@ -274,38 +224,36 @@ function sanitizeAndValidateBoardConfig(loadedBoardConfig: Partial<BoardConfig> 
   };
 }
 
+let gameReducerInstanceRef: React.MutableRefObject<{ dispatch: React.Dispatch<GameAction> } | null> = { current: null };
+
 
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
-    case 'SET_INITIAL_BOARD_DATA': {
-      const { boardConfig: rawBoardConfigFromLoad, persistedPlayState } = action.payload;
-      
-      // Sanitize and set this as the original board. Content translation will happen based on this.
-      const newOriginalBoardConfig = sanitizeAndValidateBoardConfig(rawBoardConfigFromLoad);
-      
-      // Apply randomization to a copy that will become the initial display board.
-      // Persisted active tile is passed here in case randomization is off and we want to preserve quiz option order.
-      const initialDisplayBoard = applyBoardRandomizationSettings(
-        JSON.parse(JSON.stringify(newOriginalBoardConfig)), // Deep copy for randomization
-        persistedPlayState?.activeTileForInteraction 
-      );
+    case 'SET_BOARD_CONFIG': {
+      let { boardConfig, persistedPlayState } = action.payload;
+      boardConfig = sanitizeAndValidateBoardConfig(boardConfig);
 
-      let players = generatePlayers(newOriginalBoardConfig.settings.numberOfPlayers);
+      if (boardConfig.settings.randomizeTiles) {
+        boardConfig = applyBoardRandomizationSettings(boardConfig);
+      }
+      
+      let players = generatePlayers(boardConfig.settings.numberOfPlayers);
       let currentPlayerIndex = 0;
       let gameStatus: GameStatus = persistedPlayState?.gameStatus ?? 'playing';
-      let activeTileForInteraction: Tile | null = null; // Will be derived from originalBoardConfig
+      let activeTileForInteraction: Tile | null = persistedPlayState?.activeTileForInteraction ?? null;
       let winner: Player | null = persistedPlayState?.winner ?? null;
       let diceRoll: number | null = persistedPlayState?.diceRoll ?? null;
       let logs: LogEntry[] = persistedPlayState?.logs ?? [];
       let playersFinishedCount = persistedPlayState?.playersFinishedCount ?? 0;
       let pawnAnimation: PawnAnimation | null = null;
-
+      
       if (persistedPlayState?.gameStatus === 'animating_pawn') {
          gameStatus = 'playing'; 
       }
+      
 
       if (persistedPlayState?.players) {
-        if (persistedPlayState.players.length === newOriginalBoardConfig.settings.numberOfPlayers) {
+        if(persistedPlayState.players.length === boardConfig.settings.numberOfPlayers) {
           players = persistedPlayState.players.map(p => ({
             ...generatePlayers(1)[0], 
             ...p,
@@ -317,23 +265,17 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         currentPlayerIndex = persistedPlayState.currentPlayerIndex ?? 0;
       }
       
-      // If a tile interaction was persisted, find the corresponding tile from the *original* board config.
-      // The display board (initialDisplayBoard) might have shuffled quiz options if randomization is on.
-      // The activeTileForInteraction in state should reflect the content as it will be after potential translation.
-      if (persistedPlayState?.activeTileForInteraction) {
-        const persistedTile = persistedPlayState.activeTileForInteraction;
-        const originalMatchingTile = newOriginalBoardConfig.tiles.find(t => t.position === persistedTile.position);
-        if (originalMatchingTile) {
-            // If the game was saved mid-quiz, we need to ensure the options order of activeTileForInteraction matches
-            // what applyBoardRandomizationSettings might have done (or not done) to initialDisplayBoard.
-            // The simplest is to take the tile from initialDisplayBoard (which has correct option order for display).
-            activeTileForInteraction = initialDisplayBoard.tiles.find(t => t.position === persistedTile.position) || null;
+      if (activeTileForInteraction) {
+        const matchingTile = boardConfig.tiles.find(t => t.id === activeTileForInteraction?.id);
+        if (matchingTile) {
+          activeTileForInteraction = matchingTile;
+        } else {
+          activeTileForInteraction = null;
         }
       }
 
-
       if (logs.length === 0 && !persistedPlayState) { 
-        logs = addLogEntry(logs, 'log.event.gameStarted', 'game_event', { name: newOriginalBoardConfig.settings.name });
+        logs = addLogEntry(logs, 'log.event.gameStarted', 'game_event', { name: boardConfig.settings.name });
       }
 
       if (gameStatus === 'finished' && !winner && persistedPlayState?.winner) {
@@ -342,8 +284,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       return {
         ...initialState,
-        originalBoardConfig: newOriginalBoardConfig, // Store the pristine, original board
-        boardConfig: initialDisplayBoard, // Display board, possibly randomized options
+        boardConfig,
         players,
         currentPlayerIndex,
         gameStatus,
@@ -353,54 +294,32 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         logs,
         playersFinishedCount,
         pawnAnimation,
-        isLoading: false, // Board is loaded, translation useEffect will handle if needed
+        isLoading: false,
         error: null
       };
     }
-    case 'UPDATE_BOARD_SETTINGS': {
-      if (!state.originalBoardConfig) return state; // Should operate on original
-      const updatedSettings = { ...state.originalBoardConfig.settings, ...action.payload };
-      const newOriginalBoardConfig = { ...state.originalBoardConfig, settings: updatedSettings };
-      
-      let updatedPlayers = state.players;
-      if (action.payload.numberOfPlayers !== undefined && action.payload.numberOfPlayers !== state.originalBoardConfig.settings.numberOfPlayers) {
-        updatedPlayers = generatePlayers(action.payload.numberOfPlayers);
+    case 'UPDATE_BOARD_SETTINGS':
+      if (state.boardConfig) {
+        const updatedSettings = { ...state.boardConfig.settings, ...action.payload };
+        let updatedPlayers = state.players;
+        if(action.payload.numberOfPlayers !== undefined && action.payload.numberOfPlayers !== state.boardConfig.settings.numberOfPlayers) {
+          updatedPlayers = generatePlayers(action.payload.numberOfPlayers);
+        }
+        return { ...state, boardConfig: { ...state.boardConfig, settings: updatedSettings }, players: updatedPlayers.map(p => ({...p, visualPosition: p.position})) };
       }
-
-      // The useEffect for language change will pick up the new originalBoardConfig and trigger re-translation
-      return {
-        ...state,
-        originalBoardConfig: newOriginalBoardConfig,
-        // boardConfig will be updated by the translation effect
-        players: updatedPlayers.map(p => ({...p, visualPosition: p.position})), 
-        isLoading: true, // Indicate that changes might trigger re-translation
-      };
-    }
-    case 'UPDATE_TILES': {
-      if (!state.originalBoardConfig) return state;
-      const newOriginalBoardConfig = { ...state.originalBoardConfig, tiles: action.payload };
-      // The useEffect for language change will pick up the new originalBoardConfig and trigger re-translation
-      return {
-        ...state,
-        originalBoardConfig: newOriginalBoardConfig,
-        isLoading: true, // Indicate that changes might trigger re-translation
-      };
-    }
+      return state;
+    case 'UPDATE_TILES':
+      if (state.boardConfig) {
+        return { ...state, boardConfig: { ...state.boardConfig, tiles: action.payload } };
+      }
+      return state;
     case 'SET_PLAYERS':
       return { ...state, players: action.payload.map(p => ({...p, visualPosition: p.position})) };
-    case 'START_LOADING': // Generic loading, can be used by translation start
-      return { ...state, isLoading: true, error: null }; 
+    case 'START_LOADING':
+      return { ...state, isLoading: true, error: null };
     case 'SET_ERROR':
       return { ...state, isLoading: false, error: action.payload, logs: addLogEntry(state.logs, 'log.event.errorOccurred', 'game_event', { error: action.payload }) };
-    case 'TRANSLATION_STARTED':
-      return { ...state, isLoading: true };
-    case 'TRANSLATION_FINISHED':
-      return { ...state, boardConfig: action.payload, isLoading: false, activeTileForInteraction: state.activeTileForInteraction ? action.payload.tiles.find(t => t.position === state.activeTileForInteraction!.position) || null : null };
-    case 'SET_DISPLAY_BOARD': // Used when setting board to original language without API
-      return { ...state, boardConfig: action.payload, isLoading: false, activeTileForInteraction: state.activeTileForInteraction ? action.payload.tiles.find(t => t.position === state.activeTileForInteraction!.position) || null : null };
-
-     case 'PLAYER_ROLLED_DICE': {
-      // This logic should use state.boardConfig (the displayed, possibly translated board) for tile interactions
+    case 'PLAYER_ROLLED_DICE': {
       if (!state.boardConfig || state.gameStatus !== 'playing' || state.winner || state.players[state.currentPlayerIndex].hasFinished) return state;
 
       const { diceValue } = action.payload;
@@ -471,21 +390,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       if (newStepIndex === state.pawnAnimation.path.length - 1) { 
         newPlayers[playerIndex] = { ...newPlayers[playerIndex], position: currentPathStep };
-        
-        // Landed tile interaction uses the currently displayed (potentially translated) boardConfig
         let landedTile = state.boardConfig.tiles.find(t => t.position === currentPathStep);
-        if (!landedTile) { // Should not happen if boardConfig is valid
-             console.error("Landed tile not found in boardConfig during ADVANCE_PAWN_ANIMATION");
-             return { ...state, pawnAnimation: null, gameStatus: 'playing' }; // Recover
+        if (landedTile?.type === 'quiz' && landedTile.config) {
+          const quizConfig = { ...(landedTile.config as TileConfigQuiz) };
+          quizConfig.options = shuffleArray([...quizConfig.options]);
+          landedTile = { ...landedTile, config: quizConfig };
         }
-        // No need to re-shuffle quiz options here as it was handled by applyBoardRandomization or translation.
         
-        let currentLogs = addLogEntry(state.logs, 'log.playerMovedTo', 'move', { name: newPlayers[playerIndex].name, position: currentPathStep + 1, tileType: landedTile.type });
+        let currentLogs = addLogEntry(state.logs, 'log.playerMovedTo', 'move', { name: newPlayers[playerIndex].name, position: currentPathStep + 1, tileType: landedTile?.type });
         let newPlayersFinishedCount = state.playersFinishedCount;
         let gameWinner: Player | null = state.winner;
         let newGameStatus: GameStatus = 'interaction_pending';
 
-        if (landedTile.type === 'finish' && !newPlayers[playerIndex].hasFinished) {
+        if (landedTile?.type === 'finish' && !newPlayers[playerIndex].hasFinished) {
           playSound('finishSound');
           newPlayersFinishedCount++;
           newPlayers[playerIndex] = { ...newPlayers[playerIndex], hasFinished: true, finishOrder: newPlayersFinishedCount };
@@ -500,7 +417,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...state,
           players: newPlayers,
           pawnAnimation: null,
-          activeTileForInteraction: { ...landedTile }, // Ensure it's a copy from the display board
+          activeTileForInteraction: landedTile || null,
           gameStatus: newGameStatus,
           logs: currentLogs,
           playersFinishedCount: newPlayersFinishedCount,
@@ -520,7 +437,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       }
     }
     case 'ANSWER_QUIZ': {
-        // This interaction should use state.activeTileForInteraction, which comes from the displayed (translated) board.
         if (!state.boardConfig || !state.activeTileForInteraction || state.activeTileForInteraction.type !== 'quiz' || state.gameStatus !== 'interaction_pending' || state.diceRoll === null) return state;
 
         const { selectedOptionId } = action.payload;
@@ -528,7 +444,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         const selectedOption = quizConfig.options.find(opt => opt.id === selectedOptionId);
         const currentPlayer = state.players[state.currentPlayerIndex];
         const newPlayers = [...state.players];
-        const boardSettings = state.boardConfig.settings; // Use settings from displayed board
+        const boardSettings = state.boardConfig.settings;
         let currentLogs = state.logs;
 
         let newScore = currentPlayer.score;
@@ -672,9 +588,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         };
     }
     case 'RESET_GAME_FOR_PLAY': {
-      if (!state.originalBoardConfig) return state; // Need original to reset from
+      if (!state.boardConfig) return state;
       try {
-        localStorage.removeItem(`boardwise-play-state-${state.originalBoardConfig.id}`);
+        localStorage.removeItem(`boardwise-play-state-${state.boardConfig.id}`);
       } catch (e) {
         console.warn("Failed to remove play state from localStorage on reset", e);
       }
@@ -682,23 +598,21 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (state.pawnAnimation?.timerId) {
         clearTimeout(state.pawnAnimation.timerId);
       }
-
-      // Re-apply randomization to a fresh copy of originalBoardConfig
-      const reRandomizedBoardConfigForDisplay = applyBoardRandomizationSettings(
-        JSON.parse(JSON.stringify(state.originalBoardConfig)), // Deep copy from original
-        null
-      );
-      const players = generatePlayers(state.originalBoardConfig.settings.numberOfPlayers);
+      
+      let boardConfig = state.boardConfig;
+      if (boardConfig.settings.randomizeTiles) {
+        boardConfig = applyBoardRandomizationSettings(boardConfig);
+      }
+      
+      const players = generatePlayers(boardConfig.settings.numberOfPlayers);
       let initialLogs = addLogEntry([], 'log.event.gameReset', 'game_event');
-      initialLogs = addLogEntry(initialLogs, 'log.event.gameStarted', 'game_event', { name: state.originalBoardConfig.settings.name });
+      initialLogs = addLogEntry(initialLogs, 'log.event.gameStarted', 'game_event', { name: boardConfig.settings.name });
 
-      // The useEffect for language change will handle translating reRandomizedBoardConfigForDisplay if needed
       return {
         ...initialState,
-        originalBoardConfig: state.originalBoardConfig, // Keep the original
-        boardConfig: reRandomizedBoardConfigForDisplay, // Set display board
+        boardConfig,
         players,
-        isLoading: false, // Or true if immediate translation is expected by useEffect
+        isLoading: false,
         gameStatus: 'playing',
         logs: initialLogs,
       };
@@ -721,12 +635,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   }
 }
 
-let gameReducerInstanceRef: React.MutableRefObject<{ dispatch: React.Dispatch<GameAction> } | null> = { current: null };
-
-
 export function GameProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
-  const languageContext = useLanguage();
   
   const localDispatchRef = useRef<{ dispatch: React.Dispatch<GameAction> }>({ dispatch });
   useEffect(() => {
@@ -755,103 +665,24 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
 
   useEffect(() => {
-    // Persist game state, but not the full originalBoardConfig, only IDs or essential references if needed.
-    // For now, activeTileForInteraction might hold translated text. On load, it should be re-derived/re-translated.
-    if (state.originalBoardConfig && state.gameStatus !== 'setup' && !state.isLoading && state.gameStatus !== 'animating_pawn') {
+    if (state.boardConfig && state.gameStatus !== 'setup' && !state.isLoading && state.gameStatus !== 'animating_pawn') {
       const persistState: PersistedPlayState = {
         players: state.players.map(({ visualPosition, ...rest }) => rest), 
         currentPlayerIndex: state.currentPlayerIndex,
         diceRoll: state.diceRoll,
-        gameStatus: state.gameStatus, 
-        activeTileForInteraction: state.activeTileForInteraction ? 
-          { // Persist a minimal version or reference
-            id: state.activeTileForInteraction.id, // ID from original board
-            position: state.activeTileForInteraction.position,
-            type: state.activeTileForInteraction.type,
-            // Persisting full config here can be heavy and redundant if originalBoardConfig is source of truth.
-            // For quiz options, if they were shuffled and one was selected, that specific shuffle might be lost
-            // unless the activeTileForInteraction in state reflects that.
-            // Let's persist the activeTileForInteraction as is from state.boardConfig.
-            config: state.activeTileForInteraction.config,
-            ui: state.activeTileForInteraction.ui,
-          } : null,
+        gameStatus: state.gameStatus,
+        activeTileForInteraction: state.activeTileForInteraction,
         winner: state.winner,
         logs: state.logs,
         playersFinishedCount: state.playersFinishedCount,
       };
       try {
-        localStorage.setItem(`boardwise-play-state-${state.originalBoardConfig.id}`, JSON.stringify(persistState));
+        localStorage.setItem(`boardwise-play-state-${state.boardConfig.id}`, JSON.stringify(persistState));
       } catch (e) {
         console.warn("Failed to save play state to localStorage", e);
       }
     }
-  }, [state.players, state.currentPlayerIndex, state.diceRoll, state.gameStatus, state.activeTileForInteraction, state.winner, state.logs, state.playersFinishedCount, state.originalBoardConfig, state.isLoading, state.boardConfig]);
-
-
-  // Effect for handling board content translation on language change
-  useEffect(() => {
-    const { language: currentUiLanguage } = languageContext;
-
-    const translateBoardIfNeeded = async () => {
-      if (!state.originalBoardConfig) return;
-
-      if (currentUiLanguage === ASSUMED_ORIGINAL_BOARD_LANGUAGE) {
-        // If current UI language is the assumed original, set display board to original (if not already)
-        // This check prevents re-dispatching if boardConfig is already the original one.
-        if (!state.boardConfig || state.boardConfig.id !== state.originalBoardConfig.id || 
-            JSON.stringify(state.boardConfig.tiles) !== JSON.stringify(state.originalBoardConfig.tiles) ||
-            JSON.stringify(state.boardConfig.settings) !== JSON.stringify(state.originalBoardConfig.settings) ) {
-          dispatch({ type: 'SET_DISPLAY_BOARD', payload: JSON.parse(JSON.stringify(state.originalBoardConfig)) });
-        }
-        return;
-      }
-
-      // Otherwise, translate from originalBoardConfig to currentUiLanguage
-      dispatch({ type: 'TRANSLATION_STARTED' });
-
-      const boardToTranslate = JSON.parse(JSON.stringify(state.originalBoardConfig)) as BoardConfig;
-
-      boardToTranslate.settings.name = await translateTextCached(
-        state.originalBoardConfig.settings.name, // Translate from original
-        currentUiLanguage,
-        ASSUMED_ORIGINAL_BOARD_LANGUAGE
-      );
-
-      const tilePromises = boardToTranslate.tiles.map(async (tile, index) => {
-        const originalTile = state.originalBoardConfig!.tiles[index]; // Get corresponding original tile
-        if (originalTile.config) {
-          tile.config = JSON.parse(JSON.stringify(originalTile.config)); // Start from original config
-          if (tile.type === 'quiz' && tile.config) {
-            const config = tile.config as TileConfigQuiz;
-            const originalConfig = originalTile.config as TileConfigQuiz;
-            config.question = await translateTextCached(originalConfig.question, currentUiLanguage, ASSUMED_ORIGINAL_BOARD_LANGUAGE);
-            const optionPromises = config.options.map(async (option, optIndex) => {
-              const originalOption = originalConfig.options[optIndex];
-              option.text = await translateTextCached(originalOption.text, currentUiLanguage, ASSUMED_ORIGINAL_BOARD_LANGUAGE);
-            });
-            await Promise.all(optionPromises);
-          } else if (tile.type === 'info' && tile.config) {
-            const config = tile.config as TileConfigInfo;
-            const originalConfig = originalTile.config as TileConfigInfo;
-            config.message = await translateTextCached(originalConfig.message, currentUiLanguage, ASSUMED_ORIGINAL_BOARD_LANGUAGE);
-          } else if (tile.type === 'reward' && tile.config) {
-            const config = tile.config as TileConfigReward;
-            const originalConfig = originalTile.config as TileConfigReward;
-            config.message = await translateTextCached(originalConfig.message, currentUiLanguage, ASSUMED_ORIGINAL_BOARD_LANGUAGE);
-          }
-        }
-        return tile;
-      });
-      
-      boardToTranslate.tiles = await Promise.all(tilePromises);
-      dispatch({ type: 'TRANSLATION_FINISHED', payload: boardToTranslate });
-    };
-
-    if (state.originalBoardConfig) {
-      translateBoardIfNeeded();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [languageContext.language, state.originalBoardConfig]); // Only run if language or original board changes.
+  }, [state.players, state.currentPlayerIndex, state.diceRoll, state.gameStatus, state.activeTileForInteraction, state.winner, state.logs, state.playersFinishedCount, state.boardConfig, state.isLoading]);
 
 
   const initializeNewBoard = useCallback(() => {
@@ -859,10 +690,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (state.pawnAnimation?.timerId) clearTimeout(state.pawnAnimation.timerId);
     
     const newBoardData: Partial<BoardConfig> & { settings: Partial<BoardSettings> } = {
-        // id will be generated by sanitizeAndValidateBoardConfig
         settings: { ...DEFAULT_BOARD_SETTINGS },
         tiles: Array.from({ length: DEFAULT_BOARD_SETTINGS.numberOfTiles }, (_, i) => ({
-          id: nanoid(), // Assign initial ID here
+          id: nanoid(),
           type: 'empty',
           position: i,
           ui: { icon: TILE_TYPE_EMOJIS.empty, color: DEFAULT_TILE_COLOR },
@@ -878,8 +708,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         }
     }
     
-    const newBoardConfig = sanitizeAndValidateBoardConfig(newBoardData as any); // Sanitize generates final IDs for tiles
-    dispatch({ type: 'SET_INITIAL_BOARD_DATA', payload: { boardConfig: newBoardConfig } });
+    dispatch({ type: 'SET_BOARD_CONFIG', payload: { boardConfig: newBoardData as BoardConfig } });
   }, [state.pawnAnimation?.timerId]);
 
   const loadBoardFromBase64 = useCallback((rawBase64Data: string) => {
@@ -890,11 +719,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     try {
       const binaryString = atob(rawBase64Data);
       const jsonString = decodeURIComponent(escape(binaryString)); 
-      const rawBoardData = JSON.parse(jsonString) as Partial<BoardConfig> & { settings: Partial<BoardSettings> & { punishmentMode?: boolean } };
+      const rawBoardData = JSON.parse(jsonString) as Partial<BoardConfig>;
 
       if (rawBoardData && rawBoardData.settings && rawBoardData.tiles) {
-        boardConfigToLoad = sanitizeAndValidateBoardConfig(rawBoardData); // Sanitize first
-        
+        boardConfigToLoad = rawBoardData as BoardConfig;
         try {
           const storedState = localStorage.getItem(`boardwise-play-state-${boardConfigToLoad.id}`);
           if (storedState) {
@@ -904,7 +732,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           console.warn("Failed to load persisted play state from localStorage", e);
           persistedPlayState = null;
         }
-        dispatch({ type: 'SET_INITIAL_BOARD_DATA', payload: { boardConfig: boardConfigToLoad, persistedPlayState } });
+        dispatch({ type: 'SET_BOARD_CONFIG', payload: { boardConfig: boardConfigToLoad, persistedPlayState } });
       } else {
         throw new Error("Invalid board data structure from Base64.");
       }
@@ -927,9 +755,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
     let boardConfigToLoad: BoardConfig | null = null;
     let persistedPlayState: PersistedPlayState | null = null;
     try {
-      const rawBoardData = JSON.parse(jsonString) as Partial<BoardConfig> & { settings: Partial<BoardSettings> & { punishmentMode?: boolean } };
+      const rawBoardData = JSON.parse(jsonString);
       if (rawBoardData && rawBoardData.settings && rawBoardData.tiles) {
-         boardConfigToLoad = sanitizeAndValidateBoardConfig(rawBoardData);
+        boardConfigToLoad = rawBoardData as BoardConfig;
         try {
           const storedState = localStorage.getItem(`boardwise-play-state-${boardConfigToLoad.id}`);
           if (storedState) {
@@ -939,7 +767,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           console.warn("Failed to load persisted play state from localStorage for JSON import", e);
           persistedPlayState = null;
         }
-        dispatch({ type: 'SET_INITIAL_BOARD_DATA', payload: { boardConfig: boardConfigToLoad, persistedPlayState } });
+        dispatch({ type: 'SET_BOARD_CONFIG', payload: { boardConfig: boardConfigToLoad, persistedPlayState } });
         return true;
       } else {
         throw new Error("Invalid board data structure from JSON file.");
@@ -952,24 +780,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, [dispatch, state.pawnAnimation?.timerId]);
 
   const randomizeTileVisuals = useCallback(() => {
-    // This should now update originalBoardConfig if we want randomization to be part of the "source"
-    // Or, it just updates the current display boardConfig temporarily.
-    // For simplicity, let's assume it updates the original and triggers re-translation.
-    if (state.originalBoardConfig) {
-        const tempRandomizedBoardConfig = applyBoardRandomizationSettings({
-            ...state.originalBoardConfig, // Randomize based on original
-            settings: {...state.originalBoardConfig.settings, randomizeTiles: true } 
-        }, null); // Active tile for interaction isn't relevant for this operation directly
-
-        // This will update originalBoardConfig, and the useEffect will handle translation.
-        dispatch({ type: 'UPDATE_TILES', payload: tempRandomizedBoardConfig.tiles });
-        // We might also want to dispatch SET_DISPLAY_BOARD if the current language is ASSUMED_ORIGINAL_BOARD_LANGUAGE
-        // to immediately reflect randomization without waiting for translation cycle.
-        if (languageContext.language === ASSUMED_ORIGINAL_BOARD_LANGUAGE) {
-            dispatch({ type: 'SET_DISPLAY_BOARD', payload: tempRandomizedBoardConfig });
-        }
+    if (state.boardConfig) {
+      const randomizedBoard = applyBoardRandomizationSettings(state.boardConfig);
+      dispatch({ type: 'UPDATE_TILES', payload: randomizedBoard.tiles });
     }
-  }, [state.originalBoardConfig, dispatch, languageContext.language]);
+  }, [state.boardConfig, dispatch]);
 
 
   return (
@@ -986,3 +801,5 @@ export function useGame() {
   }
   return context;
 }
+
+    

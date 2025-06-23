@@ -89,13 +89,12 @@ export interface PawnAnimation {
 }
 
 export interface GameState {
-  boardConfig: BoardConfig | null; // This is the currently displayed (potentially translated) board
-  originalBoardConfig: BoardConfig | null; // Stores the board in its original loaded language
+  boardConfig: BoardConfig | null;
   players: Player[];
   currentPlayerIndex: number;
   diceRoll: number | null;
   gameStatus: GameStatus;
-  isLoading: boolean; // Also true when isTranslating
+  isLoading: boolean;
   error: string | null;
   activeTileForInteraction: Tile | null;
   winner: Player | null;
@@ -122,9 +121,10 @@ export interface PersistedPlayState {
   currentPlayerIndex: number;
   diceRoll: number | null;
   gameStatus: GameStatus;
-  activeTileForInteraction: Tile | null; // This tile should ideally be from originalBoardConfig or re-matched
+  activeTileForInteraction: Tile | null;
   winner: Player | null;
   logs: LogEntry[];
   playersFinishedCount: number;
-  // Note: Persisted board content itself isn't directly used; originalBoardConfig is the source of truth for content.
 }
+
+    
