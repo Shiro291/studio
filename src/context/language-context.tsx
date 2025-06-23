@@ -19,7 +19,7 @@ const translations: Record<Language, Record<string, string>> = { en, id };
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>('en');
+  const [language, setLanguageState] = useState<Language>('id');
 
   useEffect(() => {
     const storedLang = localStorage.getItem('boardwise-lang') as Language | null;
