@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useState } from 'react';
@@ -16,11 +15,11 @@ import { useLanguage } from '@/context/language-context';
 export default function BoardDesignerPage() {
   const { state, initializeNewBoard, loadBoardFromBase64 } = useGame();
   const { t } = useLanguage();
-  const searchParams = useSearchParams();
   const [initialLoadDone, setInitialLoadDone] = useState(false);
 
   useEffect(() => {
     if (!initialLoadDone) {
+      const searchParams = useSearchParams();
       const boardData = searchParams.get('board');
       if (boardData) {
         loadBoardFromBase64(decodeURIComponent(boardData));
@@ -29,7 +28,7 @@ export default function BoardDesignerPage() {
       }
       setInitialLoadDone(true);
     }
-  }, [searchParams, initializeNewBoard, loadBoardFromBase64, initialLoadDone]);
+  }, [initializeNewBoard, loadBoardFromBase64, initialLoadDone]);
 
   if (state.isLoading || !initialLoadDone) {
     return (
@@ -98,4 +97,3 @@ export default function BoardDesignerPage() {
     </div>
   );
 }
-
