@@ -5,3 +5,11 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
+  # Make the GEMINI_API_KEY secret available to the running app.
+  availability:
+    - secret: GEMINI_API_KEY
+
+# The build process also needs access to the API key.
+buildConfig:
+  availability:
+    - secret: GEMINI_API_KEY
